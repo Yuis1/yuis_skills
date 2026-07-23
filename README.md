@@ -33,6 +33,24 @@
 
 > `agent-team` 包含 Paseo 的会话与工作树规则，适合使用 Paseo 编排多 Agent 的环境。
 
+## 配套的用户级 AGENTS.md
+
+仓库根目录的 [`AGENTS.md`](./AGENTS.md) 收录了这套技能配套的用户级规则。它既是维护本仓库时的项目规则，也是向各 Coding Agent 分发全局规则的权威来源。后续应从仓库通过 Ansible 等配置管理工具单向发布，避免同时手工维护仓库和用户目录中的副本。
+
+这份规则刻意只常驻跨项目原则和硬约束，把具体工作流按技能名延迟加载，因此不能把它当作一份完全独立的 Prompt 使用。要让其中的技能指引完整生效，建议把下面三组技能作为一套安装和版本管理：
+
+| 来源 | `AGENTS.md` 使用的技能 | 作用 |
+|---|---|---|
+| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team` | 系统架构、演进、自动守护、重构、证据与 Agent 协作 |
+| [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`、`grill-me`、`grill-with-docs`、`prototype`、`to-spec`、`to-tickets`、`wayfinder`、`implement`、`ask-matt`、`research`、`code-review`、`tdd`、`diagnosing-bugs`、`improve-codebase-architecture`、`resolving-merge-conflicts` | 需求对齐、规划、实现、测试、排障、代码评审与模块设计 |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `gpt-taste`、`design-taste-frontend`、`redesign-existing-projects` | 新前端设计与既有界面翻新 |
+
+`agent-team` 还依赖 Paseo 环境提供的 `paseo-advisor` 和 `paseo-committee`。不使用 Paseo 时，不要安装 `agent-team`，并删除 `AGENTS.md` 中对应的技能指引。
+
+若缺少某组技能，`AGENTS.md` 中直接写出的原则仍然有效，但 Agent 无法按指引加载对应工作流。也可以删除不适用于自己环境的技能引用和工具约束；不要保留无法解析或从未安装的名字。
+
+这是一份有明确个人工作流取向的参考配置，不是通用安全基线。使用前应逐条审核，特别是 Paseo、`trash-cli`、本地参考路径、模型选择和汇报偏好。
+
 ## 安装
 
 [Codex](https://developers.openai.com/codex/build-skills)、[Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md) 和 [OpenCode](https://opencode.ai/docs/skills/) 均可从 `~/.agents/skills` 发现用户级技能；[Claude Code](https://code.claude.com/docs/en/agent-sdk/skills) 使用 `~/.claude/skills`。
@@ -78,7 +96,20 @@ done
 
 这一步适用于 Codex、Pi、OpenCode 及其他读取 Agent Skills 通用目录的工具。
 
-### 3. Claude Code
+### 3. 安装配套的第三方技能
+
+使用 [`skills` CLI](https://skills.sh/docs/cli) 安装用户级技能，并在交互提示中选择实际使用的 Agent：
+
+```bash
+npx skills@latest add mattpocock/skills --global --skill '*'
+npx skills@latest add https://github.com/Leonxlnx/taste-skill \
+  --global \
+  --skill design-taste-frontend gpt-taste redesign-existing-projects
+```
+
+`mattpocock/skills` 安装完成后，按其上游说明选择并运行 `/setup-matt-pocock-skills`，为需要完整工程流程的项目配置 Issue Tracker、标签和文档位置。第三方仓库会独立演进，升级前应阅读其变更并复核与本 `AGENTS.md` 的兼容性。
+
+### 4. Claude Code 技能目录
 
 Claude Code 用户再把同一组技能链接到专用目录：
 
@@ -101,6 +132,33 @@ done
 ```
 
 安装后请开启新会话，让 Agent 重新发现技能。
+
+### 5. 发布用户级规则
+
+不同工具读取用户级规则的位置不同：
+
+| 工具 | 目标文件 | 说明 |
+|---|---|---|
+| [Codex](https://developers.openai.com/codex/guides/agents-md) | `~/.codex/AGENTS.md` | 直接使用本仓库的 `AGENTS.md` |
+| [Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/usage.md#context-files) | `~/.pi/agent/AGENTS.md` | 直接使用本仓库的 `AGENTS.md` |
+| [OpenCode](https://opencode.ai/docs/rules/) | `~/.config/opencode/AGENTS.md` | 直接使用本仓库的 `AGENTS.md` |
+| [Claude Code](https://code.claude.com/docs/en/memory#agentsmd) | `~/.claude/CLAUDE.md` | Claude 不直接读取 `AGENTS.md`；可由同一来源生成、复制或建立符号链接 |
+
+推荐由 Ansible、chezmoi 或其他配置管理工具发布，并在覆盖已有文件前先做 Diff。若手工建立符号链接，请只在目标不存在时执行：
+
+```bash
+repo_dir="$(pwd -P)"
+target="$HOME/.codex/AGENTS.md"
+
+if [[ -e "$target" || -L "$target" ]]; then
+  printf '未修改：请先对比已有文件 %s\n' "$target"
+else
+  mkdir -p "${target%/*}"
+  ln -s "$repo_dir/AGENTS.md" "$target"
+fi
+```
+
+其他工具只需把 `target` 改为上表位置。Claude Code 若还要追加 Claude 专属规则，使用独立的 `CLAUDE.md` 导入或复制本文件，不要直接共用不可扩展的符号链接。
 
 ### 更新
 
