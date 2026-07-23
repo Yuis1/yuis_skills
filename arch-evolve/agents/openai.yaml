@@ -1,0 +1,4 @@
+interface:
+  display_name: "架构演进"
+  short_description: "规划架构量子、耦合关系以及破坏性数据和协议的安全迁移"
+  default_prompt: "使用 $arch-evolve 规划这次架构演进或破坏性迁移。"

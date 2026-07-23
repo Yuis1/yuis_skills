@@ -1,0 +1,4 @@
+interface:
+  display_name: "架构守护"
+  short_description: "把架构约束转成可执行检查、CI 门禁、基线棘轮和例外机制"
+  default_prompt: "使用 $arch-guard 为这些架构约束设计自动守护。"

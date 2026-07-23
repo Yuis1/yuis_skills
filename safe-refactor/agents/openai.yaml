@@ -1,0 +1,4 @@
+interface:
+  display_name: "安全重构"
+  short_description: "用可验证纵向切片控制跨模块重构，避免大爆炸重构和长期互锁"
+  default_prompt: "使用 $safe-refactor 把这次重构拆成可验证的安全切片。"
