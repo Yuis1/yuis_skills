@@ -2,7 +2,7 @@
 
 面向 Coding Agent 与生产力 Agent 的场景化技能集，用于复杂软件工程中的架构设计、自动治理、安全演进、重构、验证和多 Agent 协作。
 
-这些技能不是教程或书摘。每个技能只负责一个目标，`description` 只做触发钩子；正文提供可执行工作流，低频细节按需加载，避免一次占用过多上下文。
+每个技能只负责一个目标，`description` 只做触发钩子；正文提供可执行工作流，低频细节按需加载，避免一次占用过多上下文。
 
 ## 使用场景
 
@@ -35,6 +35,8 @@
 
 ## 配套的用户级 AGENTS.md
 
+> 这是一部血泪史，这里的每句话都是本人的翻车事故现场。
+
 仓库根目录的 [`AGENTS.md`](./AGENTS.md) 收录了这套技能配套的用户级规则。它既是维护本仓库时的项目规则，也是向各 Coding Agent 分发全局规则的权威来源。后续应从仓库通过 Ansible 等配置管理工具单向发布，避免同时手工维护仓库和用户目录中的副本。
 
 这份规则刻意只常驻跨项目原则和硬约束，把具体工作流按技能名延迟加载，因此不能把它当作一份完全独立的 Prompt 使用。要让其中的技能指引完整生效，建议把下面三组技能作为一套安装和版本管理：
@@ -53,121 +55,74 @@
 
 ## 安装
 
-[Codex](https://developers.openai.com/codex/build-skills)、[Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md) 和 [OpenCode](https://opencode.ai/docs/skills/) 均可从 `~/.agents/skills` 发现用户级技能；[Claude Code](https://code.claude.com/docs/en/agent-sdk/skills) 使用 `~/.claude/skills`。
+[Codex](https://developers.openai.com/codex/build-skills)、[Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md) 和 [OpenCode](https://opencode.ai/docs/skills/) 读取 `~/.agents/skills`；[Claude Code](https://code.claude.com/docs/en/agent-sdk/skills) 读取 `~/.claude/skills`。
 
-以下命令适用于 macOS 与 Linux 的 Bash 环境。
-
-### 1. 克隆仓库
+### 本技能组
 
 ```bash
 git clone https://github.com/Yuis1/yuis_skills.git
 cd yuis_skills
-```
 
-### 2. 安装到通用目录
-
-下面的命令为每个技能建立符号链接。若同名位置已经是真实文件或目录，则跳过，不会覆盖。
-
-```bash
 skills=(
-  system-design
-  arch-guard
-  arch-evolve
-  safe-refactor
-  review-evidence
-  test-evidence
-  agent-dev
-  agent-team
+  system-design arch-guard arch-evolve safe-refactor
+  review-evidence test-evidence agent-dev agent-team
 )
-
 repo_dir="$(pwd -P)"
-skill_root="$HOME/.agents/skills"
-mkdir -p "$skill_root"
 
-for skill in "${skills[@]}"; do
-  target="$skill_root/$skill"
-  if [[ -e "$target" && ! -L "$target" ]]; then
-    printf '跳过：%s 已存在且不是符号链接\n' "$target"
-    continue
-  fi
-  ln -sfn "$repo_dir/$skill" "$target"
-done
+link_skills() {
+  local root="$1"
+  mkdir -p "$root"
+  for skill in "${skills[@]}"; do
+    [[ -e "$root/$skill" || -L "$root/$skill" ]] ||
+      ln -s "$repo_dir/$skill" "$root/$skill"
+  done
+}
+
+link_skills "$HOME/.agents/skills"
+# Claude Code 用户再执行：
+link_skills "$HOME/.claude/skills"
 ```
 
-这一步适用于 Codex、Pi、OpenCode 及其他读取 Agent Skills 通用目录的工具。
+### 配套技能
 
-### 3. 安装配套的第三方技能
+依赖版本固定如下：
 
-使用 [`skills` CLI](https://skills.sh/docs/cli) 安装用户级技能，并在交互提示中选择实际使用的 Agent：
+| 仓库 | 固定版本 |
+|---|---|
+| [`mattpocock/skills`](https://github.com/mattpocock/skills/tree/v1.1.0) | `v1.1.0`（`eabea89380927aadb93abf6e290a19334d249292`） |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill/tree/e988add20dab0fa97d7a76781c48961c8184288e) | `e988add20dab0fa97d7a76781c48961c8184288e` |
 
 ```bash
-npx skills@latest add mattpocock/skills --global --skill '*'
-npx skills@latest add https://github.com/Leonxlnx/taste-skill \
-  --global \
+git clone --branch v1.1.0 --depth 1 \
+  https://github.com/mattpocock/skills.git ../mattpocock-skills
+git clone https://github.com/Leonxlnx/taste-skill.git ../taste-skill
+git -C ../taste-skill checkout --detach \
+  e988add20dab0fa97d7a76781c48961c8184288e
+
+npx skills@latest add ../mattpocock-skills --global --skill '*'
+npx skills@latest add ../taste-skill --global \
   --skill design-taste-frontend gpt-taste redesign-existing-projects
 ```
 
-`mattpocock/skills` 安装完成后，按其上游说明选择并运行 `/setup-matt-pocock-skills`，为需要完整工程流程的项目配置 Issue Tracker、标签和文档位置。第三方仓库会独立演进，升级前应阅读其变更并复核与本 `AGENTS.md` 的兼容性。
+### 用户级规则
 
-### 4. Claude Code 技能目录
-
-Claude Code 用户再把同一组技能链接到专用目录：
-
-```bash
-repo_dir="$(pwd -P)"
-skill_root="$HOME/.claude/skills"
-mkdir -p "$skill_root"
-
-for skill in \
-  system-design arch-guard arch-evolve safe-refactor \
-  review-evidence test-evidence agent-dev agent-team
-do
-  target="$skill_root/$skill"
-  if [[ -e "$target" && ! -L "$target" ]]; then
-    printf '跳过：%s 已存在且不是符号链接\n' "$target"
-    continue
-  fi
-  ln -sfn "$repo_dir/$skill" "$target"
-done
-```
-
-安装后请开启新会话，让 Agent 重新发现技能。
-
-### 5. 发布用户级规则
-
-不同工具读取用户级规则的位置不同：
-
-| 工具 | 目标文件 | 说明 |
+| 工具 | `AGENTS.md` 的发布位置 |
 |---|---|---|
-| [Codex](https://developers.openai.com/codex/guides/agents-md) | `~/.codex/AGENTS.md` | 直接使用本仓库的 `AGENTS.md` |
-| [Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/usage.md#context-files) | `~/.pi/agent/AGENTS.md` | 直接使用本仓库的 `AGENTS.md` |
-| [OpenCode](https://opencode.ai/docs/rules/) | `~/.config/opencode/AGENTS.md` | 直接使用本仓库的 `AGENTS.md` |
-| [Claude Code](https://code.claude.com/docs/en/memory#agentsmd) | `~/.claude/CLAUDE.md` | Claude 不直接读取 `AGENTS.md`；可由同一来源生成、复制或建立符号链接 |
+| [Codex](https://developers.openai.com/codex/guides/agents-md) | `~/.codex/AGENTS.md` |
+| [Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/usage.md#context-files) | `~/.pi/agent/AGENTS.md` |
+| [OpenCode](https://opencode.ai/docs/rules/) | `~/.config/opencode/AGENTS.md` |
+| [Claude Code](https://code.claude.com/docs/en/memory#agentsmd) | `~/.claude/CLAUDE.md` |
 
-推荐由 Ansible、chezmoi 或其他配置管理工具发布，并在覆盖已有文件前先做 Diff。若手工建立符号链接，请只在目标不存在时执行：
-
-```bash
-repo_dir="$(pwd -P)"
-target="$HOME/.codex/AGENTS.md"
-
-if [[ -e "$target" || -L "$target" ]]; then
-  printf '未修改：请先对比已有文件 %s\n' "$target"
-else
-  mkdir -p "${target%/*}"
-  ln -s "$repo_dir/AGENTS.md" "$target"
-fi
-```
-
-其他工具只需把 `target` 改为上表位置。Claude Code 若还要追加 Claude 专属规则，使用独立的 `CLAUDE.md` 导入或复制本文件，不要直接共用不可扩展的符号链接。
+建议通过 Ansible 等配置管理工具从本仓库单向发布。Claude Code 使用同一内容，但文件名为 `CLAUDE.md`。
 
 ### 更新
 
-符号链接始终指向本仓库，后续只需：
-
-```bash
-git pull --ff-only
-```
+本仓库执行 `git pull --ff-only`。配套技能保持上述固定版本；升级时同时更新版本记录并复核 `AGENTS.md`。
 
 ## 安全说明
 
-Agent Skills 会影响 Agent 的判断和操作。安装第三方技能前应先阅读内容。本仓库当前只包含 Markdown 指令和 YAML 展示元数据，不包含可执行脚本。
+Agent Skills 会影响 Agent 的判断和操作，安装前请先阅读内容。本仓库不包含可执行脚本。
+
+## 许可证
+
+[Apache License 2.0](LICENSE)
