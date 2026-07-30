@@ -16,7 +16,7 @@
 | 判断验证是否真正成立 | `test-evidence` | 区分行为、静态和非代码证据，安全迁移遗留测试 |
 | 开发或优化 Agent 产品 | `agent-dev` | 版本化治理 Prompt、模型、Schema、工具、编排和评测 |
 | 组织多 Agent 并行工作 | `agent-team` | 控制派发成本、会话复用、工作树、Writer 与 Reviewer 权限 |
-| 咨询已登录的 ChatGPT Web | `chatgpt-chat` | 通过专用 Edge Profile 管理 Project、长回答与附件 |
+| 咨询已登录的 ChatGPT Web | `chatgpt-chat` | 通过专用 Chrome 或 Edge Profile 管理 Project、长回答与附件 |
 
 常见组合：
 
@@ -122,7 +122,7 @@ npx skills@latest add ../taste-skill --global \
 
 ## 安全说明
 
-Agent Skills 会影响 Agent 的判断和操作，安装前请先阅读内容。除 `chatgpt-chat` 外，本仓库技能仅包含指令和元数据；`chatgpt-chat` 带有经过测试的浏览器驱动，使用隔离 Edge Profile 和短生命周期本地 CDP，安装与启用前应单独复核其凭据边界。
+Agent Skills 会影响 Agent 的判断和操作，安装前请先阅读内容。除 `chatgpt-chat` 外，本仓库技能仅包含指令和元数据；`chatgpt-chat` 带有经过测试的浏览器驱动，使用隔离 Chrome 或 Edge Profile 和短生命周期本地 CDP，安装与启用前应单独复核其凭据边界。
 
 ## 许可证
 

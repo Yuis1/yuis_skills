@@ -99,7 +99,7 @@ function recordDiagnostic(error) {
 async function main() {
   const input = parseArguments(process.argv.slice(2));
   const adapterUrl = process.env.CHATGPT_CHAT_ADAPTER_MODULE
-    ?? new URL("../lib/edge-cdp-adapter.mjs", import.meta.url).href;
+    ?? new URL("../lib/browser-cdp-adapter.mjs", import.meta.url).href;
   const adapter = await import(adapterUrl);
   const result = input.command === "login"
     ? await adapter.login({ cwd: input.cwd })
@@ -119,8 +119,8 @@ main().then(
   (error) => {
     const safeAdapterMessages = {
       AUTH_REQUIRED: "Sign in to ChatGPT in the dedicated Edge window, then retry",
-      EDGE_START_FAILED: "The dedicated ChatGPT Edge window could not be started",
-      EDGE_BUSY: "Another ChatGPT browser operation is active; wait for it to finish",
+      BROWSER_START_FAILED: "The dedicated ChatGPT browser could not be started",
+      BROWSER_BUSY: "Another ChatGPT browser operation is active; wait for it to finish",
     };
     if (!(error instanceof PublicError) && !safeAdapterMessages[error?.code]) recordDiagnostic(error);
     const message = error instanceof PublicError
