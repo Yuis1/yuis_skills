@@ -1,2 +1,6 @@
 # Editor backup files
 *~
+
+# Python test bytecode
+__pycache__/
+*.py[cod]
