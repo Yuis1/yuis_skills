@@ -1,12 +1,12 @@
 ---
 name: chatgpt-chat
-description: 通过专用 Edge 调用已登录的 ChatGPT Web。
-compatibility: Linux desktop with Microsoft Edge and the managed chatgpt-chat CLI.
+description: 通过专用 Chrome 或 Edge 调用已登录的 ChatGPT Web。
+compatibility: Linux desktop with Google Chrome or Microsoft Edge and the managed chatgpt-chat CLI.
 ---
 
 # ChatGPT Chat
 
-使用确定性的 `chatgpt-chat` CLI，不读取 Playwriter 手册，也不控制日常 Edge Profile。驱动仅启动一个专用 Edge 窗口；`inspect` 和 `ask` 结束后自动关闭。
+使用确定性的 `chatgpt-chat` CLI，不读取 Playwriter 手册，也不控制日常浏览器 Profile。驱动仅启动一个专用 Chrome 或 Edge 窗口；`inspect` 和 `ask` 结束后自动关闭。
 
 ## 边界
 
