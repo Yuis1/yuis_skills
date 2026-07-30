@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { startEdge, withEdgePage, authRequired } from "./edge-runtime.mjs";
+import { startBrowser, withBrowserPage, authRequired } from "./chromium-runtime.mjs";
 import { runWorkflow } from "./browser-workflow.mjs";
 
 const projectStateScript = new URL("../scripts/project_state.py", import.meta.url).pathname;
@@ -47,7 +47,7 @@ async function requireAuthentication(page) {
 }
 
 export async function login({ cwd }) {
-  await startEdge("https://chatgpt.com/");
+  await startBrowser("https://chatgpt.com/");
   return {
     schema_version: 1,
     command: "login",
@@ -73,7 +73,7 @@ export async function inspect({ cwd }) {
     throw new Error("Project-only memory proof is missing");
   }
   const artifactDirectory = projectState("artifact-dir", "--cwd", cwd);
-  const result = await withEdgePage(async (page) => {
+  const result = await withBrowserPage(async (page) => {
     await requireAuthentication(page);
     return runWorkflow(page, {
       command: "inspect",
@@ -105,7 +105,7 @@ export async function ask({ cwd, prompt, conversationUrl, newConversation }) {
     throw new Error("Project-only memory proof is missing");
   }
   const artifactDirectory = projectState("artifact-dir", "--cwd", cwd);
-  const result = await withEdgePage(async (page) => {
+  const result = await withBrowserPage(async (page) => {
     await requireAuthentication(page);
     return runWorkflow(page, {
       command: "ask",

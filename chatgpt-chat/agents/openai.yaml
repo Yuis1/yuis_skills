@@ -1,4 +1,4 @@
 interface:
   display_name: "ChatGPT Web"
-  short_description: "通过专用 Edge 调用已登录的 ChatGPT Web"
+  short_description: "通过专用 Chrome 或 Edge 调用已登录的 ChatGPT Web"
   default_prompt: "使用 $chatgpt-chat 在当前项目对应的 ChatGPT Project 中完成这次咨询。"
