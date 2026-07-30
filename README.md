@@ -118,7 +118,7 @@ npx skills@latest add ../taste-skill --global \
 
 ### 更新
 
-本仓库执行 `git pull --ff-only`。配套技能保持上述固定版本；升级时同时更新版本记录并复核 `AGENTS.md`。
+本仓库采用单一 `main` 分支。完成相关验证后直接推送 `main`，无需创建 PR；不得 force-push，也不保留长期功能分支。本地更新使用 `git pull --ff-only`。配套技能保持上述固定版本；升级时同时更新版本记录并复核 `AGENTS.md`。
 
 ## 安全说明
 
