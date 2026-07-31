@@ -79,6 +79,40 @@ async function endpointIsLive(endpoint) {
   }
 }
 
+export async function closeBrowserEndpoint(endpoint, {
+  fetchImpl = fetch,
+  WebSocketImpl = WebSocket,
+  timeoutMilliseconds = 5_000,
+} = {}) {
+  const response = await fetchImpl(`${endpoint}/json/version`, {
+    signal: AbortSignal.timeout(timeoutMilliseconds),
+  });
+  if (!response.ok) throw new Error("Dedicated browser endpoint is unavailable during shutdown");
+  const { webSocketDebuggerUrl } = await response.json();
+  if (!/^ws:\/\/127\.0\.0\.1:\d+\/devtools\/browser\//.test(webSocketDebuggerUrl ?? "")) {
+    throw new Error("Dedicated browser returned an invalid shutdown endpoint");
+  }
+  await new Promise((resolve, reject) => {
+    const socket = new WebSocketImpl(webSocketDebuggerUrl);
+    const timer = setTimeout(() => reject(new Error("Dedicated browser shutdown timed out")), timeoutMilliseconds);
+    const settle = (callback) => {
+      clearTimeout(timer);
+      if (socket.readyState === WebSocketImpl.OPEN) socket.close();
+      callback();
+    };
+    socket.addEventListener("open", () => {
+      socket.send(JSON.stringify({ id: 1, method: "Browser.close" }));
+    });
+    socket.addEventListener("message", (event) => {
+      try {
+        if (JSON.parse(String(event.data))?.id === 1) settle(resolve);
+      } catch {}
+    });
+    socket.addEventListener("close", () => settle(resolve));
+    socket.addEventListener("error", () => settle(() => reject(new Error("Dedicated browser shutdown failed"))));
+  });
+}
+
 export function resolveDesktopEnvironment({
   environment = process.env,
   home = homedir(),
@@ -167,8 +201,9 @@ export async function withBrowserPage(operation) {
   const home = homedir();
   const release = acquireLock(join(home, ".local/state/chatgpt_chat"));
   let browser = null;
+  let endpoint = null;
   try {
-    const { endpoint } = await startBrowser();
+    ({ endpoint } = await startBrowser());
     const playwrightEntry = join(
       home,
       ".local/lib/node_modules/playwriter/node_modules/@xmorse/playwright-core/index.js",
@@ -202,10 +237,7 @@ export async function withBrowserPage(operation) {
     throw error;
   } finally {
     if (browser) {
-      try {
-        const session = await browser.newBrowserCDPSession();
-        await session.send("Browser.close");
-      } catch {}
+      try { await closeBrowserEndpoint(endpoint); } catch {}
       browser._connection.close();
     }
     release();
