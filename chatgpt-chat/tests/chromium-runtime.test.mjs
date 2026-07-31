@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveBrowserRuntime, resolveDesktopEnvironment } from "../lib/chromium-runtime.mjs";
+import {
+  closeBrowserEndpoint,
+  resolveBrowserRuntime,
+  resolveDesktopEnvironment,
+} from "../lib/chromium-runtime.mjs";
 
 const home = "/home/example";
 
@@ -54,6 +58,43 @@ test("keeps an explicit desktop session environment", () => {
     uid: 1000,
     displaySockets: ["X1"],
   }).DISPLAY, ":7");
+});
+
+test("closes the dedicated browser through the browser CDP endpoint", async () => {
+  const sent = [];
+  class FakeWebSocket {
+    static OPEN = 1;
+    readyState = 0;
+    listeners = new Map();
+    constructor(url) {
+      assert.equal(url, "ws://127.0.0.1:9222/devtools/browser/test");
+      queueMicrotask(() => {
+        this.readyState = FakeWebSocket.OPEN;
+        this.emit("open", {});
+      });
+    }
+    addEventListener(name, listener) {
+      const listeners = this.listeners.get(name) ?? [];
+      listeners.push(listener);
+      this.listeners.set(name, listeners);
+    }
+    emit(name, event) {
+      for (const listener of this.listeners.get(name) ?? []) listener(event);
+    }
+    send(body) {
+      sent.push(JSON.parse(body));
+      queueMicrotask(() => this.emit("message", { data: JSON.stringify({ id: 1, result: {} }) }));
+    }
+    close() { this.readyState = 3; }
+  }
+  await closeBrowserEndpoint("http://127.0.0.1:9222", {
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ webSocketDebuggerUrl: "ws://127.0.0.1:9222/devtools/browser/test" }),
+    }),
+    WebSocketImpl: FakeWebSocket,
+  });
+  assert.deepEqual(sent, [{ id: 1, method: "Browser.close" }]);
 });
 
 test("accepts explicit browser and profile overrides", () => {
