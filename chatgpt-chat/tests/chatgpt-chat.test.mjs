@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -138,6 +138,117 @@ test("ask reads the prompt file and requires an explicit conversation choice", (
   );
   assert.notEqual(ambiguous.status, 0);
   assert.match(ambiguous.stderr, /exactly one of --new or --conversation-url/);
+});
+
+test("ask accepts repeated review attachments through the public CLI seam", () => {
+  const root = mkdtempSync(join(tmpdir(), "chatgpt-chat-attachments-"));
+  const project = join(root, "sample-project");
+  mkdirSync(project);
+  const promptFile = join(root, "prompt.txt");
+  const archive = join(root, "module-review.zip");
+  const notes = join(root, "context.md");
+  writeFileSync(promptFile, "Review the attached module.\n");
+  writeFileSync(archive, "zip fixture");
+  writeFileSync(notes, "# Context\n");
+  const adapter = join(root, "adapter.mjs");
+  writeFileSync(adapter, `export async function ask(input) {
+    if (JSON.stringify(input.attachmentPaths) !== ${JSON.stringify(JSON.stringify([archive, notes]))}) {
+      throw new Error("attachments were not forwarded");
+    }
+    return {
+      schema_version: 1,
+      command: "ask",
+      status: "completed",
+      conversation_url: "https://chatgpt.com/c/example",
+      verification: { project: "sample-project", memory_scope: "project-only", mode: "chat", effort: "Pro", model: "GPT-5.6 Sol" },
+      response_path: "/artifacts/response.md",
+      uploaded_attachments: [{ name: "module-review.zip", bytes: 11 }, { name: "context.md", bytes: 10 }],
+      attachments: []
+    };
+  }\n`);
+
+  const result = spawnSync(process.execPath, [
+    cli, "ask", "--cwd", project, "--prompt-file", promptFile,
+    "--attachment", archive, "--attachment", notes, "--new",
+  ], {
+    encoding: "utf8",
+    env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout).uploaded_attachments, [
+    { name: "module-review.zip", bytes: 11 },
+    { name: "context.md", bytes: 10 },
+  ]);
+});
+
+test("ask rejects symlinked review attachments before opening the browser", () => {
+  const { project, adapter, root } = fixture(`export async function ask() {
+    throw new Error("browser adapter must not be called");
+  }\n`);
+  const promptFile = join(root, "prompt.txt");
+  const archive = join(root, "module-review.zip");
+  const link = join(root, "linked-review.zip");
+  writeFileSync(promptFile, "Review the attached module.\n");
+  writeFileSync(archive, "zip fixture");
+  symlinkSync(archive, link);
+
+  const result = spawnSync(process.execPath, [
+    cli, "ask", "--cwd", project, "--prompt-file", promptFile,
+    "--attachment", link, "--new",
+  ], {
+    encoding: "utf8",
+    env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /attachment must be a regular file and not a symbolic link/);
+});
+
+test("ask accepts only review-document and archive attachment types", () => {
+  const { project, adapter, root } = fixture(`export async function ask() {
+    throw new Error("browser adapter must not be called");
+  }\n`);
+  const promptFile = join(root, "prompt.txt");
+  const executable = join(root, "review.exe");
+  writeFileSync(promptFile, "Review the attachment.\n");
+  writeFileSync(executable, "not allowed");
+
+  const result = spawnSync(process.execPath, [
+    cli, "ask", "--cwd", project, "--prompt-file", promptFile,
+    "--attachment", executable, "--new",
+  ], {
+    encoding: "utf8",
+    env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /unsupported attachment type: \.exe/);
+});
+
+test("ask rejects review attachments larger than 100 MiB", () => {
+  const { project, adapter, root } = fixture(`export async function ask() {
+    throw new Error("browser adapter must not be called");
+  }\n`);
+  const promptFile = join(root, "prompt.txt");
+  const archive = join(root, "oversized.zip");
+  writeFileSync(promptFile, "Review the attachment.\n");
+  writeFileSync(archive, "x");
+  truncateSync(archive, 100 * 1024 * 1024 + 1);
+
+  const result = spawnSync(process.execPath, [
+    cli, "ask", "--cwd", project, "--prompt-file", promptFile,
+    "--attachment", archive, "--new",
+  ], {
+    encoding: "utf8",
+    env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /attachment exceeds 100 MiB limit/);
 });
 
 test("an unauthenticated dedicated profile returns one actionable safe error", () => {

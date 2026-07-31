@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { appendFileSync, chmodSync, mkdirSync } from "node:fs";
+import { appendFileSync, chmodSync, lstatSync, mkdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, extname, join, resolve } from "node:path";
 
 class PublicError extends Error {}
 
@@ -16,7 +16,14 @@ function parseArguments(argv) {
   if (!new Set(["login", "inspect", "ask"]).has(command)) {
     throw publicError("usage: chatgpt-chat <login|inspect|ask> [options]");
   }
-  const input = { command, cwd: process.cwd(), promptFile: null, newConversation: false, conversationUrl: null };
+  const input = {
+    command,
+    cwd: process.cwd(),
+    promptFile: null,
+    attachmentPaths: [],
+    newConversation: false,
+    conversationUrl: null,
+  };
   for (let index = 0; index < rest.length; index += 1) {
     const argument = rest[index];
     if (argument === "--cwd" && rest[index + 1]) {
@@ -25,6 +32,10 @@ function parseArguments(argv) {
     }
     if (command === "ask" && argument === "--prompt-file" && rest[index + 1]) {
       input.promptFile = resolve(rest[++index]);
+      continue;
+    }
+    if (command === "ask" && argument === "--attachment" && rest[index + 1]) {
+      input.attachmentPaths.push(resolve(rest[++index]));
       continue;
     }
     if (command === "ask" && argument === "--new") {
@@ -44,6 +55,34 @@ function parseArguments(argv) {
     }
   }
   return input;
+}
+
+const allowedAttachmentExtensions = new Set([
+  ".zip", ".tar", ".gz", ".tgz",
+  ".pdf", ".txt", ".md", ".json", ".csv", ".log",
+  ".yaml", ".yml", ".xml", ".html",
+  ".docx", ".pptx", ".xlsx",
+]);
+
+function validateAttachmentPaths(paths) {
+  for (const path of paths) {
+    let stat;
+    try {
+      stat = lstatSync(path);
+    } catch {
+      throw publicError(`attachment does not exist: ${path}`);
+    }
+    if (stat.isSymbolicLink() || !stat.isFile()) {
+      throw publicError(`attachment must be a regular file and not a symbolic link: ${path}`);
+    }
+    if (stat.size > 100 * 1024 * 1024) {
+      throw publicError(`attachment exceeds 100 MiB limit: ${path}`);
+    }
+    const extension = extname(path).toLowerCase();
+    if (!allowedAttachmentExtensions.has(extension)) {
+      throw publicError(`unsupported attachment type: ${extension || "no extension"}`);
+    }
+  }
 }
 
 function validateResult(input, result) {
@@ -98,6 +137,7 @@ function recordDiagnostic(error) {
 
 async function main() {
   const input = parseArguments(process.argv.slice(2));
+  validateAttachmentPaths(input.attachmentPaths);
   const adapterUrl = process.env.CHATGPT_CHAT_ADAPTER_MODULE
     ?? new URL("../lib/browser-cdp-adapter.mjs", import.meta.url).href;
   const adapter = await import(adapterUrl);
@@ -110,6 +150,7 @@ async function main() {
         prompt: await readFile(input.promptFile, "utf8"),
         conversationUrl: input.conversationUrl,
         newConversation: input.newConversation,
+        attachmentPaths: input.attachmentPaths,
       });
   process.stdout.write(`${JSON.stringify(validateResult(input, result))}\n`);
 }
