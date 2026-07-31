@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveBrowserRuntime } from "../lib/chromium-runtime.mjs";
+import { resolveBrowserRuntime, resolveDesktopEnvironment } from "../lib/chromium-runtime.mjs";
 
 const home = "/home/example";
 
@@ -31,6 +31,29 @@ test("uses Google Chrome with its own persistent profile when Edge is absent", (
     family: "chrome",
     profileDirectory: "/home/example/.local/share/chatgpt_chat/chrome-profile",
   });
+});
+
+test("discovers the active X display instead of assuming display zero", () => {
+  assert.deepEqual(resolveDesktopEnvironment({
+    environment: {},
+    home,
+    uid: 1000,
+    displaySockets: ["X1"],
+  }), {
+    DISPLAY: ":1",
+    XAUTHORITY: "/home/example/.Xauthority",
+    XDG_RUNTIME_DIR: "/run/user/1000",
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/1000/bus",
+  });
+});
+
+test("keeps an explicit desktop session environment", () => {
+  assert.equal(resolveDesktopEnvironment({
+    environment: { DISPLAY: ":7", XAUTHORITY: "/run/user/1000/custom-auth" },
+    home,
+    uid: 1000,
+    displaySockets: ["X1"],
+  }).DISPLAY, ":7");
 });
 
 test("accepts explicit browser and profile overrides", () => {

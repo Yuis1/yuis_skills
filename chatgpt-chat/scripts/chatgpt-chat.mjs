@@ -118,9 +118,12 @@ main().then(
   () => process.exit(0),
   (error) => {
     const safeAdapterMessages = {
-      AUTH_REQUIRED: "Sign in to ChatGPT in the dedicated Edge window, then retry",
-      BROWSER_START_FAILED: "The dedicated ChatGPT browser could not be started",
-      BROWSER_BUSY: "Another ChatGPT browser operation is active; wait for it to finish",
+      AUTH_REQUIRED: "AUTH_REQUIRED: run `chatgpt-chat login --cwd \"$PWD\"`, wait for the user to finish in the dedicated profile, then retry",
+      AUTH_UNVERIFIED: "AUTH_UNVERIFIED: visible ChatGPT controls could not prove authentication; use the matching troubleshooting entry",
+      CHALLENGE_REQUIRED: "CHALLENGE_REQUIRED: let the user complete the visible ChatGPT challenge, then retry",
+      RUNTIME_MISSING: "RUNTIME_MISSING: request the managed deployment; do not install browser dependencies ad hoc",
+      BROWSER_START_FAILED: "BROWSER_START_FAILED: the dedicated ChatGPT browser could not be started; use the matching troubleshooting entry",
+      BROWSER_BUSY: "BROWSER_BUSY: another ChatGPT browser operation is active; wait for it to finish",
     };
     if (!(error instanceof PublicError) && !safeAdapterMessages[error?.code]) recordDiagnostic(error);
     const message = error instanceof PublicError

@@ -35,15 +35,55 @@ function validateConversationChoice(identity, conversationUrl) {
   }
 }
 
+export function classifyAuthenticationEvidence({
+  loginControl,
+  composer,
+  newProjectControl = 0,
+  projectsHeading,
+  profileControl,
+  challengeFrame,
+}) {
+  if (challengeFrame > 0) return "challenge";
+  if (loginControl > 0) return "required";
+  if (composer > 0 && (newProjectControl > 0 || projectsHeading > 0 || profileControl > 0)) return "authenticated";
+  return "unverified";
+}
+
+async function visibleCount(locator) {
+  let visible = 0;
+  const count = Math.min(await locator.count(), 10);
+  for (let index = 0; index < count; index += 1) {
+    if (await locator.nth(index).isVisible().catch(() => false)) visible += 1;
+  }
+  return visible;
+}
+
+function codedError(code, message) {
+  return Object.assign(new Error(message), { code });
+}
+
 async function requireAuthentication(page) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 45_000 });
-  const login = page.locator('a[href^="/auth/login"]:visible');
-  const projectControl = page.getByRole("button", { name: "New project", exact: true });
-  const authenticated = await projectControl.waitFor({ state: "visible", timeout: 15_000 })
-    .then(() => true)
-    .catch(() => false);
-  if (!authenticated && await login.count()) throw authRequired();
-  if (!authenticated) throw new Error("ChatGPT authentication state could not be verified");
+  await page.locator('#prompt-textarea, a[href^="/auth/login"]').first()
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .catch(() => {});
+  await page.waitForTimeout(1_000);
+  const evidence = {
+    loginControl: await visibleCount(page.getByRole("link", { name: /log in|登录/i }))
+      + await visibleCount(page.getByRole("button", { name: /log in|登录/i })),
+    composer: await visibleCount(page.locator("#prompt-textarea")),
+    newProjectControl: await visibleCount(page.getByRole("button", {
+      name: /^(new project|create project|新建项目|创建项目)$/i,
+    })),
+    projectsHeading: await visibleCount(page.getByText(/^(projects|项目)$/i, { exact: true })),
+    profileControl: await visibleCount(page.getByRole("button", { name: /profile|个人资料|账户|account/i })),
+    challengeFrame: await page.locator('iframe[src*="challenge"], iframe[src*="cloudflare"]').count(),
+  };
+  const status = classifyAuthenticationEvidence(evidence);
+  if (status === "authenticated") return;
+  if (status === "required") throw authRequired();
+  if (status === "challenge") throw codedError("CHALLENGE_REQUIRED", "ChatGPT requires an interactive challenge");
+  throw codedError("AUTH_UNVERIFIED", "ChatGPT authentication state could not be verified from visible controls");
 }
 
 export async function login({ cwd }) {
@@ -59,6 +99,7 @@ export async function login({ cwd }) {
 export async function inspect({ cwd }) {
   const identity = resolveProject(cwd);
   if (!identity.mapping?.project_url) {
+    await withBrowserPage(async (page) => requireAuthentication(page));
     return {
       schema_version: 1,
       command: "inspect",
