@@ -45,11 +45,23 @@ async function verifyProjectOnlyMemory() {
   if (!verified) throw new Error("Project-only memory is not visibly verified");
 }
 
+async function projectCreateControl() {
+  const named = page.getByRole("button", { name: /^(new project|create project|新建项目|创建项目)$/i }).first();
+  if (await named.isVisible().catch(() => false)) return named;
+
+  const heading = page.getByText(/^(projects|项目)$/i, { exact: true }).first();
+  await heading.waitFor({ state: "visible", timeout: 30_000 });
+  const headingButton = heading.locator("xpath=ancestor::button[1]");
+  const sibling = headingButton.locator("xpath=following-sibling::button[1]");
+  if (await sibling.isVisible().catch(() => false)) return sibling;
+  throw new Error("The visible Projects section has no create control");
+}
+
 async function createProject(projectName) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
-  const create = page.getByRole("button", { name: "New project", exact: true });
-  await create.waitFor({ state: "visible", timeout: 30_000 });
-  if (await page.getByRole("button", { name: projectName, exact: true }).count()) {
+  const create = await projectCreateControl();
+  if (await page.getByRole("button", { name: projectName, exact: true }).count()
+    || await page.getByRole("link", { name: projectName, exact: true }).count()) {
     throw new Error("An unmapped same-name ChatGPT Project already exists");
   }
   await create.click();

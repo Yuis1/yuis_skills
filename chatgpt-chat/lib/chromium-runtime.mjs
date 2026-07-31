@@ -7,6 +7,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readdirSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -78,15 +79,30 @@ async function endpointIsLive(endpoint) {
   }
 }
 
-function desktopEnvironment(home) {
-  const uid = process.getuid();
+export function resolveDesktopEnvironment({
+  environment = process.env,
+  home = homedir(),
+  uid = process.getuid(),
+  displaySockets = null,
+} = {}) {
+  const sockets = displaySockets ?? (() => {
+    try { return readdirSync("/tmp/.X11-unix"); } catch { return []; }
+  })();
+  const detectedDisplays = sockets
+    .map((name) => name.match(/^X(\d+)$/)?.[1])
+    .filter(Boolean)
+    .map(Number)
+    .sort((left, right) => right - left);
   return {
-    ...process.env,
-    DISPLAY: process.env.DISPLAY || ":0",
-    XAUTHORITY: process.env.XAUTHORITY || join(home, ".Xauthority"),
-    XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR || `/run/user/${uid}`,
-    DBUS_SESSION_BUS_ADDRESS: process.env.DBUS_SESSION_BUS_ADDRESS || `unix:path=/run/user/${uid}/bus`,
+    DISPLAY: environment.DISPLAY || (detectedDisplays.length ? `:${detectedDisplays[0]}` : ":0"),
+    XAUTHORITY: environment.XAUTHORITY || join(home, ".Xauthority"),
+    XDG_RUNTIME_DIR: environment.XDG_RUNTIME_DIR || `/run/user/${uid}`,
+    DBUS_SESSION_BUS_ADDRESS: environment.DBUS_SESSION_BUS_ADDRESS || `unix:path=/run/user/${uid}/bus`,
   };
+}
+
+function desktopEnvironment(home) {
+  return { ...process.env, ...resolveDesktopEnvironment({ environment: process.env, home }) };
 }
 
 export async function startBrowser(startUrl = "https://chatgpt.com/") {
@@ -157,7 +173,18 @@ export async function withBrowserPage(operation) {
       home,
       ".local/lib/node_modules/playwriter/node_modules/@xmorse/playwright-core/index.js",
     );
-    const playwright = await import(pathToFileURL(playwrightEntry).href);
+    if (!existsSync(playwrightEntry)) {
+      throw codedError("RUNTIME_MISSING", "The managed Playwright runtime is not installed");
+    }
+    let playwright;
+    try {
+      playwright = await import(pathToFileURL(playwrightEntry).href);
+    } catch (error) {
+      if (error?.code === "ERR_MODULE_NOT_FOUND") {
+        throw codedError("RUNTIME_MISSING", "The managed Playwright runtime is incomplete");
+      }
+      throw error;
+    }
     browser = await playwright.default.chromium.connectOverCDP(endpoint);
     const context = browser.contexts()[0];
     if (!context) throw new Error("Dedicated browser exposed no browser context");

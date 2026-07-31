@@ -149,7 +149,21 @@ test("an unauthenticated dedicated profile returns one actionable safe error", (
     env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
   });
   assert.notEqual(result.status, 0);
-  assert.equal(result.stderr, "Sign in to ChatGPT in the dedicated Edge window, then retry\n");
+  assert.match(result.stderr, /^AUTH_REQUIRED: .*chatgpt-chat login/);
+  assert.doesNotMatch(result.stderr, /Edge/);
+});
+
+test("a missing managed browser runtime returns an action instead of inviting self-install", () => {
+  const { project, adapter } = fixture(`export async function inspect() {
+    throw Object.assign(new Error("internal module path"), { code: "RUNTIME_MISSING" });
+  }\n`);
+  const result = spawnSync(process.execPath, [cli, "inspect", "--cwd", project], {
+    encoding: "utf8",
+    env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /^RUNTIME_MISSING: .*managed deployment/);
+  assert.doesNotMatch(result.stderr, /npm install|internal module path/);
 });
 
 test("adapter failures do not expose signed URLs or receipt data", () => {
