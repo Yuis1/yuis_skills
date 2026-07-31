@@ -193,6 +193,21 @@ async function collectAttachments(turn) {
   return results;
 }
 
+async function uploadAttachments(attachmentPaths) {
+  if (!attachmentPaths?.length) return [];
+  const fileInput = page.locator('input[type="file"]').first();
+  await fileInput.waitFor({ state: "attached", timeout: 30_000 });
+  await fileInput.setInputFiles(attachmentPaths);
+  const uploaded = [];
+  for (const attachmentPath of attachmentPaths) {
+    const name = path.basename(attachmentPath);
+    await page.locator("main form").getByText(name, { exact: true }).last()
+      .waitFor({ state: "visible", timeout: 60_000 });
+    uploaded.push({ name, bytes: fs.statSync(attachmentPath).size });
+  }
+  return uploaded;
+}
+
 async function titleForConversation(url) {
   const locator = page.locator(`a[href="${new URL(url).pathname}"]`).first();
   try {
@@ -231,8 +246,16 @@ async function run() {
   }
   const textbox = page.locator("#prompt-textarea");
   await textbox.waitFor({ state: "visible", timeout: 30_000 });
+  const uploadedAttachments = await uploadAttachments(input.attachmentPaths);
   await textbox.fill(input.prompt);
-  await page.locator('[data-testid="send-button"]').click();
+  const send = page.locator('[data-testid="send-button"]');
+  await send.waitFor({ state: "visible", timeout: 30_000 });
+  const uploadDeadline = Date.now() + 60_000;
+  while (!(await send.isEnabled())) {
+    if (Date.now() >= uploadDeadline) throw new Error("Uploaded attachments did not become ready to send");
+    await page.waitForTimeout(500);
+  }
+  await send.click();
   await page.waitForURL(/\/c\//, { timeout: 30_000 });
   const conversationUrl = page.url();
   const { turn, text } = await waitForCompletedResponse();
@@ -249,6 +272,7 @@ async function run() {
     responsePath,
     responseBytes: Buffer.byteLength(text),
     responsePreview: text.slice(0, 500),
+    uploadedAttachments,
     attachments,
   };
 }

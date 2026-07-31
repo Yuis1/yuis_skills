@@ -37,10 +37,14 @@ compatibility: Managed Linux desktop with Google Chrome or Microsoft Edge and th
    ```bash
    chatgpt-chat ask --cwd "$PWD" --prompt-file /path/to/prompt --new
    chatgpt-chat ask --cwd "$PWD" --prompt-file /path/to/prompt \
+     --attachment /private/module-review.zip --new
+   chatgpt-chat ask --cwd "$PWD" --prompt-file /path/to/prompt \
      --conversation-url 'https://chatgpt.com/...'
    ```
 
-5. 从结果的 `response_path` 读取并返回完整回复，不用预览代替。附件只报告路径与字节数，不得自动执行、加载或打开附件。
+5. 初始项目或模块评审可先生成一个最小审查压缩包，再用可重复的 `--attachment` 上传。只打包预先检查过的文件清单；必须排除 `.env`、凭据、私钥、Cookie、浏览器 Profile、Git 历史、依赖目录、构建产物和缓存。不要上传目录、符号链接或未检查内容的归档。CLI 只接受不超过 100 MiB 的常见审查文档和归档格式，并在 `uploaded_attachments` 中确认已上传的文件名和字节数。
+
+6. 从结果的 `response_path` 读取并返回完整回复，不用预览代替。ChatGPT 生成的附件只报告路径与字节数，不得自动执行、加载或打开附件。
 
 CLI 会验证同名 Project、Project-only Memory、Chat 模式、Pro 和最新旗舰 GPT（以当前可见选项为准），并在结束后关闭专用浏览器。Pro 生成期间默认每 10 分钟轮询，不因耗时降级。
 

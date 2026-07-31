@@ -138,7 +138,7 @@ export async function inspect({ cwd }) {
   };
 }
 
-export async function ask({ cwd, prompt, conversationUrl, newConversation }) {
+export async function ask({ cwd, prompt, conversationUrl, newConversation, attachmentPaths = [] }) {
   if (!prompt.trim()) throw new Error("Prompt file is empty");
   const identity = resolveProject(cwd);
   validateConversationChoice(identity, conversationUrl);
@@ -155,6 +155,7 @@ export async function ask({ cwd, prompt, conversationUrl, newConversation }) {
       newConversation,
       conversationUrl,
       prompt,
+      attachmentPaths,
       artifactDirectory,
     });
   });
@@ -184,6 +185,7 @@ export async function ask({ cwd, prompt, conversationUrl, newConversation }) {
     response_path: result.responsePath,
     response_bytes: result.responseBytes,
     response_preview: result.responsePreview,
+    uploaded_attachments: result.uploadedAttachments,
     attachments: result.attachments,
   };
 }
