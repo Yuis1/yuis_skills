@@ -6,13 +6,13 @@ Checked 2026-08-03.
 
 The runtime uses a deterministic Playwright driver over CDP with a dedicated persistent profile. Google Chrome and Microsoft Edge both expose the Chromium DevTools Protocol required by this workflow. The driver selects an installed supported browser, prefers Edge when both are present to preserve existing deployments, and allows explicit executable/profile overrides.
 
-Remote debugging never targets the user's daily profile. Each browser family has its own isolated profile, the debugging port is random and loopback-only, and the browser closes after each completed operation. When no X11 or Wayland session exists, Chrome's supported headless mode uses that same persistent dedicated Profile; interactive login and visible challenges still require a managed graphical session. Playwriter remains pinned only as the source of its reviewed Playwright runtime; its extension and relay are not used.
+Remote debugging never targets the user's daily profile. Each browser family has its own isolated profile, the debugging port is random and loopback-only, and the browser closes after each completed operation. When no X11 or Wayland session exists, a managed Xvfb display runs the same visible browser mode with that persistent dedicated Profile; Chromium's native headless mode is not used because the real ChatGPT route presents a challenge there. Interactive login and visible challenges still require a user's managed graphical session. Playwriter remains pinned only as the source of its reviewed Playwright runtime; its extension and relay are not used.
 
 Sources:
 
 - [Microsoft Edge DevTools Protocol](https://learn.microsoft.com/en-us/microsoft-edge/devtools/protocol/)
 - [Chrome remote debugging security change](https://developer.chrome.com/blog/remote-debugging-port)
-- [Chrome Headless mode](https://developer.chrome.com/docs/chromium/headless)
+- [Xvfb manual](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml)
 - [Playwright Chrome extensions and CDP](https://playwright.dev/docs/chrome-extensions)
 - [Playwriter package on npm](https://www.npmjs.com/package/playwriter)
 

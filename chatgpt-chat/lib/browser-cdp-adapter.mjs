@@ -98,8 +98,20 @@ export async function login({ cwd }) {
 
 export async function inspect({ cwd }) {
   const identity = resolveProject(cwd);
-  if (!identity.mapping?.project_url) {
-    await withBrowserPage(async (page) => requireAuthentication(page));
+  if (identity.mapping?.project_url && identity.mapping.memory_scope !== "project-only") {
+    throw new Error("Project-only memory proof is missing");
+  }
+  const artifactDirectory = projectState("artifact-dir", "--cwd", cwd);
+  const result = await withBrowserPage(async (page) => {
+    await requireAuthentication(page);
+    return runWorkflow(page, {
+      command: "inspect",
+      projectName: identity.local_name,
+      projectUrl: identity.mapping?.project_url ?? null,
+      artifactDirectory,
+    });
+  });
+  if (result.projectMissing) {
     return {
       schema_version: 1,
       command: "inspect",
@@ -110,19 +122,13 @@ export async function inspect({ cwd }) {
       conversations: [],
     };
   }
-  if (identity.mapping.memory_scope !== "project-only") {
-    throw new Error("Project-only memory proof is missing");
+  if (!identity.mapping?.project_url) {
+    projectState(
+      "bind-project", "--cwd", cwd,
+      "--url", result.projectUrl,
+      "--memory-scope", "project-only",
+    );
   }
-  const artifactDirectory = projectState("artifact-dir", "--cwd", cwd);
-  const result = await withBrowserPage(async (page) => {
-    await requireAuthentication(page);
-    return runWorkflow(page, {
-      command: "inspect",
-      projectName: identity.local_name,
-      projectUrl: identity.mapping.project_url,
-      artifactDirectory,
-    });
-  });
   return {
     schema_version: 1,
     command: "inspect",

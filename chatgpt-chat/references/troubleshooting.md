@@ -26,11 +26,11 @@ The pinned browser runtime is absent or incomplete. Request a managed `chatgpt_c
 
 ## BROWSER_START_FAILED
 
-The runtime uses the dedicated persistent Profile visibly when a graphical session exists and automatically uses managed headless mode otherwise. Report the error and request a managed convergence; do not guess `DISPLAY`, launch a temporary Profile, or inspect CDP internals.
+The runtime uses the dedicated persistent Profile visibly when a graphical session exists and starts the same visible browser mode on a managed virtual display otherwise. Report the error and request a managed convergence; do not guess `DISPLAY`, launch a temporary Profile, or inspect CDP internals.
 
 ## LOGIN_DISPLAY_REQUIRED
 
-Headless `inspect`, `ask`, and Project Sources operations remain supported, but interactive sign-in and visible challenges do not. Ask the user to run `chatgpt-chat login --cwd "$PWD"` once from a managed graphical desktop using the same dedicated Profile, then retry headlessly. Do not migrate cookies or bypass the challenge.
+Displayless `inspect`, `ask`, and Project Sources operations remain supported through the managed virtual display, but interactive sign-in and visible challenges require the user's graphical session. Ask the user to run `chatgpt-chat login --cwd "$PWD"` once from a managed graphical desktop using the same dedicated Profile, then retry. Do not migrate cookies or bypass the challenge.
 
 ## BROWSER_BUSY
 
@@ -38,7 +38,7 @@ Another operation owns the dedicated browser lock. Wait for it to finish; do not
 
 ## project_missing
 
-This is a status, not an error. If the user requested a new thread, call `ask --new`; the driver creates the basename-matched Project and verifies Project-only Memory before sending.
+This is a status, not an error. The driver has already waited for the Projects list, expanded it when possible, and found no exact-name Project. If the user requested a new thread, call `ask --new`; the driver creates the basename-matched Project and verifies Project-only Memory before sending. Do not search the implementation or assume that a still-loading sidebar proves absence.
 
 ## Generic browser operation failure
 
