@@ -77,7 +77,15 @@ async function findMappedProject(projectName) {
     await page.waitForTimeout(500);
   }
   if (!await project.isVisible().catch(() => false)) return null;
-  await project.click();
+  if ((await project.getAttribute("role")) === "button") {
+    const row = project.locator("xpath=ancestor::div[contains(@class, 'group/project-unfurl-row')][1]");
+    await row.hover();
+    const projectHome = row.getByRole("button", { name: /open project home|打开项目首页/i }).first();
+    await projectHome.waitFor({ state: "visible", timeout: 10_000 });
+    await projectHome.click();
+  } else {
+    await project.click();
+  }
   await page.waitForURL(/\/g\/g-p-[^/]+\/project(?:\?.*)?$/, { timeout: 30_000 });
   const projectUrl = new URL(page.url());
   projectUrl.search = "";
