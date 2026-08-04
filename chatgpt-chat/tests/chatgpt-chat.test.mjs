@@ -140,6 +140,46 @@ test("ask reads the prompt file and requires an explicit conversation choice", (
   assert.match(ambiguous.stderr, /exactly one of --new or --conversation-url/);
 });
 
+test("project source commands use explicit files and deletion confirmation", () => {
+  const root = mkdtempSync(join(tmpdir(), "chatgpt-chat-sources-"));
+  const project = join(root, "sample-project");
+  mkdirSync(project);
+  const source = join(root, "architecture.pdf");
+  writeFileSync(source, "source fixture");
+  const adapter = join(root, "adapter.mjs");
+  writeFileSync(adapter, `
+    const base = { schema_version: 1, verification: { project: "sample-project", memory_scope: "project-only" } };
+    export async function sourceList() { return { ...base, command: "source-list", status: "completed", sources: [{ name: "architecture.pdf" }] }; }
+    export async function sourceAdd(input) {
+      if (JSON.stringify(input.sourcePaths) !== ${JSON.stringify(JSON.stringify([source]))}) throw new Error("sources not forwarded");
+      return { ...base, command: "source-add", status: "completed", added_sources: [{ name: "architecture.pdf", bytes: 14 }], sources: [{ name: "architecture.pdf" }] };
+    }
+    export async function sourceRemove(input) {
+      if (input.sourceName !== "architecture.pdf") throw new Error("source name not forwarded");
+      return { ...base, command: "source-remove", status: "completed", removed_source: { name: "architecture.pdf" }, sources: [] };
+    }
+  `);
+  const env = { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href };
+
+  const listed = spawnSync(process.execPath, [cli, "source-list", "--cwd", project], { encoding: "utf8", env });
+  assert.equal(listed.status, 0, listed.stderr);
+  assert.deepEqual(JSON.parse(listed.stdout).sources, [{ name: "architecture.pdf" }]);
+
+  const added = spawnSync(process.execPath, [cli, "source-add", "--cwd", project, "--source", source], { encoding: "utf8", env });
+  assert.equal(added.status, 0, added.stderr);
+  assert.deepEqual(JSON.parse(added.stdout).added_sources, [{ name: "architecture.pdf", bytes: 14 }]);
+
+  const unconfirmed = spawnSync(process.execPath, [cli, "source-remove", "--cwd", project, "--name", "architecture.pdf"], { encoding: "utf8", env });
+  assert.notEqual(unconfirmed.status, 0);
+  assert.match(unconfirmed.stderr, /--confirm-project-source-delete is required/);
+
+  const removed = spawnSync(process.execPath, [
+    cli, "source-remove", "--cwd", project, "--name", "architecture.pdf", "--confirm-project-source-delete",
+  ], { encoding: "utf8", env });
+  assert.equal(removed.status, 0, removed.stderr);
+  assert.deepEqual(JSON.parse(removed.stdout).removed_source, { name: "architecture.pdf" });
+});
+
 test("ask accepts repeated review attachments through the public CLI seam", () => {
   const root = mkdtempSync(join(tmpdir(), "chatgpt-chat-attachments-"));
   const project = join(root, "sample-project");

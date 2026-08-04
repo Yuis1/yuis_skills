@@ -13,14 +13,17 @@ function publicError(message) {
 
 function parseArguments(argv) {
   const [command, ...rest] = argv;
-  if (!new Set(["login", "inspect", "ask"]).has(command)) {
-    throw publicError("usage: chatgpt-chat <login|inspect|ask> [options]");
+  if (!new Set(["login", "inspect", "ask", "source-list", "source-add", "source-remove"]).has(command)) {
+    throw publicError("usage: chatgpt-chat <login|inspect|ask|source-list|source-add|source-remove> [options]");
   }
   const input = {
     command,
     cwd: process.cwd(),
     promptFile: null,
     attachmentPaths: [],
+    sourcePaths: [],
+    sourceName: null,
+    confirmProjectSourceDelete: false,
     newConversation: false,
     conversationUrl: null,
   };
@@ -38,6 +41,18 @@ function parseArguments(argv) {
       input.attachmentPaths.push(resolve(rest[++index]));
       continue;
     }
+    if (command === "source-add" && argument === "--source" && rest[index + 1]) {
+      input.sourcePaths.push(resolve(rest[++index]));
+      continue;
+    }
+    if (command === "source-remove" && argument === "--name" && rest[index + 1]) {
+      input.sourceName = rest[++index];
+      continue;
+    }
+    if (command === "source-remove" && argument === "--confirm-project-source-delete") {
+      input.confirmProjectSourceDelete = true;
+      continue;
+    }
     if (command === "ask" && argument === "--new") {
       input.newConversation = true;
       continue;
@@ -52,6 +67,18 @@ function parseArguments(argv) {
     if (!input.promptFile) throw publicError("--prompt-file is required");
     if (Number(input.newConversation) + Number(Boolean(input.conversationUrl)) !== 1) {
       throw publicError("exactly one of --new or --conversation-url is required");
+    }
+  }
+  if (command === "source-add" && input.sourcePaths.length === 0) {
+    throw publicError("at least one --source is required");
+  }
+  if (command === "source-remove") {
+    if (!input.sourceName) throw publicError("--name is required");
+    if (input.sourceName !== input.sourceName.trim() || input.sourceName.length > 255 || /[\\/]/.test(input.sourceName)) {
+      throw publicError("--name must be one exact visible source filename");
+    }
+    if (!input.confirmProjectSourceDelete) {
+      throw publicError("--confirm-project-source-delete is required");
     }
   }
   return input;
@@ -93,6 +120,10 @@ function validateResult(input, result) {
     if (result.status !== "login_window_open") throw publicError("browser adapter returned an invalid login result");
     return result;
   }
+  const isSourceCommand = input.command.startsWith("source-");
+  if (isSourceCommand && result.status !== "completed") {
+    throw publicError("browser adapter returned an invalid source result");
+  }
   const contract = input.command === "inspect"
     ? {
         memoryScope: result.web_project?.memory_scope,
@@ -108,9 +139,11 @@ function validateResult(input, result) {
       };
   if (!(input.command === "inspect" && result.status === "project_missing")) {
     const valid = contract.memoryScope === "project-only"
-      && contract.mode === "chat"
-      && contract.effort === "Pro"
-      && /^GPT-\d/.test(contract.model ?? "");
+      && (isSourceCommand || (
+        contract.mode === "chat"
+        && contract.effort === "Pro"
+        && /^GPT-\d/.test(contract.model ?? "")
+      ));
     if (!valid) throw publicError("browser contract not satisfied");
   }
   return result;
@@ -137,7 +170,7 @@ function recordDiagnostic(error) {
 
 async function main() {
   const input = parseArguments(process.argv.slice(2));
-  validateAttachmentPaths(input.attachmentPaths);
+  validateAttachmentPaths([...input.attachmentPaths, ...input.sourcePaths]);
   const adapterUrl = process.env.CHATGPT_CHAT_ADAPTER_MODULE
     ?? new URL("../lib/browser-cdp-adapter.mjs", import.meta.url).href;
   const adapter = await import(adapterUrl);
@@ -145,13 +178,19 @@ async function main() {
     ? await adapter.login({ cwd: input.cwd })
     : input.command === "inspect"
       ? await adapter.inspect({ cwd: input.cwd })
-      : await adapter.ask({
-        cwd: input.cwd,
-        prompt: await readFile(input.promptFile, "utf8"),
-        conversationUrl: input.conversationUrl,
-        newConversation: input.newConversation,
-        attachmentPaths: input.attachmentPaths,
-      });
+      : input.command === "ask"
+        ? await adapter.ask({
+          cwd: input.cwd,
+          prompt: await readFile(input.promptFile, "utf8"),
+          conversationUrl: input.conversationUrl,
+          newConversation: input.newConversation,
+          attachmentPaths: input.attachmentPaths,
+        })
+        : input.command === "source-list"
+          ? await adapter.sourceList({ cwd: input.cwd })
+          : input.command === "source-add"
+            ? await adapter.sourceAdd({ cwd: input.cwd, sourcePaths: input.sourcePaths })
+            : await adapter.sourceRemove({ cwd: input.cwd, sourceName: input.sourceName });
   process.stdout.write(`${JSON.stringify(validateResult(input, result))}\n`);
 }
 
@@ -165,6 +204,7 @@ main().then(
       RUNTIME_MISSING: "RUNTIME_MISSING: request the managed deployment; do not install browser dependencies ad hoc",
       BROWSER_START_FAILED: "BROWSER_START_FAILED: the dedicated ChatGPT browser could not be started; use the matching troubleshooting entry",
       BROWSER_BUSY: "BROWSER_BUSY: another ChatGPT browser operation is active; wait for it to finish",
+      LOGIN_DISPLAY_REQUIRED: "LOGIN_DISPLAY_REQUIRED: interactive login needs a graphical session; authenticate this dedicated profile once on a managed desktop",
     };
     if (!(error instanceof PublicError) && !safeAdapterMessages[error?.code]) recordDiagnostic(error);
     const message = error instanceof PublicError

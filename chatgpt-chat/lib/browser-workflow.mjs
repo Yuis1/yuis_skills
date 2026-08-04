@@ -208,6 +208,66 @@ async function uploadAttachments(attachmentPaths) {
   return uploaded;
 }
 
+async function openProjectSources(projectUrl, projectName) {
+  await waitForProject(projectUrl, projectName);
+  const url = new URL(projectUrl);
+  url.searchParams.set("tab", "sources");
+  await page.goto(url.href, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  const surface = page.locator('[data-project-home-sources-surface="true"]');
+  await surface.waitFor({ state: "visible", timeout: 30_000 });
+  await surface.locator(".skeleton").waitFor({ state: "hidden", timeout: 60_000 }).catch(() => {});
+  return surface;
+}
+
+async function listProjectSources(surface) {
+  const rows = surface.locator(".group\\/file-row");
+  const sources = [];
+  const count = Math.min(await rows.count(), 100);
+  for (let index = 0; index < count; index += 1) {
+    const row = rows.nth(index);
+    if (!await row.isVisible().catch(() => false)) continue;
+    const lines = (await row.innerText()).split("\n").map((line) => line.trim()).filter(Boolean);
+    if (lines[0]) sources.push({ name: lines[0] });
+  }
+  return sources;
+}
+
+async function addProjectSources(surface, sourcePaths) {
+  const fileInput = surface.locator('input[type="file"]').first();
+  await fileInput.waitFor({ state: "attached", timeout: 30_000 });
+  await fileInput.setInputFiles(sourcePaths);
+  const added = [];
+  for (const sourcePath of sourcePaths) {
+    const name = path.basename(sourcePath);
+    const sourceName = surface.getByText(name, { exact: true }).last();
+    await sourceName.waitFor({ state: "visible", timeout: 120_000 });
+    const row = surface.locator(".group\\/file-row").filter({ has: sourceName }).last();
+    await row.getByText(/uploading|processing/i).waitFor({ state: "hidden", timeout: 120_000 }).catch(() => {});
+    added.push({ name, bytes: fs.statSync(sourcePath).size });
+  }
+  return added;
+}
+
+async function removeProjectSource(surface, sourceName) {
+  const name = surface.getByText(sourceName, { exact: true }).last();
+  await name.waitFor({ state: "visible", timeout: 30_000 });
+  const row = surface.locator(".group\\/file-row").filter({ has: name }).last();
+  let menu = row.getByRole("button", { name: /more|options|actions/i }).last();
+  if (!(await menu.count())) menu = row.locator("button").last();
+  if (!(await menu.count())) throw new Error("The selected project source has no visible action menu");
+  await menu.click();
+  const remove = page.getByRole("menuitem", { name: /^(delete|remove)( source)?$/i }).last();
+  await remove.waitFor({ state: "visible", timeout: 10_000 });
+  await remove.click();
+  const dialog = page.getByRole("dialog").last();
+  if (await dialog.isVisible().catch(() => false)) {
+    const confirm = dialog.getByRole("button", { name: /^(delete|remove)( source)?$/i }).last();
+    await confirm.waitFor({ state: "visible", timeout: 10_000 });
+    await confirm.click();
+  }
+  await name.waitFor({ state: "hidden", timeout: 30_000 });
+}
+
 async function titleForConversation(url) {
   const locator = page.locator(`a[href="${new URL(url).pathname}"]`).first();
   try {
@@ -229,6 +289,28 @@ async function run() {
     await waitForProject(projectUrl, input.projectName);
   }
   await verifyProjectOnlyMemory();
+  if (input.command.startsWith("source-")) {
+    const surface = await openProjectSources(projectUrl, input.projectName);
+    if (input.command === "source-list") {
+      return { projectUrl, createdProjectUrl, sources: await listProjectSources(surface) };
+    }
+    if (input.command === "source-add") {
+      const addedSources = await addProjectSources(surface, input.sourcePaths);
+      return {
+        projectUrl,
+        createdProjectUrl,
+        addedSources,
+        sources: await listProjectSources(surface),
+      };
+    }
+    await removeProjectSource(surface, input.sourceName);
+    return {
+      projectUrl,
+      createdProjectUrl,
+      removedSource: { name: input.sourceName },
+      sources: await listProjectSources(surface),
+    };
+  }
   const interaction = await ensureBestInteraction();
   if (input.command === "inspect") {
     return { projectUrl, createdProjectUrl, interaction };
