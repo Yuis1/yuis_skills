@@ -136,7 +136,7 @@ export async function inspect({ cwd }) {
     local_project: { name: identity.local_name, root: identity.local_root },
     web_project: {
       name: identity.local_name,
-      url: identity.mapping.project_url,
+      url: result.projectUrl,
       memory_scope: "project-only",
     },
     interaction: result.interaction,

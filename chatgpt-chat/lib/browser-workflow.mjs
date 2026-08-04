@@ -18,8 +18,10 @@ function compareModels(left, right) {
 }
 
 async function waitForProject(projectUrl, projectName) {
-  const title = page.locator("main")
-    .getByRole("button", { name: `Edit the title of ${projectName}`, exact: true });
+  const escapedName = projectName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const title = page.locator("main").getByRole("button", {
+    name: new RegExp(`(?:Edit the title of\\s+${escapedName}|编辑[“\"]?${escapedName}[”\"]?的标题)`, "i"),
+  });
   for (let attempt = 0; attempt < 2; attempt += 1) {
     if (page.url() !== projectUrl) {
       await page.goto(projectUrl, { waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => {});
@@ -32,14 +34,14 @@ async function waitForProject(projectUrl, projectName) {
 }
 
 async function verifyProjectOnlyMemory() {
-  await page.getByRole("button", { name: "Show project details", exact: true }).click();
-  await page.getByRole("menuitem", { name: "Project settings", exact: true }).click();
+  await page.getByRole("button", { name: /Show project details|显示项目详情/i }).click();
+  await page.getByRole("menuitem", { name: /Project settings|项目设置/i }).click();
   const dialog = page.getByRole("dialog");
   await dialog.waitFor({ state: "visible", timeout: 10_000 });
   const text = await dialog.innerText();
-  const verified = /\bMemory\b/.test(text)
-    && /\bProject-only\b/.test(text)
-    && /Work mode isn[’']t available/.test(text);
+  const verified = /\bMemory\b|记忆/.test(text)
+    && /\bProject-only\b|仅限项目/.test(text)
+    && (/Work mode isn[’']t available/.test(text) || /无法使用工作模式/.test(text));
   await page.keyboard.press("Escape");
   await dialog.waitFor({ state: "hidden", timeout: 10_000 }).catch(() => {});
   if (!verified) throw new Error("Project-only memory is not visibly verified");
@@ -68,7 +70,7 @@ async function findMappedProject(projectName) {
   let expanded = false;
   for (let attempt = 0; attempt < 120; attempt += 1) {
     if (await project.isVisible().catch(() => false)) break;
-    const showMore = page.getByRole("button", { name: /^(show more|显示更多)$/i }).first();
+    const showMore = page.getByRole("button", { name: /^(show more|显示更多|查看更多)$/i }).first();
     if (!expanded && await showMore.isVisible().catch(() => false)) {
       await showMore.click();
       expanded = true;
