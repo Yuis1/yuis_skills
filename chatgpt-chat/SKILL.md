@@ -32,6 +32,8 @@ compatibility: Managed Linux desktop with Google Chrome or Microsoft Edge and th
 
    专用 Profile 会自动使用其中已有的 ChatGPT/OpenAI/Google Cookie。等待用户在专用窗口完成登录或确认并关闭窗口，然后重新运行 `inspect`。不得读取日常浏览器 Profile、Cookie 数据库或自行编写 Cookie 迁移脚本；用户明确要求迁移认证时也应退出正常路径，交给仓库 Owner 按受控运维流程处理。
 
+   `inspect`、`ask` 和项目 Sources 操作在无图形会话时自动使用同一个持久化专用 Profile 的无头模式，不要自行设置 `DISPLAY`。只有首次登录或可见挑战需要图形会话；`LOGIN_DISPLAY_REQUIRED` 时请用户在托管桌面完成一次认证。
+
 4. 根据 `inspect` 的会话摘要做语义判断：目标、假设、工件和决策线程连续才续聊，否则新建。把原始问题写入权限受限的文件，再执行一种调用：
 
    ```bash
@@ -44,7 +46,23 @@ compatibility: Managed Linux desktop with Google Chrome or Microsoft Edge and th
 
 5. 初始项目或模块评审可先生成一个最小审查压缩包，再用可重复的 `--attachment` 上传。只打包预先检查过的文件清单；必须排除 `.env`、凭据、私钥、Cookie、浏览器 Profile、Git 历史、依赖目录、构建产物和缓存。不要上传目录、符号链接或未检查内容的归档。CLI 只接受不超过 100 MiB 的常见审查文档和归档格式，并在 `uploaded_attachments` 中确认已上传的文件名和字节数。
 
-6. 从结果的 `response_path` 读取并返回完整回复，不用预览代替。ChatGPT 生成的附件只报告路径与字节数，不得自动执行、加载或打开附件。
+6. Project Sources 是项目内所有对话共享的长期事实源，不等同于单轮 `--attachment`。先列出现状；只上传经过同样脱敏检查的普通文件：
+
+   ```bash
+   chatgpt-chat source-list --cwd "$PWD"
+   chatgpt-chat source-add --cwd "$PWD" --source /private/architecture.pdf
+   ```
+
+   删除会影响项目内后续对话。只有用户明确批准删除准确文件名后，才能执行：
+
+   ```bash
+   chatgpt-chat source-remove --cwd "$PWD" --name 'architecture.pdf' \
+     --confirm-project-source-delete
+   ```
+
+   不得用模糊名称、批量推断或 UI 猜测删除。
+
+7. 从结果的 `response_path` 读取并返回完整回复，不用预览代替。ChatGPT 生成的附件只报告路径与字节数，不得自动执行、加载或打开附件。
 
 CLI 会验证同名 Project、Project-only Memory、Chat 模式、Pro 和最新旗舰 GPT（以当前可见选项为准），并在结束后关闭专用浏览器。Pro 生成期间默认每 10 分钟轮询，不因耗时降级。
 

@@ -21,6 +21,14 @@ test("authentication guidance uses the dedicated profile without improvising coo
   assert.match(skill, /不得.*Cookie.*迁移/s);
 });
 
+test("normal use supports headless conversations and governed project sources", () => {
+  assert.match(skill, /无图形会话.*无头模式/s);
+  assert.match(skill, /source-list/);
+  assert.match(skill, /source-add/);
+  assert.match(skill, /source-remove/);
+  assert.match(skill, /confirm-project-source-delete/);
+});
+
 test("low-frequency detail is disclosed only for a matching failure", () => {
   assert.match(skill, /仅在失败时/);
   assert.match(skill, /references\/troubleshooting\.md/);

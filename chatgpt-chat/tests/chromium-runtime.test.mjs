@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   closeBrowserEndpoint,
+  resolveBrowserLaunch,
   resolveBrowserRuntime,
   resolveDesktopEnvironment,
 } from "../lib/chromium-runtime.mjs";
@@ -58,6 +59,30 @@ test("keeps an explicit desktop session environment", () => {
     uid: 1000,
     displaySockets: ["X1"],
   }).DISPLAY, ":7");
+});
+
+test("uses the persistent dedicated profile headlessly when no display exists", () => {
+  const launch = resolveBrowserLaunch({
+    environment: { HOME: home },
+    home,
+    uid: 1000,
+    displaySockets: [],
+  });
+  assert.equal(launch.headless, true);
+  assert.ok(launch.arguments.includes("--headless=new"));
+  assert.equal("DISPLAY" in launch.environment, false);
+});
+
+test("keeps visible browser operation when an X display is available", () => {
+  const launch = resolveBrowserLaunch({
+    environment: { HOME: home },
+    home,
+    uid: 1000,
+    displaySockets: ["X2"],
+  });
+  assert.equal(launch.headless, false);
+  assert.ok(!launch.arguments.includes("--headless=new"));
+  assert.equal(launch.environment.DISPLAY, ":2");
 });
 
 test("closes the dedicated browser through the browser CDP endpoint", async () => {

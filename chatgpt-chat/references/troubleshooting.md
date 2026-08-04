@@ -26,7 +26,11 @@ The pinned browser runtime is absent or incomplete. Request a managed `chatgpt_c
 
 ## BROWSER_START_FAILED
 
-The runtime already discovers an active X display and supports managed Chrome or Edge. Confirm that a graphical session is active, then report the error. Do not guess `DISPLAY`, launch temporary browser Profiles, or inspect CDP internals.
+The runtime uses the dedicated persistent Profile visibly when a graphical session exists and automatically uses managed headless mode otherwise. Report the error and request a managed convergence; do not guess `DISPLAY`, launch a temporary Profile, or inspect CDP internals.
+
+## LOGIN_DISPLAY_REQUIRED
+
+Headless `inspect`, `ask`, and Project Sources operations remain supported, but interactive sign-in and visible challenges do not. Ask the user to run `chatgpt-chat login --cwd "$PWD"` once from a managed graphical desktop using the same dedicated Profile, then retry headlessly. Do not migrate cookies or bypass the challenge.
 
 ## BROWSER_BUSY
 

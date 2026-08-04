@@ -87,7 +87,7 @@ async function requireAuthentication(page) {
 }
 
 export async function login({ cwd }) {
-  await startBrowser("https://chatgpt.com/");
+  await startBrowser("https://chatgpt.com/", { interactive: true });
   return {
     schema_version: 1,
     command: "login",
@@ -136,6 +136,50 @@ export async function inspect({ cwd }) {
     interaction: result.interaction,
     conversations: indexedConversations(identity.mapping),
   };
+}
+
+async function runSourceCommand({ cwd, command, sourcePaths = [], sourceName = null }) {
+  const identity = resolveProject(cwd);
+  if (!identity.mapping?.project_url) throw new Error("Project is not mapped");
+  if (identity.mapping.memory_scope !== "project-only") {
+    throw new Error("Project-only memory proof is missing");
+  }
+  const artifactDirectory = projectState("artifact-dir", "--cwd", cwd);
+  const result = await withBrowserPage(async (page) => {
+    await requireAuthentication(page);
+    return runWorkflow(page, {
+      command,
+      projectName: identity.local_name,
+      projectUrl: identity.mapping.project_url,
+      sourcePaths,
+      sourceName,
+      artifactDirectory,
+    });
+  });
+  return {
+    schema_version: 1,
+    command,
+    status: "completed",
+    verification: {
+      project: identity.local_name,
+      memory_scope: "project-only",
+    },
+    ...(command === "source-add" ? { added_sources: result.addedSources } : {}),
+    ...(command === "source-remove" ? { removed_source: result.removedSource } : {}),
+    sources: result.sources,
+  };
+}
+
+export async function sourceList({ cwd }) {
+  return runSourceCommand({ cwd, command: "source-list" });
+}
+
+export async function sourceAdd({ cwd, sourcePaths = [] }) {
+  return runSourceCommand({ cwd, command: "source-add", sourcePaths });
+}
+
+export async function sourceRemove({ cwd, sourceName }) {
+  return runSourceCommand({ cwd, command: "source-remove", sourceName });
 }
 
 export async function ask({ cwd, prompt, conversationUrl, newConversation, attachmentPaths = [] }) {

@@ -113,15 +113,18 @@ export async function closeBrowserEndpoint(endpoint, {
   });
 }
 
+function availableDisplaySockets(displaySockets) {
+  if (displaySockets) return displaySockets;
+  try { return readdirSync("/tmp/.X11-unix"); } catch { return []; }
+}
+
 export function resolveDesktopEnvironment({
   environment = process.env,
   home = homedir(),
   uid = process.getuid(),
   displaySockets = null,
 } = {}) {
-  const sockets = displaySockets ?? (() => {
-    try { return readdirSync("/tmp/.X11-unix"); } catch { return []; }
-  })();
+  const sockets = availableDisplaySockets(displaySockets);
   const detectedDisplays = sockets
     .map((name) => name.match(/^X(\d+)$/)?.[1])
     .filter(Boolean)
@@ -135,13 +138,41 @@ export function resolveDesktopEnvironment({
   };
 }
 
-function desktopEnvironment(home) {
-  return { ...process.env, ...resolveDesktopEnvironment({ environment: process.env, home }) };
+export function resolveBrowserLaunch({
+  environment = process.env,
+  home = homedir(),
+  uid = process.getuid(),
+  displaySockets = null,
+} = {}) {
+  const sockets = availableDisplaySockets(displaySockets);
+  const hasGraphicalSession = Boolean(environment.DISPLAY || environment.WAYLAND_DISPLAY || sockets.length);
+  if (!hasGraphicalSession) {
+    const headlessEnvironment = { ...environment };
+    delete headlessEnvironment.DISPLAY;
+    delete headlessEnvironment.WAYLAND_DISPLAY;
+    return {
+      headless: true,
+      arguments: ["--headless=new", "--disable-gpu"],
+      environment: headlessEnvironment,
+    };
+  }
+  return {
+    headless: false,
+    arguments: ["--new-window"],
+    environment: {
+      ...environment,
+      ...resolveDesktopEnvironment({ environment, home, uid, displaySockets: sockets }),
+    },
+  };
 }
 
-export async function startBrowser(startUrl = "https://chatgpt.com/") {
+export async function startBrowser(startUrl = "https://chatgpt.com/", { interactive = false } = {}) {
   const home = homedir();
   const runtime = resolveBrowserRuntime({ home });
+  const launch = resolveBrowserLaunch({ environment: process.env, home });
+  if (interactive && launch.headless) {
+    throw codedError("LOGIN_DISPLAY_REQUIRED", "Interactive ChatGPT login requires a graphical session");
+  }
   const stateRoot = join(home, ".local/state/chatgpt_chat");
   mkdirSync(runtime.profileDirectory, { recursive: true, mode: 0o700 });
   mkdirSync(stateRoot, { recursive: true, mode: 0o700 });
@@ -154,11 +185,11 @@ export async function startBrowser(startUrl = "https://chatgpt.com/") {
     "--no-first-run",
     "--no-default-browser-check",
     "--disable-session-crashed-bubble",
-    "--new-window",
+    ...launch.arguments,
     startUrl,
   ], {
     detached: true,
-    env: desktopEnvironment(home),
+    env: launch.environment,
     stdio: "ignore",
   });
   child.unref();
