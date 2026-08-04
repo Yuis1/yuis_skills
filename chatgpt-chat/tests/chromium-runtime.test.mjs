@@ -61,16 +61,27 @@ test("keeps an explicit desktop session environment", () => {
   }).DISPLAY, ":7");
 });
 
-test("uses the persistent dedicated profile headlessly when no display exists", () => {
+test("uses a managed virtual display with the persistent profile when no display exists", () => {
   const launch = resolveBrowserLaunch({
     environment: { HOME: home },
     home,
     uid: 1000,
     displaySockets: [],
   });
-  assert.equal(launch.headless, true);
-  assert.ok(launch.arguments.includes("--headless=new"));
+  assert.equal(launch.virtualDisplay, true);
+  assert.ok(!launch.arguments.includes("--headless=new"));
   assert.equal("DISPLAY" in launch.environment, false);
+});
+
+test("allows managed verification to force virtual-display mode despite an X socket", () => {
+  const launch = resolveBrowserLaunch({
+    environment: { HOME: home, CHATGPT_CHAT_VIRTUAL_DISPLAY: "1" },
+    home,
+    uid: 1000,
+    displaySockets: ["X2"],
+  });
+  assert.equal(launch.virtualDisplay, true);
+  assert.ok(!launch.arguments.includes("--headless=new"));
 });
 
 test("keeps visible browser operation when an X display is available", () => {
@@ -80,7 +91,7 @@ test("keeps visible browser operation when an X display is available", () => {
     uid: 1000,
     displaySockets: ["X2"],
   });
-  assert.equal(launch.headless, false);
+  assert.equal(launch.virtualDisplay, false);
   assert.ok(!launch.arguments.includes("--headless=new"));
   assert.equal(launch.environment.DISPLAY, ":2");
 });

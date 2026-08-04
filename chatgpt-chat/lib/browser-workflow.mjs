@@ -57,6 +57,34 @@ async function projectCreateControl() {
   throw new Error("The visible Projects section has no create control");
 }
 
+async function findMappedProject(projectName) {
+  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.getByText(/^(projects|项目)$/i, { exact: true }).first()
+    .waitFor({ state: "visible", timeout: 60_000 });
+  const projectControl = () => page.getByRole("link", { name: projectName, exact: true })
+    .or(page.getByRole("button", { name: projectName, exact: true }))
+    .first();
+  let project = projectControl();
+  let expanded = false;
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    if (await project.isVisible().catch(() => false)) break;
+    const showMore = page.getByRole("button", { name: /^(show more|显示更多)$/i }).first();
+    if (!expanded && await showMore.isVisible().catch(() => false)) {
+      await showMore.click();
+      expanded = true;
+      project = projectControl();
+    }
+    await page.waitForTimeout(500);
+  }
+  if (!await project.isVisible().catch(() => false)) return null;
+  await project.click();
+  await page.waitForURL(/\/g\/g-p-[^/]+\/project(?:\?.*)?$/, { timeout: 30_000 });
+  const projectUrl = new URL(page.url());
+  projectUrl.search = "";
+  await waitForProject(projectUrl.href, projectName);
+  return projectUrl.href;
+}
+
 async function createProject(projectName) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
   const create = await projectCreateControl();
@@ -208,15 +236,19 @@ async function uploadAttachments(attachmentPaths) {
   return uploaded;
 }
 
+async function waitForSourcesLoaded() {
+  const surface = page.locator('[data-project-home-sources-surface="true"]');
+  await surface.waitFor({ state: "visible", timeout: 30_000 });
+  await surface.locator(".skeleton").waitFor({ state: "hidden", timeout: 60_000 });
+  return surface;
+}
+
 async function openProjectSources(projectUrl, projectName) {
   await waitForProject(projectUrl, projectName);
   const url = new URL(projectUrl);
   url.searchParams.set("tab", "sources");
   await page.goto(url.href, { waitUntil: "domcontentloaded", timeout: 30_000 });
-  const surface = page.locator('[data-project-home-sources-surface="true"]');
-  await surface.waitFor({ state: "visible", timeout: 30_000 });
-  await surface.locator(".skeleton").waitFor({ state: "hidden", timeout: 60_000 }).catch(() => {});
-  return surface;
+  return waitForSourcesLoaded();
 }
 
 async function listProjectSources(surface) {
@@ -241,9 +273,18 @@ async function addProjectSources(surface, sourcePaths) {
     const name = path.basename(sourcePath);
     const sourceName = surface.getByText(name, { exact: true }).last();
     await sourceName.waitFor({ state: "visible", timeout: 120_000 });
-    const row = surface.locator(".group\\/file-row").filter({ has: sourceName }).last();
-    await row.getByText(/uploading|processing/i).waitFor({ state: "hidden", timeout: 120_000 }).catch(() => {});
+    const row = sourceName.locator("xpath=ancestor::div[contains(@class, 'group/file-row')][1]");
+    await row.getByText(/\S+\s*·\s*\S+/).waitFor({ state: "visible", timeout: 120_000 });
+    await page.waitForTimeout(2_000);
+    if (!await row.isVisible()) throw new Error(`Project source did not persist visibly: ${name}`);
     added.push({ name, bytes: fs.statSync(sourcePath).size });
+  }
+  await page.waitForTimeout(2_000);
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 30_000 });
+  const refreshed = await waitForSourcesLoaded();
+  for (const { name } of added) {
+    await refreshed.getByText(name, { exact: true }).last()
+      .waitFor({ state: "visible", timeout: 30_000 });
   }
   return added;
 }
@@ -251,10 +292,11 @@ async function addProjectSources(surface, sourcePaths) {
 async function removeProjectSource(surface, sourceName) {
   const name = surface.getByText(sourceName, { exact: true }).last();
   await name.waitFor({ state: "visible", timeout: 30_000 });
-  const row = surface.locator(".group\\/file-row").filter({ has: name }).last();
+  const row = name.locator("xpath=ancestor::div[contains(@class, 'group/file-row')][1]");
   let menu = row.getByRole("button", { name: /more|options|actions/i }).last();
   if (!(await menu.count())) menu = row.locator("button").last();
   if (!(await menu.count())) throw new Error("The selected project source has no visible action menu");
+  await row.hover();
   await menu.click();
   const remove = page.getByRole("menuitem", { name: /^(delete|remove)( source)?$/i }).last();
   await remove.waitFor({ state: "visible", timeout: 10_000 });
@@ -266,6 +308,12 @@ async function removeProjectSource(surface, sourceName) {
     await confirm.click();
   }
   await name.waitFor({ state: "hidden", timeout: 30_000 });
+  await page.waitForTimeout(2_000);
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 30_000 });
+  const refreshed = await waitForSourcesLoaded();
+  if (await refreshed.getByText(sourceName, { exact: true }).count()) {
+    throw new Error("Project source deletion did not persist after reload");
+  }
 }
 
 async function titleForConversation(url) {
@@ -282,9 +330,14 @@ async function run() {
   let projectUrl = input.projectUrl;
   let createdProjectUrl = null;
   if (!projectUrl) {
-    if (input.command !== "ask" || !input.newConversation) throw new Error("Project is not mapped");
-    projectUrl = await createProject(input.projectName);
-    createdProjectUrl = projectUrl;
+    if (input.command === "inspect") {
+      projectUrl = await findMappedProject(input.projectName);
+      if (!projectUrl) return { projectMissing: true };
+    } else {
+      if (input.command !== "ask" || !input.newConversation) throw new Error("Project is not mapped");
+      projectUrl = await createProject(input.projectName);
+      createdProjectUrl = projectUrl;
+    }
   } else {
     await waitForProject(projectUrl, input.projectName);
   }

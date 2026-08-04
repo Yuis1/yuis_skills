@@ -145,19 +145,20 @@ export function resolveBrowserLaunch({
   displaySockets = null,
 } = {}) {
   const sockets = availableDisplaySockets(displaySockets);
+  const forceVirtualDisplay = environment.CHATGPT_CHAT_VIRTUAL_DISPLAY === "1";
   const hasGraphicalSession = Boolean(environment.DISPLAY || environment.WAYLAND_DISPLAY || sockets.length);
-  if (!hasGraphicalSession) {
-    const headlessEnvironment = { ...environment };
-    delete headlessEnvironment.DISPLAY;
-    delete headlessEnvironment.WAYLAND_DISPLAY;
+  if (forceVirtualDisplay || !hasGraphicalSession) {
+    const virtualEnvironment = { ...environment };
+    delete virtualEnvironment.DISPLAY;
+    delete virtualEnvironment.WAYLAND_DISPLAY;
     return {
-      headless: true,
-      arguments: ["--headless=new", "--disable-gpu"],
-      environment: headlessEnvironment,
+      virtualDisplay: true,
+      arguments: ["--new-window"],
+      environment: virtualEnvironment,
     };
   }
   return {
-    headless: false,
+    virtualDisplay: false,
     arguments: ["--new-window"],
     environment: {
       ...environment,
@@ -166,19 +167,55 @@ export function resolveBrowserLaunch({
   };
 }
 
+async function startVirtualDisplay({ spawnImpl = spawn, socketExists = existsSync } = {}) {
+  if (!executable("/usr/bin/Xvfb")) {
+    throw codedError("RUNTIME_MISSING", "The managed virtual display runtime is not installed");
+  }
+  const displayNumber = Array.from({ length: 30 }, (_, index) => 90 + index)
+    .find((candidate) => !socketExists(`/tmp/.X11-unix/X${candidate}`));
+  if (displayNumber === undefined) {
+    throw codedError("BROWSER_BUSY", "No managed virtual display slot is available");
+  }
+  const child = spawnImpl("/usr/bin/Xvfb", [
+    `:${displayNumber}`,
+    "-screen", "0", "1280x1024x24",
+    "-nolisten", "tcp",
+    "-noreset",
+  ], { stdio: "ignore" });
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    if (socketExists(`/tmp/.X11-unix/X${displayNumber}`)) {
+      return {
+        display: `:${displayNumber}`,
+        stop: () => { if (child.exitCode === null) child.kill("SIGTERM"); },
+      };
+    }
+    if (child.exitCode !== null) break;
+  }
+  if (child.exitCode === null) child.kill("SIGTERM");
+  throw codedError("BROWSER_START_FAILED", "Managed virtual display did not start");
+}
+
 export async function startBrowser(startUrl = "https://chatgpt.com/", { interactive = false } = {}) {
   const home = homedir();
   const runtime = resolveBrowserRuntime({ home });
   const launch = resolveBrowserLaunch({ environment: process.env, home });
-  if (interactive && launch.headless) {
+  if (interactive && launch.virtualDisplay) {
     throw codedError("LOGIN_DISPLAY_REQUIRED", "Interactive ChatGPT login requires a graphical session");
   }
   const stateRoot = join(home, ".local/state/chatgpt_chat");
   mkdirSync(runtime.profileDirectory, { recursive: true, mode: 0o700 });
   mkdirSync(stateRoot, { recursive: true, mode: 0o700 });
   const existing = endpointFromFile(runtime.profileDirectory);
-  if (await endpointIsLive(existing)) return { ...runtime, endpoint: existing, started: false };
+  if (await endpointIsLive(existing)) {
+    return { ...runtime, endpoint: existing, started: false, stopVirtualDisplay: null };
+  }
 
+  let virtualDisplay = null;
+  if (launch.virtualDisplay) {
+    virtualDisplay = await startVirtualDisplay();
+    launch.environment.DISPLAY = virtualDisplay.display;
+  }
   const child = spawn(runtime.executable, [
     `--user-data-dir=${runtime.profileDirectory}`,
     "--remote-debugging-port=0",
@@ -197,8 +234,16 @@ export async function startBrowser(startUrl = "https://chatgpt.com/", { interact
   for (let attempt = 0; attempt < 120; attempt += 1) {
     await new Promise((resolve) => setTimeout(resolve, 250));
     const endpoint = endpointFromFile(runtime.profileDirectory);
-    if (endpoint && await endpointIsLive(endpoint)) return { ...runtime, endpoint, started: true };
+    if (endpoint && await endpointIsLive(endpoint)) {
+      return {
+        ...runtime,
+        endpoint,
+        started: true,
+        stopVirtualDisplay: virtualDisplay?.stop ?? null,
+      };
+    }
   }
+  virtualDisplay?.stop();
   throw codedError("BROWSER_START_FAILED", `Dedicated ${runtime.family} browser did not expose a CDP endpoint`);
 }
 
@@ -233,8 +278,10 @@ export async function withBrowserPage(operation) {
   const release = acquireLock(join(home, ".local/state/chatgpt_chat"));
   let browser = null;
   let endpoint = null;
+  let stopVirtualDisplay = null;
+  let keepBrowserOpen = false;
   try {
-    ({ endpoint } = await startBrowser());
+    ({ endpoint, stopVirtualDisplay } = await startBrowser());
     const playwrightEntry = join(
       home,
       ".local/lib/node_modules/playwriter/node_modules/@xmorse/playwright-core/index.js",
@@ -264,13 +311,17 @@ export async function withBrowserPage(operation) {
     if (error?.code === "AUTH_REQUIRED" && browser) {
       browser._connection.close();
       browser = null;
+      keepBrowserOpen = true;
     }
     throw error;
   } finally {
     if (browser) {
       try { await closeBrowserEndpoint(endpoint); } catch {}
       browser._connection.close();
+    } else if (endpoint && !keepBrowserOpen) {
+      try { await closeBrowserEndpoint(endpoint); } catch {}
     }
+    stopVirtualDisplay?.();
     release();
   }
 }

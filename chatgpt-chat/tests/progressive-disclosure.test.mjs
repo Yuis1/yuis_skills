@@ -21,8 +21,10 @@ test("authentication guidance uses the dedicated profile without improvising coo
   assert.match(skill, /不得.*Cookie.*迁移/s);
 });
 
-test("normal use supports headless conversations and governed project sources", () => {
-  assert.match(skill, /无图形会话.*无头模式/s);
+test("normal use supports displayless conversations and governed project sources", () => {
+  assert.match(skill, /等待 Projects 列表加载/);
+  assert.match(skill, /精确同名项目.*project_missing/s);
+  assert.match(skill, /无图形会话.*虚拟显示/s);
   assert.match(skill, /source-list/);
   assert.match(skill, /source-add/);
   assert.match(skill, /source-remove/);

@@ -18,7 +18,7 @@ compatibility: Managed Linux desktop with Google Chrome or Microsoft Edge and th
 
    未安装就停止并报告 `COMMAND_MISSING`，请求仓库 Owner 下发托管角色；不要搜索 npm/pip、不要手工创建链接。
 
-2. 检查当前 Git 项目及专用 Profile 的认证状态：
+2. 检查当前 Git 项目及专用 Profile 的认证状态。`inspect` 会等待 Projects 列表加载，验证并绑定同名且 Project-only 的既有 Project；只有确认没有精确同名项目时才返回 `project_missing`：
 
    ```bash
    chatgpt-chat inspect --cwd "$PWD"
@@ -32,7 +32,7 @@ compatibility: Managed Linux desktop with Google Chrome or Microsoft Edge and th
 
    专用 Profile 会自动使用其中已有的 ChatGPT/OpenAI/Google Cookie。等待用户在专用窗口完成登录或确认并关闭窗口，然后重新运行 `inspect`。不得读取日常浏览器 Profile、Cookie 数据库或自行编写 Cookie 迁移脚本；用户明确要求迁移认证时也应退出正常路径，交给仓库 Owner 按受控运维流程处理。
 
-   `inspect`、`ask` 和项目 Sources 操作在无图形会话时自动使用同一个持久化专用 Profile 的无头模式，不要自行设置 `DISPLAY`。只有首次登录或可见挑战需要图形会话；`LOGIN_DISPLAY_REQUIRED` 时请用户在托管桌面完成一次认证。
+   `inspect`、`ask` 和项目 Sources 操作在无图形会话时自动使用同一个持久化专用 Profile 和受管虚拟显示，不要自行设置 `DISPLAY`。只有首次登录或可见挑战需要用户的图形会话；`LOGIN_DISPLAY_REQUIRED` 时请用户在托管桌面完成一次认证。
 
 4. 根据 `inspect` 的会话摘要做语义判断：目标、假设、工件和决策线程连续才续聊，否则新建。把原始问题写入权限受限的文件，再执行一种调用：
 
