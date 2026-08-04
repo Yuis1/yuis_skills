@@ -308,12 +308,12 @@ async function removeProjectSource(surface, sourceName) {
   if (!(await menu.count())) throw new Error("The selected project source has no visible action menu");
   await row.hover();
   await menu.click();
-  const remove = page.getByRole("menuitem", { name: /^(delete|remove)( source)?$/i }).last();
+  const remove = page.getByRole("menuitem", { name: /^(delete|remove)( source)?$|^删除$/i }).last();
   await remove.waitFor({ state: "visible", timeout: 10_000 });
   await remove.click();
   const dialog = page.getByRole("dialog").last();
   if (await dialog.isVisible().catch(() => false)) {
-    const confirm = dialog.getByRole("button", { name: /^(delete|remove)( source)?$/i }).last();
+    const confirm = dialog.getByRole("button", { name: /^(delete|remove)( source)?$|^删除$/i }).last();
     await confirm.waitFor({ state: "visible", timeout: 10_000 });
     await confirm.click();
   }
