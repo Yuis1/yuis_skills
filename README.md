@@ -1,13 +1,23 @@
 # yuis_skills
 
-面向 Coding Agent 与生产力 Agent 的场景化技能集，用于复杂软件工程中的架构设计、自动治理、安全演进、重构、验证和多 Agent 协作。
+## 项目概述
+> 目标：让 Coding Agent 可以真正在 **大型复杂工程** 中用起来，朝着搭建“需求对齐-架构决策—Agent团队实现—对抗性提升-质量守护-人类反馈—规则沉淀”的Loop工程不断演进。
 
-每个技能只负责一个目标，`description` 只做触发钩子；正文提供可执行工作流，低频细节按需加载，避免一次占用过多上下文。
+本项目来源于本人长期使用 AI 开发复杂系统时积累的实际踩坑痛点：
+- 代码腐化与复杂度失控：巨型文件、圈复杂度上升、正则与补丁堆叠、预测性抽象、过度防御与遗留孤儿代码
+- 架构反模式：上帝入口、业务事实Owner不清、依赖方向失控、浅模块、接口复杂
+- 虚假完成：形式化红测、牺牲用户体验换取bug修复
+- 反馈机制不够系统：动手前未对齐、缺乏架构守护与代码质量门控、Taste平庸、bug证据未持久化
+- Prompt与文档写作缺陷：暴露内部思考、缺乏叙事结构、使用未对齐术语
+
+本项目将以上踩坑经验进行系统化，整理为用户级 AGENTS.md 与一组可被 Agent 自动发现、按需加载、独立执行和组合使用的 Skills。  
+AGENTS.md 负责承载跨项目稳定原则、安全约束和全局工作偏好；具体操作流程则拆分为架构设计、架构演进、自动守护、安全重构、测试证据、复杂任务复审、Agent 产品治理和多 Agent 协作等场景化等技能。
+
 
 ## 使用场景
 
-| 场景 | 技能 | 主要解决的问题 |
-|---|---|
+| 场景 | 技能 | 解决问题 |
+|---|---|---|
 | 设计或评审系统结构 | `system-design` | 划分业务 Owner、边界和组件，校验依赖方向与副作用归属 |
 | 把架构规则接入自动化 | `arch-guard` | 设计架构测试、CI Gate、基线棘轮和例外机制 |
 | 演进服务、数据或协议 | `arch-evolve` | 分析架构量子与运行耦合，规划 Expand-Contract 和不可逆点 |
@@ -40,7 +50,7 @@
 
 仓库根目录的 [`AGENTS.md`](./AGENTS.md) 收录了这套技能配套的用户级规则。它既是维护本仓库时的项目规则，也是向各 Coding Agent 分发全局规则的权威来源。后续应从仓库通过 Ansible 等配置管理工具单向发布，避免同时手工维护仓库和用户目录中的副本。
 
-这份规则刻意只常驻跨项目原则和硬约束，把具体工作流按技能名延迟加载，因此不能把它当作一份完全独立的 Prompt 使用。要让其中的技能指引完整生效，建议把下面三组技能作为一套安装和版本管理：
+这份规则刻意只常驻跨项目原则和硬约束，具体 skills 按需加载，因此不能当作完全独立的 Prompt 使用。建议配套安装下面三组技能：
 
 | 来源 | `AGENTS.md` 使用的技能 | 作用 |
 |---|---|---|
@@ -52,7 +62,7 @@
 
 若缺少某组技能，`AGENTS.md` 中直接写出的原则仍然有效，但 Agent 无法按指引加载对应工作流。也可以删除不适用于自己环境的技能引用和工具约束；不要保留无法解析或从未安装的名字。
 
-这是一份有明确个人工作流取向的参考配置，不是通用安全基线。使用前应逐条审核，特别是 Paseo、`trash-cli`、本地参考路径、模型选择和汇报偏好。
+这是一份有明确个人工作流取向的参考配置，不是通用安全基线。使用前应逐条审核，特别是 Paseo、本地参考路径、模型选择和汇报偏好。
 
 ## 安装
 
@@ -108,7 +118,7 @@ npx skills@latest add ../taste-skill --global \
 ### 用户级规则
 
 | 工具 | `AGENTS.md` 的发布位置 |
-|---|---|---|
+|---|---|
 | [Codex](https://developers.openai.com/codex/guides/agents-md) | `~/.codex/AGENTS.md` |
 | [Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/usage.md#context-files) | `~/.pi/agent/AGENTS.md` |
 | [OpenCode](https://opencode.ai/docs/rules/) | `~/.config/opencode/AGENTS.md` |
@@ -116,13 +126,11 @@ npx skills@latest add ../taste-skill --global \
 
 建议通过 Ansible 等配置管理工具从本仓库单向发布。Claude Code 使用同一内容，但文件名为 `CLAUDE.md`。
 
-### 更新
-
-本仓库采用单一 `main` 分支。完成相关验证后直接推送 `main`，无需创建 PR；不得 force-push，也不保留长期功能分支。本地更新使用 `git pull --ff-only`。配套技能保持上述固定版本；升级时同时更新版本记录并复核 `AGENTS.md`。
-
 ## 安全说明
 
 Agent Skills 会影响 Agent 的判断和操作，安装前请先阅读内容。除 `chatgpt-chat` 外，本仓库技能仅包含指令和元数据；`chatgpt-chat` 带有经过测试的浏览器驱动，使用隔离 Chrome 或 Edge Profile 和短生命周期本地 CDP，安装与启用前应单独复核其凭据边界。
+
+另外建议使用 `trash-cli` 、[DCG](https://github.com/Dicklesworthstone/destructive_command_guard) 、BTRFS快照、异地备份，共同构筑安全底线。
 
 ## 许可证
 
