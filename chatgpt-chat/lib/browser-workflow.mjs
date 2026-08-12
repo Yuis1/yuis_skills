@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export async function runWorkflow(page, input) {
 function modelRank(label) {
   const match = label.match(/^GPT-(\d+)(?:\.(\d+))?(?:\s+(.*))?$/i);
   if (!match) return [-1, -1, -1];
@@ -17,16 +16,137 @@ function compareModels(left, right) {
   return left.localeCompare(right);
 }
 
-async function waitForProject(projectUrl, projectName) {
-  const escapedName = projectName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const title = page.locator("main").getByRole("button", {
-    name: new RegExp(`(?:Edit the title of\\s+${escapedName}|编辑[“\"]?${escapedName}[”\"]?的标题)`, "i"),
-  });
+export function classifyAuthenticationEvidence({ loginControl, composer, accountControl, challengeFrame }) {
+  if (challengeFrame > 0) return "challenge";
+  if (loginControl > 0) return "required";
+  if (composer > 0 && accountControl > 0) return "authenticated";
+  return "unverified";
+}
+
+async function visibleCount(locator) {
+  let visible = 0;
+  const count = Math.min(await locator.count(), 10);
+  for (let index = 0; index < count; index += 1) {
+    if (await locator.nth(index).isVisible().catch(() => false)) visible += 1;
+  }
+  return visible;
+}
+
+export async function requireAuthentication(page) {
+  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 45_000 });
+  await page.locator('#prompt-textarea, a[href^="/auth/login"]').first()
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .catch(() => {});
+  await page.waitForTimeout(1_000);
+  const evidence = {
+    challengeFrame: await page.locator('iframe[src*="challenge"], iframe[src*="cloudflare"]').count(),
+    loginControl: await visibleCount(page.getByRole("link", { name: /log in|登录/i }))
+      + await visibleCount(page.getByRole("button", { name: /log in|登录/i })),
+    composer: await visibleCount(page.locator("#prompt-textarea")),
+    accountControl: await visibleCount(page.locator('[data-testid="accounts-profile-button"]'))
+      + await visibleCount(page.getByRole("button", { name: /profile|个人资料|账户|account/i })),
+  };
+  const status = classifyAuthenticationEvidence(evidence);
+  if (status === "authenticated") return;
+  if (status === "challenge") throw Object.assign(new Error("ChatGPT requires an interactive challenge"), { code: "CHALLENGE_REQUIRED" });
+  if (status === "required") throw Object.assign(new Error("The connected browser Profile is not authenticated to ChatGPT"), { code: "AUTH_REQUIRED" });
+  throw Object.assign(new Error("ChatGPT authentication state could not be verified from visible controls"), { code: "AUTH_UNVERIFIED" });
+}
+
+export async function findMappedProject(page, projectName, confirmProject) {
+  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.getByText(/^(projects|项目)$/i, { exact: true }).first()
+    .waitFor({ state: "visible", timeout: 60_000 });
+  const projectControl = () => page.getByRole("link", { name: projectName, exact: true })
+    .or(page.getByRole("button", { name: projectName, exact: true }))
+    .first();
+  let project = projectControl();
+  let expanded = false;
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    if (await project.isVisible().catch(() => false)) break;
+    const showMore = page.getByRole("button", { name: /^(show more|显示更多|查看更多)$/i }).first();
+    if (!expanded && await showMore.isVisible().catch(() => false)) {
+      await showMore.click();
+      expanded = true;
+      project = projectControl();
+    }
+    await page.waitForTimeout(500);
+  }
+  if (!await project.isVisible().catch(() => false)) return null;
+  await project.click();
+  await page.waitForURL(/\/g\/g-p-[^/]+(?:-[^/]+)?\/project(?:\?.*)?$/, { timeout: 30_000 });
+  const projectUrl = new URL(page.url());
+  projectUrl.search = "";
+  await confirmProject(projectUrl.href, projectName);
+  return projectUrl.href;
+}
+
+async function dismissTransientOverlays(page) {
+  const rateLimit = page.locator('[data-testid="modal-conversation-history-rate-limit"]');
+  if (!await rateLimit.isVisible().catch(() => false)) return;
+  const dismiss = rateLimit.getByRole("button", { name: /^(OK|Close|Dismiss|Got it|确定|关闭|知道了)$/i }).first();
+  if (await dismiss.isVisible().catch(() => false)) await dismiss.click();
+  else await page.keyboard.press("Escape");
+  await rateLimit.waitFor({ state: "hidden", timeout: 10_000 }).catch(() => {});
+}
+
+export async function ensureBestInteraction(page) {
+  await dismissTransientOverlays(page);
+  const form = page.locator("main form");
+  const trigger = form.getByRole("button", { name: /^(Instant|Medium|High|Extra High|Pro)$/ }).first();
+  const openAdvancedPicker = async () => {
+    await trigger.waitFor({ state: "visible", timeout: 30_000 });
+    await trigger.click();
+    const picker = page.locator('[data-testid="composer-intelligence-picker-content"]');
+    await picker.waitFor({ state: "visible", timeout: 10_000 });
+    const advanced = page.getByRole("menuitem", { name: "Show advanced options", exact: true });
+    if (await advanced.count()) await advanced.click();
+    return page.getByRole("menu").first();
+  };
+
+  let rootMenu = await openAdvancedPicker();
+  await rootMenu.getByRole("menuitem", { name: /^Model / }).click();
+  const modelMenu = page.getByRole("menu", { name: /^Model / });
+  const choices = modelMenu.getByRole("menuitemradio");
+  const labels = [];
+  for (let index = 0; index < await choices.count(); index += 1) {
+    const label = (await choices.nth(index).innerText()).trim();
+    if (modelRank(label)[0] >= 0) labels.push(label);
+  }
+  if (!labels.length) throw new Error("No flagship GPT model is available");
+  labels.sort(compareModels);
+  const preferred = labels[0];
+  const choice = modelMenu.getByRole("menuitemradio", { name: preferred, exact: true });
+  if ((await choice.getAttribute("aria-checked")) !== "true") await choice.click();
+  else await page.keyboard.press("Escape");
+
+  rootMenu = await openAdvancedPicker();
+  await rootMenu.getByRole("menuitem", { name: /^Effort / }).click();
+  const effortMenu = page.getByRole("menu", { name: /^Effort / });
+  const pro = effortMenu.getByRole("menuitemradio", { name: "Pro", exact: true });
+  if (await pro.count() !== 1) throw new Error("Pro effort is unavailable");
+  if ((await pro.getAttribute("aria-checked")) !== "true") await pro.click();
+  else await page.keyboard.press("Escape");
+  return { mode: "chat", effort: "Pro", model: preferred };
+}
+
+export async function runWorkflow(page, input) {
+  if (input.command === "login") {
+    await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 45_000 });
+    return { authenticated: true };
+  }
+  await requireAuthentication(page);
+  async function waitForProject(projectUrl, projectName) {
+  const main = page.locator("main");
+  const visibleProjectName = main.getByText(projectName, { exact: true }).first();
+  const projectTabs = main.getByRole("tab", { name: /^(Chats|Sources|聊天|来源)$/i });
   for (let attempt = 0; attempt < 2; attempt += 1) {
     if (page.url() !== projectUrl) {
       await page.goto(projectUrl, { waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => {});
     }
-    if (await title.waitFor({ state: "visible", timeout: 60_000 }).then(() => true).catch(() => false)) return;
+    const nameVisible = await visibleProjectName.waitFor({ state: "visible", timeout: 60_000 })
+      .then(() => true).catch(() => false);
+    if (nameVisible && await projectTabs.count() >= 2) return;
     await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => {});
   }
   const currentTitle = await page.title().catch(() => "unavailable");
@@ -59,42 +179,6 @@ async function projectCreateControl() {
   throw new Error("The visible Projects section has no create control");
 }
 
-async function findMappedProject(projectName) {
-  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
-  await page.getByText(/^(projects|项目)$/i, { exact: true }).first()
-    .waitFor({ state: "visible", timeout: 60_000 });
-  const projectControl = () => page.getByRole("link", { name: projectName, exact: true })
-    .or(page.getByRole("button", { name: projectName, exact: true }))
-    .first();
-  let project = projectControl();
-  let expanded = false;
-  for (let attempt = 0; attempt < 120; attempt += 1) {
-    if (await project.isVisible().catch(() => false)) break;
-    const showMore = page.getByRole("button", { name: /^(show more|显示更多|查看更多)$/i }).first();
-    if (!expanded && await showMore.isVisible().catch(() => false)) {
-      await showMore.click();
-      expanded = true;
-      project = projectControl();
-    }
-    await page.waitForTimeout(500);
-  }
-  if (!await project.isVisible().catch(() => false)) return null;
-  if ((await project.getAttribute("role")) === "button") {
-    const row = project.locator("xpath=ancestor::div[contains(@class, 'group/project-unfurl-row')][1]");
-    await row.hover();
-    const projectHome = row.getByRole("button", { name: /open project home|打开项目首页/i }).first();
-    await projectHome.waitFor({ state: "visible", timeout: 10_000 });
-    await projectHome.click();
-  } else {
-    await project.click();
-  }
-  await page.waitForURL(/\/g\/g-p-[^/]+\/project(?:\?.*)?$/, { timeout: 30_000 });
-  const projectUrl = new URL(page.url());
-  projectUrl.search = "";
-  await waitForProject(projectUrl.href, projectName);
-  return projectUrl.href;
-}
-
 async function createProject(projectName) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
   const create = await projectCreateControl();
@@ -114,46 +198,11 @@ async function createProject(projectName) {
   return page.url();
 }
 
-async function ensureBestInteraction() {
-  const form = page.locator("main form");
-  const trigger = form.getByRole("button", { name: /^(Instant|Medium|High|Extra High|Pro)$/ }).first();
-  await trigger.waitFor({ state: "visible", timeout: 30_000 });
-  await trigger.click();
-  let picker = page.locator('[data-testid="composer-intelligence-picker-content"]');
-  await picker.waitFor({ state: "visible", timeout: 10_000 });
-  const pro = picker.getByRole("menuitemradio", { name: "Pro", exact: true });
-  if (await pro.count() !== 1) throw new Error("Pro effort is unavailable");
-  if ((await pro.getAttribute("aria-checked")) !== "true") {
-    await pro.click();
-    await trigger.click();
-    picker = page.locator('[data-testid="composer-intelligence-picker-content"]');
-    await picker.waitFor({ state: "visible", timeout: 10_000 });
-  }
-  const modelSubmenu = picker.getByRole("menuitem").filter({ hasText: /^GPT-/ }).first();
-  await modelSubmenu.click();
-  const modelMenu = page.locator('[role="menu"]').last();
-  const choices = modelMenu.getByRole("menuitemradio");
-  const labels = [];
-  for (let index = 0; index < await choices.count(); index += 1) {
-    const label = (await choices.nth(index).innerText()).trim();
-    if (modelRank(label)[0] >= 0) labels.push(label);
-  }
-  if (!labels.length) throw new Error("No flagship GPT model is available");
-  labels.sort(compareModels);
-  const preferred = labels[0];
-  const choice = modelMenu.getByRole("menuitemradio", { name: preferred, exact: true });
-  if ((await choice.getAttribute("aria-checked")) !== "true") await choice.click();
-  else {
-    await page.keyboard.press("Escape");
-    await page.keyboard.press("Escape");
-  }
-  return { mode: "chat", effort: "Pro", model: preferred };
-}
-
 async function waitForCompletedResponse() {
   const pollMilliseconds = Number(process.env.CHATGPT_CHAT_POLL_MILLISECONDS || 600_000);
   if (!Number.isFinite(pollMilliseconds) || pollMilliseconds < 1_000) throw new Error("Invalid polling interval");
   const messages = page.locator('[data-message-author-role="assistant"]');
+  const responseActions = page.getByRole("group", { name: /Response actions|回复操作/i });
   for (;;) {
     const stop = page.locator('[data-testid="stop-button"]');
     if (await stop.count() && await stop.first().isVisible()) {
@@ -165,6 +214,11 @@ async function waitForCompletedResponse() {
       continue;
     }
     const content = messages.last();
+    const actions = responseActions.last();
+    if (await responseActions.count()) {
+      await actions.waitFor({ state: "visible", timeout: 5_000 });
+      return { turn: actions.locator("xpath=ancestor::article[1]"), text: (await content.innerText()).trim() };
+    }
     const first = (await content.innerText()).trim();
     if (!first) {
       await page.waitForTimeout(Math.min(pollMilliseconds, 10_000));
@@ -173,7 +227,7 @@ async function waitForCompletedResponse() {
     await page.waitForTimeout(2_000);
     const second = (await content.innerText()).trim();
     if (first === second && !(await stop.count() && await stop.first().isVisible())) {
-      return { turn: content.locator("xpath=.."), text: second };
+      return { turn: content.locator("xpath=ancestor::article[1]"), text: second };
     }
   }
 }
@@ -200,8 +254,6 @@ function dispositionFilename(value) {
 }
 
 async function collectAttachments(turn) {
-  const toolbar = page.locator('[data-playwriter-toolbar="1"]');
-  if (await toolbar.count()) await toolbar.evaluate((element) => { element.style.pointerEvents = "none"; });
   const results = [];
   const cards = turn.getByRole("button", { name: "Download file" });
   const count = Math.min(await cards.count(), 10);
@@ -341,7 +393,7 @@ async function run() {
   let createdProjectUrl = null;
   if (!projectUrl) {
     if (input.command === "inspect") {
-      projectUrl = await findMappedProject(input.projectName);
+      projectUrl = await findMappedProject(page, input.projectName, waitForProject);
       if (!projectUrl) return { projectMissing: true };
     } else {
       if (input.command !== "ask" || !input.newConversation) throw new Error("Project is not mapped");
@@ -374,7 +426,7 @@ async function run() {
       sources: await listProjectSources(surface),
     };
   }
-  const interaction = await ensureBestInteraction();
+  const interaction = await ensureBestInteraction(page);
   if (input.command === "inspect") {
     return { projectUrl, createdProjectUrl, interaction };
   }
@@ -406,7 +458,6 @@ async function run() {
   const { turn, text } = await waitForCompletedResponse();
   const responsePath = path.join(input.artifactDirectory, `${new Date().toISOString().replace(/[:.]/g, "-")}-response.txt`);
   fs.writeFileSync(responsePath, `${text}\n`, { mode: 0o600, flag: "wx" });
-  await page.waitForTimeout(5_000);
   const attachments = await collectAttachments(turn);
   return {
     projectUrl,

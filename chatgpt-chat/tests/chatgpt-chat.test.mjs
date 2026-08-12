@@ -30,7 +30,7 @@ function fixture(adapterBody) {
   return { root, project, adapter };
 }
 
-test("login opens the dedicated profile through the CLI seam", () => {
+test("login verifies ChatGPT in the connected browser profile through the CLI seam", () => {
   const { project, adapter } = fixture(`export async function login({ cwd }) {
     return { schema_version: 1, command: "login", status: "login_window_open", local_project: cwd };
   }\n`);
@@ -291,7 +291,7 @@ test("ask rejects review attachments larger than 100 MiB", () => {
   assert.match(result.stderr, /attachment exceeds 100 MiB limit/);
 });
 
-test("an unauthenticated dedicated profile returns one actionable safe error", () => {
+test("an unauthenticated connected profile returns one actionable safe error", () => {
   const { project, adapter } = fixture(`export async function inspect() {
     throw Object.assign(new Error("internal browser detail"), { code: "AUTH_REQUIRED" });
   }\n`);
@@ -300,8 +300,8 @@ test("an unauthenticated dedicated profile returns one actionable safe error", (
     env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
   });
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /^AUTH_REQUIRED: .*chatgpt-chat login/);
-  assert.doesNotMatch(result.stderr, /Edge/);
+  assert.match(result.stderr, /^AUTH_REQUIRED: .*connected browser Profile/);
+  assert.doesNotMatch(result.stderr, /cookie|storage|profile path/i);
 });
 
 test("a missing managed browser runtime returns an action instead of inviting self-install", () => {

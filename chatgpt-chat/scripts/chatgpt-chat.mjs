@@ -198,13 +198,13 @@ main().then(
   () => process.exit(0),
   (error) => {
     const safeAdapterMessages = {
-      AUTH_REQUIRED: "AUTH_REQUIRED: run `chatgpt-chat login --cwd \"$PWD\"`, wait for the user to finish in the dedicated profile, then retry",
+      AUTH_REQUIRED: "AUTH_REQUIRED: the connected browser Profile is not signed in to ChatGPT; use the matching troubleshooting entry",
       AUTH_UNVERIFIED: "AUTH_UNVERIFIED: visible ChatGPT controls could not prove authentication; use the matching troubleshooting entry",
-      CHALLENGE_REQUIRED: "CHALLENGE_REQUIRED: let the user complete the visible ChatGPT challenge, then retry",
+      CHALLENGE_REQUIRED: "CHALLENGE_REQUIRED: do not bypass the visible ChatGPT challenge; use the matching troubleshooting entry",
       RUNTIME_MISSING: "RUNTIME_MISSING: request the managed deployment; do not install browser dependencies ad hoc",
-      BROWSER_START_FAILED: "BROWSER_START_FAILED: the dedicated ChatGPT browser could not be started; use the matching troubleshooting entry",
+      BROWSER_NOT_CONNECTED: "BROWSER_NOT_CONNECTED: start Edge or Chrome with its managed Playwriter extension and retry",
+      BROWSER_PROFILE_AMBIGUOUS: "BROWSER_PROFILE_AMBIGUOUS: keep exactly one Profile connected in the preferred browser family",
       BROWSER_BUSY: "BROWSER_BUSY: another ChatGPT browser operation is active; wait for it to finish",
-      LOGIN_DISPLAY_REQUIRED: "LOGIN_DISPLAY_REQUIRED: interactive login needs a graphical session; authenticate this dedicated profile once on a managed desktop",
     };
     if (!(error instanceof PublicError) && !safeAdapterMessages[error?.code]) recordDiagnostic(error);
     const message = error instanceof PublicError
