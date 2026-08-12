@@ -1,33 +1,35 @@
-# 遗留测试迁移
+[English](LEGACY.md) | [简体中文](LEGACY.zh-CN.md)
 
-只在迁移测试 Owner、重置测试底座或删除大量旧测试与 Fixture 时读取。
+# Legacy-Test Migration
 
-## 先建立合同映射
+Read this only when migrating test ownership, resetting the test foundation, or deleting many old tests and Fixtures.
 
-逐项记录：
+## Establish a Contract Map First
 
-`行为 ID → 旧证据 → 新 Owner 的证据 → 处置`
+Record each item as:
 
-将旧测试分为：
+`behavior ID → old evidence → evidence under the new Owner → disposition`
 
-- 公开行为合同；
-- 与私有实现耦合的检查；
-- 重复场景；
-- 仅为旧兼容路径服务的装配、Fixture 或转发。
+Classify old tests as:
 
-不要按文件名、行数或测试数量机械迁移。
+- public behavioral contracts;
+- checks coupled to private implementation;
+- duplicate scenarios; or
+- assembly, Fixtures, or forwarding that exist only for an old compatibility path.
 
-## 迁移顺序
+Do not migrate mechanically by filename, line count, or test count.
 
-1. 在删除前确认旧测试实际证明了什么。
-2. 为公开行为指定新的权威测试位置。
-3. 对既有行为，新测试原则上应在旧实现上通过，证明合同没有被重新发明。
-4. 对新增行为或架构切换合同，可以在旧实现上失败，但要说明失败代表什么。
-5. 新权威证据通过后，才在同一切片删除重复测试、私有 helper、locator、动态转发和旧 Fixture。
-6. 运行受影响 Owner 与真实依赖闭包的验证，记录未迁移合同。
+## Migration Sequence
 
-禁止先删除旧测试，再凭新实现或记忆重写。若无法证明某项旧测试是否仍有价值，先保留并登记待确认项。
+1. Before deletion, establish what each old test actually proves.
+2. Assign a new authoritative test location for every public behavior.
+3. For existing behavior, the new test should generally pass against the old implementation, proving that the contract was not reinvented.
+4. A test for new behavior or an architecture-transition contract may fail against the old implementation, but state what the failure means.
+5. Only after the new authoritative evidence passes may the same slice remove duplicate tests, private Helpers, locators, dynamic forwarding, and old Fixtures.
+6. Verify the affected Owner and true dependency closure, and record contracts that were not migrated.
 
-## 测试底座
+Do not delete old tests first and then rewrite them from the new implementation or from memory. If the continuing value of an old test cannot be established, retain it and record it as pending confirmation.
 
-产品实现、测试底座重置和质量门规则默认使用独立 Diff。测试底座阻塞产品切片时，先冻结产品 candidate，再拆前置底座切片，避免把产品行为变化藏在大规模测试搬迁中。
+## Test Foundation
+
+Product implementation, test-foundation resets, and quality-gate rules use separate Diffs by default. If the test foundation blocks a product slice, freeze the product candidate first and split out a prerequisite foundation slice, so product behavior changes are not hidden inside broad test migration.

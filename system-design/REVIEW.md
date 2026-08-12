@@ -1,37 +1,39 @@
-# 系统结构评审速查
+[English](REVIEW.md) | [简体中文](REVIEW.zh-CN.md)
 
-只在结构评审或定位复杂性来源时读取。每个发现都要绑定实际调用、依赖或代表性变更，不凭术语定罪。
+# System Structure Review Checklist
 
-## 复杂性证据
+Read this only for structural review or when locating the source of complexity. Tie every finding to an actual call, dependency, or representative change; do not convict by terminology alone.
 
-- **变更放大**：一个小需求需要修改很多位置。
-- **认知负荷**：使用模块前必须理解大量内部细节。
-- **未知依赖**：修改者无法可靠判断会影响谁。
+## Evidence of Complexity
 
-行数、文件数、函数长度、圈复杂度和 Diff 大小只是风险信号。超过阈值应触发复核，不能成为机械拆分理由。
+- **Change amplification:** a small requirement demands changes in many places.
+- **Cognitive load:** using a module requires understanding many internal details.
+- **Unknown dependencies:** a maintainer cannot reliably determine who a change will affect.
 
-## 结构危险信号
+Lines of code, file count, function length, cyclomatic complexity, and Diff size are risk signals only. Crossing a threshold should trigger review, not mechanical decomposition.
 
-- **浅模块**：接口与实现复杂度接近，没有隐藏重要知识。
-- **信息泄露**：同一设计决策散落在多个模块；变化时必须同步修改。
-- **时间分解**：按执行先后组织代码，而不是按共同知识与变化原因组织。
-- **过度暴露**：常见用法被迫了解少见配置和内部细节。
-- **透传层**：方法只把相同参数交给下一层，没有转换语义、策略或错误。
-- **通用与专用混杂**：特定业务规则污染通用能力，或通用细节散落各业务。
-- **连体模块**：理解或修改一方前必须读懂另一方内部实现。
-- **难取名、难描述、难理解**：通常说明职责或抽象边界没有选对。
+## Structural Warning Signs
 
-重复本身不是自动重构依据。先判断重复是否承载相同知识、是否必然一起变化；不恰当共享可能比局部重复造成更强耦合。
+- **Shallow module:** interface complexity approaches implementation complexity, so the module hides no important knowledge.
+- **Information leakage:** one design decision is scattered across modules and must be changed in several places.
+- **Temporal decomposition:** code is organized by execution order instead of shared knowledge and reasons for change.
+- **Overexposure:** common use requires understanding rare configuration and internal details.
+- **Pass-through layer:** a method forwards the same parameters to the next layer without translating semantics, policy, or errors.
+- **General-purpose and special-purpose code mixed together:** specific business rules contaminate a general capability, or general details are scattered across business features.
+- **Entangled modules:** understanding or changing one requires reading the other's internal implementation.
+- **Hard to name, describe, or understand:** often indicates a poorly chosen responsibility or abstraction boundary.
 
-## 架构危险信号
+Duplication is not automatic grounds for refactoring. First determine whether the duplicate code carries the same knowledge and must change together; inappropriate sharing can create stronger coupling than local duplication.
 
-- 顶层目录只展示框架层，看不出业务能力。
-- 服务各自部署，却共享数据库、同步 UI 或中央编排，实际必须一起变更。
-- 数据库成为跨域公开接口，消费方直接依赖内部表结构。
-- Port 镜像供应商或数据库 API，业务层仍被外部语义控制。
-- 防腐层只转发，不转换模型、语义、错误和协议。
-- 测试直接依赖大量内部结构，导致结构调整引发大面积无关失败。
+## Architecture Warning Signs
 
-## 评审输出
+- Top-level directories expose framework layers but not business capabilities.
+- Services deploy separately but share a database, synchronous UI, or central orchestration, so they must change together in practice.
+- The database becomes a public interface across domains, and consumers depend directly on internal table structure.
+- A Port mirrors a vendor or database API, leaving the business layer controlled by external semantics.
+- An anticorruption layer forwards without translating models, semantics, errors, and protocols.
+- Tests depend directly on extensive internal structure, causing structural changes to trigger widespread unrelated failures.
 
-每项问题记录：受影响的 Owner、触发问题的真实变更、被泄漏的知识、建议边界、迁移成本和可验证的完成条件。
+## Review Output
+
+For each issue, record the affected Owner, the real change that exposes the problem, the leaked knowledge, proposed boundary, migration cost, and verifiable completion criteria.

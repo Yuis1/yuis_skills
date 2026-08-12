@@ -1,27 +1,29 @@
 ---
 name: agent-dev
-description: 治理 Agent 产品的 Prompt、模型、Schema、工具与评测。
+description: Govern an Agent product's Prompts, models, Schemas, tools, and evaluations.
 ---
 
-# Agent 开发
+[English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-## 变更与评测
+# Agent Development
 
-- Prompt、模型、Schema、工具和 Agent 编排变更必须版本化，并使用同一评测集比较收益、回归和成本。
-- 需要语义理解的判断不得使用个案正则、关键词或固定话术伪装成模型决策；固定协议、标识符、安全硬约束和可审计确定性规则除外。
-- 不要让 LLM 一次性输出大块代码、结构化内容、SVG，优先使用 json + 模板 的方式输出，若输出代码、大块结构化内容则要进行多轮React。
+## Changes and Evaluation
 
-## 优化顺序
+- Changes to Prompts, models, Schemas, tools, and Agent orchestration must be versioned. Use the same evaluation set to compare gains, regressions, and cost.
+- Do not disguise decisions that require semantic understanding as model decisions by using case-specific regexes, keywords, or fixed phrasing. Fixed protocols, identifiers, hard safety constraints, and auditable deterministic rules are exceptions.
+- Do not ask an LLM to emit large blocks of code, structured content, or SVG in one pass. Prefer JSON plus templates; if it must emit code or large structured content, use multiple React rounds.
 
-- 当 Agent 行为不理想时，不是加规则代码进行修补和兜底，而是按以下优化顺序：
-  1. 检查输入、上下文和任务边界；
-  2. 建立复现样例和评测集；
-  3. 优化 Prompt、Schema、工具；
-  4. 调整模型配置；
-  5. 调整或增加编排节点，且必须论证其收益超过成本。
+## Optimization Order
 
-## Prompt 编写
+- When Agent behavior is unsatisfactory, do not patch or paper over it with more rule code. Optimize in this order:
+  1. Check the input, context, and task boundary.
+  2. Establish reproduction cases and an evaluation set.
+  3. Improve the Prompt, Schema, and tools.
+  4. Adjust model configuration.
+  5. Adjust or add orchestration nodes only after demonstrating that the benefit exceeds the cost.
 
-- 使用角色可理解的业务语言：除非角色本身面向开发、运维或测试，否则不得泄露内部模块名、配置包名、实现名、链路名和调试语义。
-- KV-Cache优化：在不改变语义和消息优先级的前提下，Prompt 按稳定程度排列：不变系统规则 -> 低频上下文 -> 中高频上下文 -> 本轮输入。
-- 废弃字段、恒为空输出和旧模型私有格式不得留在 Prompt 中；兼容逻辑由运行时代码处理。
+## Prompt Writing
+
+- Use business language the role understands. Unless the role itself serves development, operations, or testing, do not expose internal module names, configuration-package names, implementation names, pipeline names, or debugging semantics.
+- Optimize the KV Cache without changing meaning or message priority. Order Prompt content from most stable to least stable: invariant system rules → low-frequency context → medium- and high-frequency context → current-turn input.
+- Remove deprecated fields, outputs that are always empty, and legacy model-specific formats from the Prompt. The runtime owns compatibility logic.

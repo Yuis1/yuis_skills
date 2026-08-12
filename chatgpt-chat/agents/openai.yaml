@@ -1,4 +1,4 @@
 interface:
   display_name: "ChatGPT Web"
-  short_description: "通过用户现有 Edge/Chrome Profile 调用 ChatGPT Web"
-  default_prompt: "使用 $chatgpt-chat 的正常 CLI 路径完成咨询；浏览器选择、扩展重连和标签页生命周期由 CLI 统一处理；按用户明确要求管理经过脱敏检查的 Project Sources；除非 CLI 返回明确错误码，不读取实现或研究文档。"
+  short_description: "Consult ChatGPT Web through the user's existing Edge/Chrome Profile"
+  default_prompt: "Use the normal $chatgpt-chat CLI path for this consultation. Leave browser selection, extension reconnection, and tab lifecycle to the CLI. Manage reviewed and redacted Project Sources only when the user explicitly requests it. Do not read implementation or research documentation unless the CLI returns an explicit error code."

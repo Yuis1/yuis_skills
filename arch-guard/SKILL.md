@@ -1,42 +1,44 @@
 ---
 name: arch-guard
-description: 把架构约束变成自动守护。用于架构测试、CI Gate、基线棘轮或规则豁免。
+description: Turn architecture constraints into automated enforcement. Use for architecture tests, CI Gates, baseline ratchets, or rule exemptions.
 ---
 
-# 架构自动守护
+[English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-只自动阻断重要、稳定、可客观判断且误报可控的风险。工具能证明什么，就只声称什么。
+# Automated Architecture Enforcement
 
-## 建立守护规则
+Automatically block only risks that are important, stable, objectively decidable, and controllable in false positives. Claim only what the tool can prove.
 
-1. 写清要保护的架构特征，以及退化后会造成的具体损害。
-2. 为特征选择一个或多个检查；不要强迫“一项特征只配一项检查”。
-3. 说明每项检查的范围、触发时机、判定结果、执行方式和能力边界。
-4. 决定放置位置：
-   - 稳定、高价值、低误报：进入合并请求 CI 并可阻断。
-   - 需要语境判断：进入 Review Checklist 或 ADR。
-   - 低频或昂贵：进入专项验证。
-5. 历史项目先建立基线，只阻断新增或恶化；不要为了过线机械拆分或压缩代码。
-6. 为例外记录规则、原因、范围、Owner、风险、复查日期、清偿条件和对应事项。
+## Establish Enforcement Rules
 
-## Gate 分工
+1. State the architectural characteristic to protect and the concrete harm caused by its degradation.
+2. Select one or more checks for that characteristic; do not force a one-characteristic-to-one-check mapping.
+3. Document the scope, trigger, decision result, execution method, and capability boundary of every check.
+4. Choose its location:
+   - Stable, high value, low false-positive rate: put it in merge-request CI and allow it to block.
+   - Requires contextual judgment: put it in a Review Checklist or ADR.
+   - Infrequent or expensive: put it in specialized verification.
+5. For a legacy project, establish a baseline first and block only new or worsened violations. Do not mechanically split or compress code merely to pass.
+6. For every exception, record the rule, reason, scope, Owner, risk, review date, retirement condition, and tracking item.
 
-- **Static Gate**：格式、Lint、类型和可由静态工具直接判断的规则。
-- **Architecture Gate**：依赖方向、环、Owner 和静态边界。它不能证明运行行为。
-- **Test Gate**：公开行为、状态转换、真实组件或受控集成。
-- **Preflight**：本地快速入口，必须与 CI 共用判断实现；本地通过不能替代 CI。
-- **Toolchain-Evidence Gate**：固定工具与环境，保存真实退出结果、跳过项和证据位置。
+## Gate Responsibilities
 
-各 Gate 要写清输入、输出、阻断条件和无法判断时的处理方式。跳过、未运行或工具失效都不能记为通过。
+- **Static Gate:** formatting, Lint, types, and rules directly decidable by static tools.
+- **Architecture Gate:** dependency direction, cycles, Owners, and static boundaries. It cannot prove runtime behavior.
+- **Test Gate:** public behavior, state transitions, real components, or controlled integrations.
+- **Preflight:** a fast local entry point that must share its decision implementation with CI; local success does not replace CI.
+- **Toolchain-Evidence Gate:** pins tools and environments and preserves actual exit results, skipped items, and evidence locations.
 
-## 自动化边界
+For each Gate, state its inputs, outputs, blocking conditions, and behavior when it cannot decide. A skipped or unexecuted Gate—or one whose tooling failed—must not count as passed.
 
-- 复杂分析**优先使用成熟解析器、编译器、Lint 框架或依赖图工具**。
-- 若判断需要接近完整语言语义，应缩小支持范围或转人工复审，不扩展成自研近似编译器。
-- 圈复杂度、行数、依赖数和主序列距离只是风险信号，不能单独成为拆分目标。
-- 静态导入检查只能证明源码依赖；共享数据库、同步调用、事务和运行时编排需要运行证据或架构资料。
-- 监控只有在目标、允许偏差和告警判据明确时，才构成架构守护。
+## Automation Boundaries
 
-## 完成条件
+- For complex analysis, **prefer mature parsers, compilers, Lint frameworks, or dependency-graph tools**.
+- If a decision requires nearly complete language semantics, narrow the supported scope or move it to human review instead of expanding a home-grown approximate compiler.
+- Cyclomatic complexity, line count, dependency count, and distance from the main sequence are risk signals only; they cannot independently become decomposition targets.
+- Static import checks prove only source dependencies. Shared databases, synchronous calls, transactions, and runtime orchestration require runtime evidence or architecture documentation.
+- Monitoring constitutes architecture enforcement only when the objective, allowed deviation, and alert criteria are explicit.
 
-交付“受保护特征 → 检查 → 执行位置 → 结果证据 → Owner”的映射，并验证规则在合规样例上通过、在真实违规样例上失败。证据可信度的判断见 `test-evidence`。
+## Completion Criteria
+
+Deliver a mapping of “protected characteristic → check → execution location → result evidence → Owner,” and verify that each rule passes a compliant example and fails a real violating example. See `test-evidence` for judging evidence credibility.

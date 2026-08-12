@@ -1,74 +1,92 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # yuis_skills
 
-## 项目概述
-> 目标：让 Coding Agent 可以真正在 **大型复杂工程** 中用起来，朝着搭建“需求对齐-架构决策—Agent团队实现—对抗性提升-质量守护-人类反馈—规则沉淀”的Loop工程不断演进。
+## Overview
 
-本项目来源于本人长期使用 AI 开发复杂系统时积累的实际踩坑痛点：
-- 代码腐化与复杂度失控：巨型文件、圈复杂度上升、正则与补丁堆叠、预测性抽象、过度防御与遗留孤儿代码
-- 架构反模式：上帝入口、业务事实Owner不清、依赖方向失控、浅模块、接口复杂、横向大爆炸重构
-- 虚假完成：形式化红测、牺牲用户体验换取bug修复
-- 反馈机制不够系统：动手前未对齐、缺乏架构守护与代码质量门控、Taste平庸、bug证据未持久化
-- Prompt与文档写作缺陷：暴露内部思考、缺乏叙事结构、使用未对齐术语
+> **Goal:** Make Coding Agents genuinely effective in large, complex engineering environments by continuously improving a loop of requirements alignment → architectural decisions → Agent-team implementation → adversarial refinement → quality enforcement → human feedback → rule consolidation.
 
-本项目将以上踩坑经验进行系统化，整理为用户级 AGENTS.md 与一组可被 Agent 自动发现、按需加载、独立执行和组合使用的 Skills。  
-AGENTS.md 负责承载跨项目稳定原则、安全约束和全局工作偏好；具体操作流程则拆分为架构设计、架构演进、自动守护、安全重构、测试证据、复杂任务复审、Agent 产品治理和多 Agent 协作等场景化等技能。
+This project distills the practical failure modes I have encountered while using AI to develop complex systems over an extended period:
 
+- **Code decay and uncontrolled complexity:** giant files, rising cyclomatic complexity, accumulated regexes and patches, speculative abstractions, excessive defensive code, and orphaned legacy code
+- **Architectural antipatterns:** god entry points, unclear Owners for business facts, uncontrolled dependency direction, shallow modules, complex interfaces, and horizontal big-bang refactoring
+- **False completion:** ceremonial red tests and bug fixes that sacrifice user experience
+- **Unsystematic feedback:** failure to align before implementation, missing architecture enforcement and code-quality gates, mediocre taste, and failure to persist bug evidence
+- **Prompt and documentation defects:** exposing internal reasoning, lacking narrative structure, and using terminology that has not been aligned
 
-## 使用场景
+The project systematizes those lessons as a user-level `AGENTS.md` and a collection of Skills that Agents can discover automatically, load on demand, execute independently, and compose.
 
-| 场景 | 技能 | 解决问题 |
+`AGENTS.md` carries stable cross-project principles, safety constraints, and global workflow preferences. Concrete procedures live in focused Skills for architecture design, architecture evolution, automated enforcement, safe refactoring, test evidence, complex-task review, Agent-product governance, multi-Agent collaboration, and related scenarios.
+
+## Use Cases
+
+| Scenario | Skill | What it addresses |
 |---|---|---|
-| 设计或评审系统结构 | `system-design` | 划分业务 Owner、边界和组件，校验依赖方向与副作用归属 |
-| 把架构规则接入自动化 | `arch-guard` | 设计架构测试、CI Gate、基线棘轮和例外机制 |
-| 演进服务、数据或协议 | `arch-evolve` | 分析架构量子与运行耦合，规划 Expand-Contract 和不可逆点 |
-| 执行跨模块重构 | `safe-refactor` | 用可工作的纵向切片替换旧路径，避免大爆炸重构和长期互锁 |
-| 验收复杂或高风险任务 | `review-evidence` | 冻结验收范围，生成绑定候选版本的可复现证据 |
-| 判断验证是否真正成立 | `test-evidence` | 区分行为、静态和非代码证据，安全迁移遗留测试 |
-| 开发或优化 Agent 产品 | `agent-dev` | 版本化治理 Prompt、模型、Schema、工具、编排和评测 |
-| 组织多 Agent 并行工作 | `agent-team` | 控制派发成本、会话复用、工作树、Writer 与 Reviewer 权限 |
-| 咨询已登录的 ChatGPT Web | `chatgpt-chat` | 通过用户现有 Edge/Chrome Profile 管理 Project、长回答与附件 |
+| Design or review system structure | `system-design` | Establish business Owners, boundaries, and components; verify dependency direction and side-effect ownership |
+| Automate architecture rules | `arch-guard` | Design architecture tests, CI Gates, baseline ratchets, and exception handling |
+| Evolve services, data, or protocols | `arch-evolve` | Analyze architectural quanta and runtime coupling; plan Expand-Contract migrations and irreversible points |
+| Execute cross-module refactoring | `safe-refactor` | Replace old paths through working vertical slices, avoiding big-bang refactoring and prolonged interlocks |
+| Accept complex or high-risk work | `review-evidence` | Freeze acceptance scope and produce reproducible evidence tied to a candidate version |
+| Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; migrate legacy tests safely |
+| Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through versioning |
+| Organize parallel multi-Agent work | `agent-team` | Control delegation cost, session reuse, worktrees, and Writer/Reviewer permissions |
+| Consult an authenticated ChatGPT Web session | `chatgpt-chat` | Manage Projects, long-form responses, and attachments through the user's existing Edge/Chrome Profile |
 
-常见组合：
+Common combinations:
 
-- 系统拆分：`system-design` → `arch-evolve` → `arch-guard`
-- 大范围重构：`safe-refactor` + `test-evidence`；高风险候选再用 `review-evidence`
-- Agent 行为变更：`agent-dev` + `test-evidence`
+- System decomposition: `system-design` → `arch-evolve` → `arch-guard`
+- Large-scale refactoring: `safe-refactor` + `test-evidence`; add `review-evidence` for a high-risk candidate
+- Agent behavior changes: `agent-dev` + `test-evidence`
 
-安装后，Agent 可以根据任务和技能描述自动选择；也可以在 Prompt 中明确指定技能。不要在每次任务前预加载整套技能。
+After installation, an Agent can select Skills from the task and their descriptions, or you can name a Skill explicitly in your Prompt. Do not preload the entire collection before every task.
 
-示例：
+Examples:
 
-- “使用 `system-design` 评审订单与支付的边界，并给出 Owner 和依赖图。”
-- “使用 `safe-refactor` 把这次底座替换拆成可独立验证的纵向切片。”
-- “使用 `review-evidence` 为这个高风险变更冻结验收范围并准备复审证据。”
+- “Use `system-design` to review the boundary between ordering and payments, and provide an Owner map and dependency graph.”
+- “Use `safe-refactor` to divide this platform replacement into independently verifiable vertical slices.”
+- “Use `review-evidence` to freeze acceptance scope and prepare review evidence for this high-risk change.”
 
-> `agent-team` 包含 Paseo 的会话与工作树规则，适合使用 Paseo 编排多 Agent 的环境。
+> `agent-team` includes Paseo session and worktree rules for environments that use Paseo to orchestrate multiple Agents.
 
-## 配套的用户级 AGENTS.md
+## Companion User-Level `AGENTS.md`
 
-> 这是一部血泪史，这里的每句话都是本人的翻车事故现场。
+> Every sentence in this file is written in the blood of a real production mishap.
 
-仓库根目录的 [`AGENTS.md`](./AGENTS.md) 收录了这套技能配套的用户级规则。它既是维护本仓库时的项目规则，也是向各 Coding Agent 分发全局规则的权威来源。后续应从仓库通过 Ansible 等配置管理工具单向发布，避免同时手工维护仓库和用户目录中的副本。
+The repository-root [`AGENTS.md`](./AGENTS.md) contains the user-level rules that accompany these Skills. It is both the project rule set for maintaining this repository and the authoritative source distributed to Coding Agents. Publish it one way from the repository through Ansible or another configuration-management system; do not maintain the repository and user-directory copies manually in parallel.
 
-这份规则刻意只常驻跨项目原则和硬约束，具体 skills 按需加载，因此不能当作完全独立的 Prompt 使用。建议配套安装下面三组技能：
+The file deliberately keeps only cross-project principles and hard constraints permanently in context while loading concrete Skills on demand, so it is not a complete standalone Prompt. Install the following three Skill groups alongside it:
 
-| 来源 | `AGENTS.md` 使用的技能 | 作用 |
+| Source | Skills used by `AGENTS.md` | Purpose |
 |---|---|---|
-| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team` | 系统架构、演进、自动守护、重构、证据与 Agent 协作 |
-| [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`、`grill-me`、`grill-with-docs`、`prototype`、`to-spec`、`to-tickets`、`wayfinder`、`implement`、`ask-matt`、`research`、`code-review`、`tdd`、`diagnosing-bugs`、`improve-codebase-architecture`、`resolving-merge-conflicts` | 需求对齐、规划、实现、测试、排障、代码评审与模块设计 |
-| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `gpt-taste`、`design-taste-frontend`、`redesign-existing-projects` | 新前端设计与既有界面翻新 |
+| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team` | System architecture, evolution, automated enforcement, refactoring, evidence, and Agent collaboration |
+| [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`, `grill-me`, `grill-with-docs`, `prototype`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `ask-matt`, `research`, `code-review`, `tdd`, `diagnosing-bugs`, `improve-codebase-architecture`, `resolving-merge-conflicts` | Requirements alignment, planning, implementation, testing, diagnosis, code review, and module design |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `gpt-taste`, `design-taste-frontend`, `redesign-existing-projects` | New frontend design and modernization of existing interfaces |
 
-`agent-team` 还依赖 Paseo 环境提供的 `paseo-advisor` 和 `paseo-committee`。不使用 Paseo 时，不要安装 `agent-team`，并删除 `AGENTS.md` 中对应的技能指引。
+`agent-team` also depends on the `paseo-advisor` and `paseo-committee` capabilities provided by a Paseo environment. If you do not use Paseo, do not install `agent-team`, and remove the corresponding Skill guidance from `AGENTS.md`.
 
-若缺少某组技能，`AGENTS.md` 中直接写出的原则仍然有效，但 Agent 无法按指引加载对应工作流。也可以删除不适用于自己环境的技能引用和工具约束；不要保留无法解析或从未安装的名字。
+If a Skill group is absent, the principles written directly in `AGENTS.md` remain in force, but the Agent cannot load the referenced workflow. You may also remove Skill references and tool constraints that do not apply to your environment; do not retain names that cannot be resolved or have never been installed.
 
-这是一份有明确个人工作流取向的参考配置，不是通用安全基线。使用前应逐条审核，特别是 Paseo、本地参考路径、模型选择和汇报偏好。
+This is a reference configuration with a deliberate, personal workflow bias—not a universal security baseline. Review every rule before adoption, especially Paseo integration, local reference paths, model selection, and reporting preferences.
 
-## 安装
+## Bilingual Maintenance
 
-[Codex](https://developers.openai.com/codex/build-skills)、[Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md) 和 [OpenCode](https://opencode.ai/docs/skills/) 读取 `~/.agents/skills`；[Claude Code](https://code.claude.com/docs/en/agent-sdk/skills) 读取 `~/.claude/skills`。
+English and Simplified Chinese are equal-authority mirrors. Contributors may maintain either language in their native language, but every change must update the paired document in the same change set without altering meaning, obligation strength, examples, or scope.
 
-### 本技能组
+- English is the default discoverable form: `README.md`, `AGENTS.md`, and each `SKILL.md`.
+- Simplified Chinese mirrors use `.zh-CN.md`, such as `README.zh-CN.md`, `AGENTS.zh-CN.md`, and `SKILL.zh-CN.md`.
+- A Skill keeps both languages in the same directory so scripts, assets, references, installation paths, and Skill identity remain shared.
+- The only discoverable Skill entry is `SKILL.md`. A localized mirror is reference documentation, not a second Skill, which avoids duplicate-name discovery and divergence between two installed packages.
+- Each `SKILL.md` and its Chinese mirror provide reciprocal language links.
+- `chatgpt-chat` is intentionally English-only because its normal workflow does not ask the user to write a Prompt. It is the sole documented exception.
+- Structural checks detect missing mirrors and drift-prone differences in headings, code blocks, links, paths, commands, and normative markers. Human or semantic review remains responsible for linguistic quality and meaning equivalence.
+
+Neither language is a translation branch or a secondary source. If a proposed edit cannot be mirrored without changing meaning, stop and resolve the underlying content decision before merging. See the [bilingual maintenance contract](docs/bilingual-maintenance.md) for the editing workflow and validation boundary.
+
+## Installation
+
+[Codex](https://developers.openai.com/codex/build-skills), [Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md), and [OpenCode](https://opencode.ai/docs/skills/) read `~/.agents/skills`; [Claude Code](https://code.claude.com/docs/en/agent-sdk/skills) reads `~/.claude/skills`.
+
+### This Skill Collection
 
 ```bash
 git clone https://github.com/Yuis1/yuis_skills.git
@@ -90,17 +108,17 @@ link_skills() {
 }
 
 link_skills "$HOME/.agents/skills"
-# Claude Code 用户再执行：
+# Claude Code users should also run:
 link_skills "$HOME/.claude/skills"
 ```
 
-### 配套技能
+### Companion Skills
 
-依赖版本固定如下：
+Dependencies are pinned as follows:
 
-| 仓库 | 固定版本 |
+| Repository | Pinned version |
 |---|---|
-| [`mattpocock/skills`](https://github.com/mattpocock/skills/tree/v1.1.0) | `v1.1.0`（`eabea89380927aadb93abf6e290a19334d249292`） |
+| [`mattpocock/skills`](https://github.com/mattpocock/skills/tree/v1.1.0) | `v1.1.0` (`eabea89380927aadb93abf6e290a19334d249292`) |
 | [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill/tree/e988add20dab0fa97d7a76781c48961c8184288e) | `e988add20dab0fa97d7a76781c48961c8184288e` |
 
 ```bash
@@ -115,23 +133,23 @@ npx skills@latest add ../taste-skill --global \
   --skill design-taste-frontend gpt-taste redesign-existing-projects
 ```
 
-### 用户级规则
+### User-Level Rules
 
-| 工具 | `AGENTS.md` 的发布位置 |
+| Tool | Publication path for `AGENTS.md` |
 |---|---|
 | [Codex](https://developers.openai.com/codex/guides/agents-md) | `~/.codex/AGENTS.md` |
 | [Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/usage.md#context-files) | `~/.pi/agent/AGENTS.md` |
 | [OpenCode](https://opencode.ai/docs/rules/) | `~/.config/opencode/AGENTS.md` |
 | [Claude Code](https://code.claude.com/docs/en/memory#agentsmd) | `~/.claude/CLAUDE.md` |
 
-建议通过 Ansible 等配置管理工具从本仓库单向发布。Claude Code 使用同一内容，但文件名为 `CLAUDE.md`。
+Publish one way from this repository through Ansible or another configuration-management system. Claude Code uses the same content under the filename `CLAUDE.md`.
 
-## 安全说明
+## Security
 
-Agent Skills 会影响 Agent 的判断和操作，安装前请先阅读内容。除 `chatgpt-chat` 外，本仓库技能仅包含指令和元数据；`chatgpt-chat` 通过 Playwriter 扩展操作用户现有 Edge/Chrome Profile，以沿用登录状态。扩展具有广泛页面控制能力，虽然业务流程只操作自建 ChatGPT 标签页，安装与启用前仍应单独复核其凭据边界。
+Agent Skills influence an Agent's judgment and actions; read them before installation. Except for `chatgpt-chat`, the Skills in this repository contain instructions and metadata only. `chatgpt-chat` controls the user's existing Edge/Chrome Profile through the Playwriter extension so it can reuse the authenticated session. The extension has broad page-control capability; although the business workflow operates only on ChatGPT tabs that it creates, review its credential boundary separately before installation and enablement.
 
-另外建议使用 `trash-cli` 、[DCG](https://github.com/Dicklesworthstone/destructive_command_guard) 、BTRFS快照、异地备份，共同构筑安全底线。
+We also recommend combining `trash-cli`, [DCG](https://github.com/Dicklesworthstone/destructive_command_guard), BTRFS snapshots, and off-site backups as a defense-in-depth safety foundation.
 
-## 许可证
+## License
 
 [Apache License 2.0](LICENSE)

@@ -1,43 +1,45 @@
 ---
 name: system-design
-description: 设计或评审系统结构。用于边界、依赖方向、业务 Owner 或组件切分。
+description: Design or review system structure. Use for boundaries, dependency direction, business Owners, or component decomposition.
 ---
 
-# 系统结构设计
+[English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-目标是让一次变更只触碰应当变化的部分，并让关键业务事实、依赖方向和副作用边界一眼可查。
+# System Structure Design
 
-## 工作流
+The goal is for a change to touch only the parts that should change, while making critical business facts, dependency direction, and side-effect boundaries immediately visible.
 
-1. **确认变化轴**：列出本次需求会改变什么、必须保持什么，以及哪些外部系统、数据和副作用受影响。
-2. **确认 Owner**：每份业务事实只设一个权威写入方；缓存、索引、投影和读模型标为可重建派生物。
-3. **画边界与依赖**：标出 Domain、Application、驱动适配器、基础设施适配器和组合根。源码依赖指向更稳定的业务策略，图中不得有环。
-4. **检查接口深度**：边界应隐藏一组内聚知识或外部复杂性，常见用法应最短、最安全。删除没有语义转换的透传层、镜像具体实现的 Port 和巨型 Resolver。
-5. **检查运行边界**：明确事务、一致性、并发、配置、信任验证和外部副作用归谁负责。
-6. **检查演进成本**：用一个代表性变更走查依赖图，记录需要同时修改的 Owner、组件和部署单元。
+## Workflow
 
-## 不可妥协的约束
+1. **Identify axes of change:** list what this requirement changes, what must remain, and which external systems, data, and side effects it affects.
+2. **Identify Owners:** give every business fact exactly one authoritative writer; mark caches, indexes, projections, and Read Models as rebuildable derivatives.
+3. **Map boundaries and dependencies:** mark Domain, Application, driving adapters, infrastructure adapters, and the composition root. Source dependencies point toward more stable business policy, and the graph must remain acyclic.
+4. **Check interface depth:** a boundary should hide a cohesive body of knowledge or external complexity, and make common use shortest and safest. Remove pass-through layers without semantic translation, Ports that mirror concrete implementations, and giant Resolvers.
+5. **Check runtime boundaries:** state who owns transactions, consistency, concurrency, configuration, trust verification, and external side effects.
+6. **Check evolution cost:** walk one representative change through the dependency graph and record the Owners, components, and deployment units that must change together.
 
-- 分层是依赖约束，不是目录模板。没有对应职责时，不创建空壳层或形式化 Port。
-- Domain 和 Application 不导入数据库、传输协议、框架或具体适配器。控制流可以向外，源码依赖仍向内。
-- 入口只做协议解析、鉴权、校验、调用用例、序列化和错误映射。实现选择、创建与生命周期管理只在组合根。
-- 外部能力由使用方用最小 Port 表达；防腐层必须实际转换模型、语义、错误和协议。
-- 生命周期、事务、一致性或并发语义不同的状态不得混入同一 Owner。
-- 外部配置只在启动边界读取并校验；业务代码只接收按能力拆分的只读配置。
-- 外部副作用与内部事实分离。结果未确认前，不写入最终事实。
+## Non-Negotiable Constraints
 
-## 交付证据
+- Layers are dependency constraints, not directory templates. Do not create an empty shell layer or formal Port when the corresponding responsibility does not exist.
+- Domain and Application import no database, transport protocol, framework, or concrete adapter. Control flow may point outward, but source dependencies still point inward.
+- Entry points perform only protocol parsing, authentication and authorization, validation, use-case invocation, serialization, and error mapping. Concrete implementation selection, construction, and lifecycle management belong only in the composition root.
+- A consumer expresses an external capability through a minimal Port. An anticorruption layer must actually translate models, semantics, errors, and protocols.
+- State with different lifecycle, transaction, consistency, or concurrency semantics must not share one Owner.
+- Read and validate external configuration only at the startup boundary. Business code receives read-only configuration split by capability.
+- Separate external side effects from internal facts. Do not write a final fact until the result is confirmed.
 
-至少产出：
+## Delivery Evidence
 
-- Owner 清单：权威事实、写入方、派生物。
-- 依赖图：方向、边界、组合根和例外。
-- 代表性变更走查：会改哪些模块、组件和部署单元。
-- 风险清单：事务、信任、副作用、迁移和仍未验证之处。
+Produce at least:
 
-## 按需读取
+- **Owner inventory:** authoritative facts, writers, and derivatives.
+- **Dependency graph:** direction, boundaries, composition root, and exceptions.
+- **Representative change walkthrough:** the modules, components, and deployment units that would change.
+- **Risk inventory:** transactions, trust, side effects, migration, and anything still unverified.
 
-- 需要决定组件聚合、依赖稳定性或用主序列诊断时，读 [COMPONENTS.md](COMPONENTS.md)。
-- 需要做结构评审或查找浅层、泄漏、时间分解等问题时，读 [REVIEW.md](REVIEW.md)。
-- 涉及跨版本迁移或运行时耦合时，改用 `arch-evolve`。
-- 需要把约束编码进 CI 时，改用 `arch-guard`。
+## Read on Demand
+
+- To decide component aggregation, dependency stability, or diagnose with the main sequence, read [COMPONENTS.md](COMPONENTS.md).
+- For structural review or to identify shallowness, leakage, temporal decomposition, and related problems, read [REVIEW.md](REVIEW.md).
+- For cross-version migration or runtime coupling, switch to `arch-evolve`.
+- To encode constraints in CI, switch to `arch-guard`.
