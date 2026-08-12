@@ -1,45 +1,43 @@
-# Troubleshooting by error code
+# Troubleshooting
 
-Read only the section matching the CLI error. Do not read implementation files during normal use.
+只读取与 CLI 错误码同名的小节。
 
 ## COMMAND_MISSING
 
-The host has the skill text but not the managed runtime. Stop. Ask the `yuis_ops` Owner to enable and apply the `chatgpt_chat` role. Do not create a CLI symlink and do not install Playwriter, Playwright, npm, or pip packages yourself.
+请求 `yuis_ops` Owner 应用 `chatgpt_chat` 角色；不要手工安装或创建链接。
+
+## BROWSER_NOT_CONNECTED
+
+确认日常 Edge 或 Chrome 正在运行且 Playwriter 扩展已启用。CLI 已自动等待重连；不得改用测试浏览器、专用 Profile、云浏览器或复制 Cookie。
+
+## BROWSER_PROFILE_AMBIGUOUS
+
+首选浏览器家族连接了多个 Profile。只保留目标 Profile 的 Playwriter 连接后重试；不得根据邮箱、当前标签页或最近活动猜测账号。
 
 ## AUTH_REQUIRED
 
-Run `chatgpt-chat login --cwd "$PWD"` once. The dedicated Chrome or Edge Profile automatically loads its own existing ChatGPT, OpenAI, and Google cookies. Wait for the user to complete any visible sign-in or confirmation, close the window, and rerun `inspect`.
-
-Do not inspect or copy the daily browser Profile. Authentication migration is not a normal CLI operation. Even when the user explicitly requests migration, hand the operation to the repository Owner so it can use the approved local, domain-scoped, browser-stopped procedure without printing credential values.
+当前 Profile 没有 ChatGPT 登录状态。正常设计应沿用用户已有登录；如果确实退出，只能在同一日常 Profile 完成认证。不得读取或迁移凭据。
 
 ## AUTH_UNVERIFIED
 
-The page opened but visible controls did not prove either signed-in or signed-out state. Read only the redacted tail of `~/.local/state/chatgpt_chat/driver.log`. Report the code and stop; do not probe cookies or broaden selectors ad hoc.
+页面既不能证明已登录，也没有显示登录入口。报告可见 UI 回归；不得发送。
 
 ## CHALLENGE_REQUIRED
 
-Let the user complete the visible ChatGPT or browser challenge in the dedicated window. Do not bypass it. Retry `inspect` afterward.
+不要规避可见挑战。运行时不会降低安全约束或切换到其他 Profile。
 
 ## RUNTIME_MISSING
 
-The pinned browser runtime is absent or incomplete. Request a managed `chatgpt_chat.yml` convergence. Do not run `npm install`, inspect package internals, or invoke the skill script directly.
-
-## BROWSER_START_FAILED
-
-The runtime uses the dedicated persistent Profile visibly when a graphical session exists and starts the same visible browser mode on a managed virtual display otherwise. Report the error and request a managed convergence; do not guess `DISPLAY`, launch a temporary Profile, or inspect CDP internals.
-
-## LOGIN_DISPLAY_REQUIRED
-
-Displayless `inspect`, `ask`, and Project Sources operations remain supported through the managed virtual display, but interactive sign-in and visible challenges require the user's graphical session. Ask the user to run `chatgpt-chat login --cwd "$PWD"` once from a managed graphical desktop using the same dedicated Profile, then retry. Do not migrate cookies or bypass the challenge.
+请求托管 `chatgpt_chat.yml` 收敛；不要自行安装 Playwriter、npm 或浏览器包。
 
 ## BROWSER_BUSY
 
-Another operation owns the dedicated browser lock. Wait for it to finish; do not start a second browser or remove a live lock.
+另一个操作正在控制 ChatGPT。等待完成；不得并行启动第二个操作。
 
 ## project_missing
 
-This is a status, not an error. The driver has already waited for the Projects list, expanded it when possible, and found no exact-name Project. If the user requested a new thread, call `ask --new`; the driver creates the basename-matched Project and verifies Project-only Memory before sending. Do not search the implementation or assume that a still-loading sidebar proves absence.
+这是状态而非错误。只有在 Projects 列表加载并确认无精确同名项目后才会返回；需要新会话时调用 `ask --new`。
 
 ## Generic browser operation failure
 
-Read only the redacted diagnostic tail. If no error code matches, report a selector/runtime regression to the skill Owner. Do not read `lib/`, `scripts/`, tests, or implementation research unless the task is explicitly to maintain the skill.
+只读取脱敏诊断尾部。没有匹配错误码时报告 ChatGPT UI 或 Playwriter 回归；普通调用不要读取源码。

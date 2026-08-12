@@ -1,37 +1,28 @@
 # Implementation research
 
-Checked 2026-08-03.
+Checked 2026-08-12.
 
-## Browser control
+## Decision
 
-The runtime uses a deterministic Playwright driver over CDP with a dedicated persistent profile. Google Chrome and Microsoft Edge both expose the Chromium DevTools Protocol required by this workflow. The driver selects an installed supported browser, prefers Edge when both are present to preserve existing deployments, and allows explicit executable/profile overrides.
+Use the user's existing authenticated browser Profile through the Playwriter extension. Select one connected Microsoft Edge Profile first; when Edge is unavailable, select one connected Google Chrome Profile. Both families execute the same `browser-workflow.mjs` program, so browser diversity changes only transport selection, not ChatGPT behavior.
 
-Remote debugging never targets the user's daily profile. Each browser family has its own isolated profile, the debugging port is random and loopback-only, and the browser closes after each completed operation. When no X11 or Wayland session exists, a managed Xvfb display runs the same visible browser mode with that persistent dedicated Profile; Chromium's native headless mode is not used because the real ChatGPT route presents a challenge there. Interactive login and visible challenges still require a user's managed graphical session. Playwriter remains pinned only as the source of its reviewed Playwright runtime; its extension and relay are not used.
+The runtime never reads or copies cookies. Each command creates a Playwriter session and a task-owned `chatgpt.com` tab, then closes only that tab and deletes only that session. It never closes the browser or user tabs.
+
+## Unattended reconnect
+
+A healthy Playwriter extension survives page reload and navigation and automatically reconnects its WebSocket. Local relay logs also showed automatic reconnection after close code 1001 without a user click. Refreshing ChatGPT is not itself a reconnect mechanism: while the control channel is down, automation cannot issue a page refresh through that channel.
+
+The transport instead waits for the same stable browser key to reappear, resets the Playwriter session, and retries the complete idempotent pre-send workflow once. Operations remain serialized to avoid the previous overload pattern of 16 concurrent clients and a large injected script timing out. Recovery is bounded; ambiguity or repeated failure remains fail-closed.
+
+## Security boundary
+
+The existing Profile avoids duplicate login but gives the extension broad authority over Profile pages. The product workflow narrows its intended behavior to a new ChatGPT tab, although this restriction is policy enforced rather than browser least privilege. Browser credentials, storage, headers, signed URLs, and receipts are never emitted.
+
+## ChatGPT UI contract
+
+The current UI puts Model and Effort in the composer's Advanced menu. The shared workflow selects the newest visible flagship GPT and Pro, opens Projects through the exact project-name control, and verifies immutable Project-only Memory before sending or mutating Sources.
 
 Sources:
 
-- [Microsoft Edge DevTools Protocol](https://learn.microsoft.com/en-us/microsoft-edge/devtools/protocol/)
-- [Chrome remote debugging security change](https://developer.chrome.com/blog/remote-debugging-port)
-- [Xvfb manual](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml)
-- [Playwright Chrome extensions and CDP](https://playwright.dev/docs/chrome-extensions)
-- [Playwriter package on npm](https://www.npmjs.com/package/playwriter)
-
-## ChatGPT Projects
-
-OpenAI documents Projects as workspaces containing chats, files, instructions, and project memory. Project-only memory must be selected when creating a Project and cannot be enabled later on an existing default-memory Project. The driver therefore verifies the visible immutable Project-only setting before every send or Sources mutation. The public Sources tab visibly provides file upload and per-source actions; the CLI uses only those UI controls, lists exact visible filenames, and requires an explicit destructive confirmation flag before deletion.
-
-Source:
-
-- [Projects in ChatGPT, OpenAI Help Center](https://help.openai.com/en/articles/10169521-projects-in-chatgpt)
-
-## Model and reasoning controls
-
-OpenAI documents model and reasoning controls in the composer. Labels can change, so the driver ranks visible flagship GPT choices and verifies Pro immediately before sending instead of trusting hidden fields or a fixed model name.
-
-Source:
-
-- [ChatGPT Release Notes, OpenAI Help Center](https://help.openai.com/en/articles/6825453-chatgpt-release-notes)
-
-## Similar skills
-
-No maintained skill found during implementation combined authenticated ChatGPT Web automation, project-only verification, repository-to-Project routing, long Pro polling, complete response retrieval, conversation attachment capture, and governed Project Sources. This skill therefore exposes deterministic conversation and source-management commands while keeping browser mechanics internal.
+- [Playwriter documentation](https://playwriter.dev/)
+- [OpenAI: Projects in ChatGPT](https://help.openai.com/en/articles/10169521-projects-in-chatgpt)
