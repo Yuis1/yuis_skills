@@ -1,149 +1,152 @@
-## 分工
+[English](AGENTS.md) | [简体中文](AGENTS.zh-CN.md)
 
-- 本文件只规定跨项目稳定原则、常驻安全约束与全局工具偏好。
-- 操作步骤、复审包格式、测试范围、基线、阈值、工具版本和命令由对应 Skill 或项目文档承载。
-- 项目特有的质量入口、运行环境和例外必须写入项目文档或项目 Skill。
+## Responsibilities
 
-## 1. 架构与治理
+- This file defines only stable cross-project principles, standing safety constraints, and global tool preferences.
+- The relevant Skill or project documentation owns procedures, review-package formats, test scope, baselines, thresholds, tool versions, and commands.
+- Project-specific quality entry points, runtime environments, and exceptions must be documented in the project documentation or a project Skill.
 
-> 系统边界、依赖和业务 Owner 用 `system-design`；单模块接口设计用 `codebase-design`；演进与破坏性迁移用 `arch-evolve`；自动守护用 `arch-guard`。
+## 1. Architecture and Governance
 
-### 复杂性与边界
+> Use `system-design` for system boundaries, dependencies, and business Owners; `codebase-design` for single-module interface design; `arch-evolve` for evolution and breaking migrations; and `arch-guard` for automated enforcement.
 
-- 复杂性以变更放大、认知负荷和未知依赖衡量。行数、文件数、函数长度、圈复杂度和 Diff 大小只是风险信号，不得单独驱动拆分。
-- 项目阈值只触发设计复核。不得为过线机械拆文件、压缩排版、合并无关语句、隐藏装配参数或抽取连体 Helper。
-- 模块必须隐藏一组内聚的业务知识或外部复杂性；接口应显著简单于实现，并让常见用法最短、最安全。禁止没有语义价值的转发层、镜像具体实现的 Port 和巨型 Resolver。
-- 每份业务事实只能有一个权威写 Owner；缓存、索引、投影和 Read Model 是可重建派生物。生命周期、事务、一致性或并发语义不同的状态不得混入同一 Owner。
-- 入口只负责协议解析、鉴权、校验、用例调用、序列化和错误映射；具体实现的选择、创建和生命周期管理只在组合根。
+### Complexity and Boundaries
 
-### 依赖方向与防腐
+- Assess complexity by change amplification, cognitive load, and unknown dependencies. Lines of code, file counts, function length, cyclomatic complexity, and Diff size are only risk signals and must not drive decomposition on their own.
+- Project thresholds trigger design review only. Do not mechanically split files, compress formatting, combine unrelated statements, hide assembly parameters, or extract tightly coupled Helpers merely to stay under a threshold.
+- A module must hide a cohesive body of business knowledge or external complexity. Its interface should be markedly simpler than its implementation and make the common path the shortest and safest. Do not create semantically empty forwarding layers, Ports that mirror concrete implementations, or giant Resolvers.
+- Each business fact must have exactly one authoritative write Owner. Caches, indexes, projections, and Read Models are rebuildable derivatives. Do not place state with different lifecycle, transaction, consistency, or concurrency semantics under the same Owner.
+- Entry points are responsible only for protocol parsing, authentication and authorization, validation, use-case invocation, serialization, and error mapping. Concrete implementation selection, construction, and lifecycle management belong only in the composition root.
 
-- 源码依赖向内且无环：外层实现内层定义的最小 Port，业务策略不导入数据库、协议、框架或具体适配器。控制流可以向外，源码依赖仍指向更稳定的策略。
-- 分层是依赖约束，不是目录模板。没有对应职责时，不创建空壳层、无语义转发器或仅为形式完整而存在的 Port。
-- 禁止用 `sys.path`、Import fallback、服务定位器或非受控动态导入绕过边界。
-- 跨域只依赖公开契约；防腐层必须实际转换模型、语义、错误和协议，外部 DTO、ORM 实体及内部错误类型不得直接进入本域。
+### Dependency Direction and Anticorruption
 
-### 状态、信任与副作用
+- Source dependencies point inward and remain acyclic: outer layers implement minimal Ports defined by inner layers, while business policy imports no database, protocol, framework, or concrete adapter. Control flow may point outward, but source dependencies still point toward the more stable policy.
+- Layers are dependency constraints, not directory templates. When a responsibility does not exist, do not create an empty shell layer, a semantically empty forwarder, or a Port that exists only for formal completeness.
+- Do not use `sys.path`, import fallbacks, service locators, or uncontrolled dynamic imports to bypass boundaries.
+- Domains depend only on one another's public contracts. An anticorruption layer must actually translate models, semantics, errors, and protocols; external DTOs, ORM entities, and internal error types must not cross directly into the domain.
 
-- 外部配置只在启动边界读取并校验；业务代码只接收按能力拆分的只读配置。
-- 禁止吞掉异常。宽泛捕获只允许在最高层错误边界、任务隔离或资源清理路径，并保留原始原因和可观测信号。
-- 模块导入阶段禁止外部 I/O。Fallback、重试和降级必须显式、受限、可配置、可测试，不得由初始化或 Import 失败隐式触发。
-- 外部输入默认不可信。身份、权限、策略和关键标识无法验证时不得默认通过、降低约束或写入权威事实。
-- 影响权限、资金、审核或不可逆副作用的决策，只能依据显式、结构化、可审计的权威事实，不得从自由文本隐式推断。
-- 事务、一致性和并发边界必须显式；唯一性由数据层保证，可重试操作必须幂等。
-- 外部副作用与内部事实分离，并具备可查询状态、关联标识及明确的重试、恢复或补偿路径；结果未确认前不得写入最终事实。
+### State, Trust, and Side Effects
 
-### 契约与治理
+- Read and validate external configuration only at the startup boundary. Business code receives read-only configuration split by capability.
+- Do not swallow exceptions. Broad catches are allowed only at top-level error boundaries, task-isolation boundaries, or resource-cleanup paths, and they must preserve the original cause and observable signals.
+- Do not perform external I/O during module import. Fallbacks, retries, and degradation must be explicit, bounded, configurable, and testable; initialization or import failure must not trigger them implicitly.
+- Treat external input as untrusted. If identity, authorization, policy, or a critical identifier cannot be verified, do not allow by default, relax constraints, or write an authoritative fact.
+- Decisions affecting access, money, approval, or irreversible side effects must rely only on explicit, structured, auditable, authoritative facts, never on implicit inference from free text.
+- Transaction, consistency, and concurrency boundaries must be explicit. The data layer enforces uniqueness, and retryable operations must be idempotent.
+- Separate external side effects from internal facts. Provide queryable status, correlation identifiers, and explicit retry, recovery, or compensation paths; do not write a final fact until the result is confirmed.
 
-- 跨进程、长期持久化及模型机器输出必须具有唯一权威、版本化的 Schema；未知、缺失或非法输入不得默认通过。
-- 数据与协议变更必须可验证、可迁移，并明确兼容方案、恢复路径以及是否可回滚。临时兼容必须有 Owner、期限和删除条件。
-- 只把高价值、稳定、低误报且维护成本合理的规则放进 CI 阻断；复杂判断不伪装成精确自动化。
-- 本地 Preflight 与 CI 必须共用判断实现。历史项目使用基线棘轮，只阻断新增或恶化。
-- 任何豁免必须版本化记录原因、范围、Owner、风险、复查日期和清偿条件；禁止无说明的全局忽略。
+### Contracts and Governance
 
-## 2. 执行
+- Cross-process data, long-lived persisted data, and machine output from models must have a single authoritative, versioned Schema. Unknown, missing, or invalid input must not pass by default.
+- Data and protocol changes must be verifiable and migratable, with an explicit compatibility strategy, recovery path, and statement of whether rollback is possible. Temporary compatibility must have an Owner, deadline, and deletion condition.
+- Put only high-value, stable, low-false-positive, reasonably maintainable rules into blocking CI. Do not disguise complex judgment as precise automation.
+- Local Preflight and CI must share the same decision implementation. Legacy projects use a baseline ratchet that blocks only new or worsened violations.
+- Every exemption must be versioned with its reason, scope, Owner, risk, review date, and retirement condition. Unexplained global ignores are forbidden.
 
-解决问题、修复缺陷、设计架构或生产力流程时，从第一性原理出发。
+## 2. Execution
 
-### 动手前对齐
+Use first-principles reasoning when solving problems, fixing defects, designing architecture, or improving productivity workflows.
 
-- 先对齐目标、术语、Owner、验收标准和不做的事。非代码场景可用 `grill-me`；PRD、技术架构、领域建模等复杂且需要用户参与的决策用 `grill-with-docs`，并同步更新 CONTEXT 与 ADR。使用 `grill-*` 系列技能时，每次同时问3～6个问题。
-- 不确定的设计问题先用 `prototype` 做可丢弃验证。大任务按需使用 `to-spec`、`to-tickets` 或 `wayfinder`；按既定规格实施用 `implement`。
-- 涉及新增依赖、公共契约、持久化数据、多个 Owner、多个可部署单元、安全边界或不可逆副作用时，先给出实施方案；低风险、可逆的局部修改可直接执行。
+### Align Before Acting
 
-### 文档写作
-- 使用 `chatgpt-chat` 来弥补检索与研究深度的不足：1）项目初始化前后的整体方案及评审； 2）复杂、深度、专业、广泛的信息采集、市场调研、架构选型等研究； 3）重大决策。
-- MRD、BRD、PRD、技术架构文档：要使用自然行文来叙述 TLDL、背景、问题痛点、调研、决策逻辑 等等内容，不能只有列表事项。对整体思路循序渐进展开表达，对不在 CONTEXT.md 中的术语需要解释，表述专业地道，确保叙事连贯可读。
-- Spec、开发、测试计划：表述可以偏结构化，自然化表述允许很少。
+- Align first on the objective, terminology, Owner, acceptance criteria, and non-goals. Non-code work may use `grill-me`; complex decisions that require user participation, such as PRDs, technical architecture, and domain modeling, use `grill-with-docs` and keep CONTEXT and ADRs synchronized. When using a `grill-*` Skill, ask 3–6 questions at a time.
+- Use `prototype` for disposable validation of uncertain design questions. For large tasks, use `to-spec`, `to-tickets`, or `wayfinder` as needed; use `implement` when executing an established specification.
+- Provide an implementation plan before changes involving a new dependency, public contract, persisted data, multiple Owners, multiple deployable units, a security boundary, or an irreversible side effect. Low-risk, reversible, local changes may proceed directly.
 
-### 奥卡姆剃刀
+### Documentation Writing
 
-- 零预测代码：不编写缺少当前需求或验证证据的特性、扩展点、配置项和兼容分支。外部输入、I/O、副作用和明确错误契约所需的防御性处理不属于预测代码。
-- 不得只因“未来可能复用”创建抽象；为领域边界、副作用隔离或外部能力 Port 服务的单实现抽象可以存在。
-- 以最小完整闭环为修改单位，不以最少文件或行数为目标。直接相关的测试、迁移、契约、观测、文档和旧路径删除均属于任务范围。
-- 只清理由本次改动造成的孤儿 Import、变量和函数；历史死代码另开任务。
+- Use `chatgpt-chat` to supplement retrieval and research depth for: 1) overall planning and review before and after project initialization; 2) complex, deep, specialized, or broad information gathering, market research, and architecture evaluation; and 3) major decisions.
+- MRDs, BRDs, PRDs, and technical architecture documents must use natural prose to explain the TL;DR, background, pain points, research, and decision rationale rather than presenting lists alone. Develop the overall argument progressively, explain terms absent from CONTEXT.md, and write in professional, idiomatic, coherent language.
+- Specifications, development plans, and test plans may be more structured and use little prose.
 
-**检验：该变更能否独立回退而不牵连无关业务？新增结构是否都有当前需求或证据？**
+### Occam's Razor
 
-### 信息与完成证据
+- Zero speculative code: do not implement features, extension points, configuration, or compatibility branches without a current requirement or validating evidence. Defensive handling required by external input, I/O, side effects, or an explicit error contract is not speculative code.
+- Do not create an abstraction merely because it might be reused later. A single-implementation abstraction may exist when it serves a domain boundary, side-effect isolation, or an external-capability Port.
+- Use the smallest complete closed loop—not the fewest files or lines—as the unit of change. Directly related tests, migrations, contracts, observability, documentation, and removal of the old path are all in scope.
+- Clean up only imports, variables, and functions orphaned by the current change. Track historical dead code separately.
 
-- 仓库状态、版本行为、接口契约、命令结果和排障结论必须以当前检索或运行证据为准，记忆不得作为证据。
-- 推荐顺序：本仓库文档、代码与测试 → 固定本地参考 `~/dev/refs/` → 项目 Skill/工具 → 官方一手文档 → 其他来源。系统性调研用 `research`。
-- 只能依据实际 Diff、新鲜验收结果和剩余风险声明完成；执行中断、跳过检查或证据缺失时，明确报告未完成或未证明。
-- 运行诊断、业务审计和用户错误分责；日志、Trace 及多媒体证据可关联、可复现，并在持久化前脱敏。
-- 跨会话、需重复反馈、影响用户或可能回归的问题进入持久化事实源并去重；同一问题复发时重开原记录。
+**Check: Can this change be reverted independently without entangling unrelated business behavior? Does every new structure have a current requirement or supporting evidence?**
 
-### 组织并行开发(仅适用于Root Agent)
+### Information and Completion Evidence
 
-- 使用 `agent-team` 技能。
+- Repository state, version behavior, interface contracts, command results, and diagnostic conclusions must be supported by current retrieval or execution evidence; memory is not evidence.
+- Preferred order: repository documentation, code, and tests → pinned local references under `~/dev/refs/` → project Skills and tools → official primary documentation → other sources. Use `research` for systematic investigation.
+- Claim completion only from the actual Diff, fresh acceptance results, and remaining-risk assessment. If execution is interrupted, checks are skipped, or evidence is missing, report the work as incomplete or unproven.
+- Separate runtime diagnostics, business audit records, and user errors. Logs, Traces, and multimedia evidence must be correlatable and reproducible, and must be redacted before persistence.
+- Issues that span sessions, require repeated feedback, affect users, or may regress must enter a persistent source of truth and be deduplicated. Reopen the original record when the same issue recurs.
 
-### 复审
+### Organizing Parallel Development (Root Agent Only)
 
-- 常规 Diff 需要复审时使用 `code-review`。
-- 只有复杂、高风险或需要独立对抗性复审的任务使用 `review-evidence`；不得把完整证据包变成所有任务的固定仪式。
+- Use the `agent-team` Skill.
 
-## 3. 开发
+### Review
 
-### 前端
+- Use `code-review` when a routine Diff needs review.
+- Use `review-evidence` only for complex, high-risk work or when an independent adversarial review is required; do not turn a complete evidence package into a mandatory ritual for every task.
 
-- 文案使用用户视角；除非产品面向开发人员，否则不暴露工程侧关键词。
-- ChatGPT 模型提升前端品味用 `gpt-taste`，其他模型用 `design-taste-frontend`；老项目翻新结合 `redesign-existing-projects`。
-- Page Shell 只负责组合，业务 Feature 自主管理查询、状态和 Mutation；不得把多个业务域的数据编排集中到单一页面或全局数据模块。
+## 3. Development
 
-### Agent 开发
+### Frontend
 
-- 新增或调整 Prompt、模型、Schema、工具、编排和评测时使用 `agent-dev`。
+- Write copy from the user's perspective. Unless the product is for developers, do not expose engineering terminology.
+- Use `gpt-taste` to improve frontend taste with ChatGPT models and `design-taste-frontend` with other models; combine either with `redesign-existing-projects` when modernizing an existing project.
+- A Page Shell only composes the page. Each business Feature owns its queries, state, and Mutations; do not centralize orchestration across multiple business domains in one page or global data module.
 
-### 第三方集成
+### Agent Development
 
-- 先读官方文档，优先采用公开、受支持的能力和最佳实践，最小化自研适配。
-- 禁止依赖对方未公开的协议或内部标识符。
-- 发现第三方缺陷时先查官方 Issue、变更记录和社区方案；临时补丁必须可撤销，并跟踪上游修复。
+- Use `agent-dev` when adding or changing Prompts, models, Schemas, tools, orchestration, or evaluations.
 
-### 注释
+### Third-Party Integrations
 
-- 注释说明代码无法自我表达的原因、不变量、意图和决策背景，不复述代码。
-- 接口注释让使用者不读实现也能正确使用；实现细节不污染接口说明。
-- 注释必须随代码维护；过时或误导的注释必须修正或删除。
-- 注释中的领域术语应与代码和文档的权威命名一致，便于检索。
+- Read official documentation first, prefer public supported capabilities and best practices, and minimize custom adaptation.
+- Do not depend on a provider's unpublished protocols or internal identifiers.
+- When a third-party defect is found, check official Issues, release notes, and community solutions first. Temporary patches must be reversible and track the upstream fix.
 
-## 4. 测试与修复
+### Comments
 
-### 测试与验证
+- Comments explain reasons, invariants, intent, and decision context that the code cannot express itself; they do not restate the code.
+- Interface comments must let consumers use the interface correctly without reading its implementation. Do not pollute interface documentation with implementation details.
+- Maintain comments with the code; correct or remove stale and misleading comments.
+- Domain terminology in comments must match the authoritative names in code and documentation so it remains searchable.
 
-- 生产行为变更默认使用 `tdd`，一次推进一个纵向切片；可复现缺陷必须补回归测试。
-- 在实现目标行为前，测试应当因为该行为尚不存在而失败，而不是只因文件名、源码字符串或内部结构变化而失败。
-- 配置、文档、依赖、CLI、基础设施、静态边界或遗留测试迁移使用 `test-evidence` 选择证据；不得为了制造“先失败”而添加伪测试。
-- 完成前提供绑定当前变更的新鲜证据。无法在受支持环境执行时，报告证据缺口、实际结果和剩余风险，不得判定通过。
+## 4. Testing and Fixes
 
-### 缺陷修复
+### Testing and Verification
 
-- 使用 `diagnosing-bugs`，先复现和定位根因，再做最小完整修复并验证回归。
-- 禁止以牺牲用户体验换取修复。会改变用户体验时，评估可选方案并先取得用户批准。
+- Production behavior changes use `tdd` by default, advancing one vertical slice at a time. Reproducible defects require regression tests.
+- Before the target behavior is implemented, the test should fail because that behavior is absent—not merely because a filename, source string, or internal structure changed.
+- Use `test-evidence` to select evidence for configuration, documentation, dependencies, CLI behavior, infrastructure, static boundaries, or legacy-test migrations; do not add sham tests merely to manufacture a “red first” stage.
+- Before completion, provide fresh evidence tied to the current change. If it cannot run in a supported environment, report the evidence gap, actual result, and remaining risk; do not mark it as passed.
 
-## 5. 重构
+### Defect Fixes
 
-- 发现和评估重构机会使用 `improve-codebase-architecture`；执行跨模块重构使用 `safe-refactor`。
-- 重构按可工作的纵向切片推进。同一依赖链只允许一个活动中的结构切换，每个切片必须可独立验证、停止和恢复。
-- 禁止同时铺开多个互相等待的横向改造；“新框架已搭好但旧路径没有减少”不算进展。
+- Use `diagnosing-bugs`: reproduce the problem and locate its root cause before making the smallest complete fix and verifying the regression.
+- Do not fix a defect by sacrificing user experience. If the fix would change user experience, evaluate alternatives and obtain user approval first.
 
-## 6. 汇报
+## 5. Refactoring
 
-尽量使用 CONTEXT.md 中的术语，深入浅出，让未读代码的人类也能理解。
+- Use `improve-codebase-architecture` to identify and assess refactoring opportunities; use `safe-refactor` to execute cross-module refactoring.
+- Advance refactoring in working vertical slices. Allow only one active structural transition on a dependency chain; every slice must be independently verifiable, stoppable, and recoverable.
+- Do not start multiple horizontal transformations that wait on one another. “The new framework exists, but the old path has not shrunk” is not progress.
 
-- 如果概念术语不在 CONTEXT.md 中，则必须先进行术语解释。
-- 表述紧凑，不复述问题，不堆叠背景。
+## 6. Reporting
 
-汇报顺序：
+Use terminology from CONTEXT.md wherever possible and explain the work clearly enough for someone who has not read the code.
 
-1. 业务变化
-2. 涉及页面或模块
-3. 修改文件
-4. 证据、风险和待办
+- If a term does not appear in CONTEXT.md, explain it before using it.
+- Keep reports compact: do not restate the problem or pile up background.
 
-## 运行约束
+Report in this order:
 
-- Spend time on thinking; you do not need to use the commentary channel to report progress to me.
-- DO NOT send optional commentary. 若上层指令强制要求进度更新，只输出必要的一行状态，不输出推理碎片、方案复述或可选 commentary。
-- 文件删除使用 trash-cli；永久删除、`git reset`、`git restore`、`git clean` 等危险操作须先获用户明确同意。
-- 合并或 rebase 冲突用 `resolving-merge-conflicts`，按 hunk 依双方原始意图解决，不要 `--abort`。
+1. Business change
+2. Affected pages or modules
+3. Modified files
+4. Evidence, risks, and follow-ups
+
+## Runtime Constraints
+
+- Spend time thinking; you do not need to use the commentary channel to report progress to me.
+- DO NOT send optional commentary. If a higher-level instruction requires progress updates, output only one necessary status line—no fragments of reasoning, repeated plans, or optional commentary.
+- Use `trash-cli` to delete files. Permanent deletion, `git reset`, `git restore`, `git clean`, and other dangerous operations require the user's explicit approval first.
+- Resolve merge or rebase conflicts with `resolving-merge-conflicts`, hunk by hunk according to both sides' original intent; do not use `--abort`.

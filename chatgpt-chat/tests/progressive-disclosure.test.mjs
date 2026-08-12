@@ -7,17 +7,17 @@ const root = resolve(import.meta.dirname, "..");
 const skill = readFileSync(resolve(root, "SKILL.md"), "utf8");
 
 test("normal use stays on the public CLI seam", () => {
-  assert.match(skill, /正常路径/);
-  assert.match(skill, /不要读取实现、研究或测试/);
+  assert.match(skill, /Normal Path/);
+  assert.match(skill, /Do not read implementation, research, or tests/);
   assert.match(skill, /command -v chatgpt-chat/);
-  assert.match(skill, /缺失.*COMMAND_MISSING/s);
+  assert.match(skill, /missing.*COMMAND_MISSING/s);
 });
 
 test("browser diversity and reconnect are hidden behind one workflow", () => {
-  assert.match(skill, /优先使用唯一连接的 Edge Profile/);
-  assert.match(skill, /没有 Edge.*Chrome Profile/s);
-  assert.match(skill, /自动等待扩展重连.*有限重试/s);
-  assert.match(skill, /不猜测账号/);
+  assert.match(skill, /prefers the only connected Edge Profile/);
+  assert.match(skill, /then the only Chrome Profile/);
+  assert.match(skill, /reconnection.*bounded retry.*automatic/s);
+  assert.match(skill, /rather than guessing an account/);
 });
 
 test("normal use retains governed conversations and project sources", () => {
@@ -29,7 +29,7 @@ test("normal use retains governed conversations and project sources", () => {
 });
 
 test("low-frequency detail is disclosed only for a matching failure", () => {
-  assert.match(skill, /仅在失败时/);
+  assert.match(skill, /Failure Only/);
   assert.match(skill, /references\/troubleshooting\.md/);
   assert.ok(skill.length < 3_000, `SKILL.md is too large for progressive disclosure: ${skill.length}`);
 });

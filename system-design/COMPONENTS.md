@@ -1,46 +1,48 @@
-# 组件切分与依赖诊断
+[English](COMPONENTS.md) | [简体中文](COMPONENTS.zh-CN.md)
 
-只在需要决定“哪些代码一起发布、一起变化”或诊断组件依赖时读取。
+# Component Decomposition and Dependency Diagnosis
 
-## 先确认组件是什么
+Read this only when deciding which code should be released and changed together, or when diagnosing component dependencies.
 
-组件是可独立部署的代码工件，例如 jar、DLL、包或二进制集合。它不是任意目录，也不等于业务边界或运行时耦合单元。
+## Establish What a Component Is
 
-组件结构会随复用方式和变化原因演进。不要在不了解共同变化与真实使用关系前，先画一套固定组件图。
+A component is an independently deployable code artifact, such as a JAR, DLL, package, or collection of binaries. It is not an arbitrary directory, nor is it the same as a business boundary or a runtime-coupling unit.
 
-## 聚合原则
+Component structure evolves with reuse patterns and reasons for change. Do not draw a fixed component map before understanding what changes together and what is actually used together.
 
-- **复用与发布一致（REP）**：能一起复用的内容应能一起发布、共享版本。
-- **共同闭包（CCP）**：因同一原因、在同一时间变化的类放在一起。多数业务系统优先降低维护变更面。
-- **共同复用（CRP）**：不要迫使使用方依赖它不需要的内容。
+## Cohesion Principles
 
-三者存在张力：REP、CCP 倾向把组件做大，CRP 倾向把组件做小。根据当前变化与复用事实取舍，不追求永久切分。
+- **Reuse/Release Equivalence Principle (REP):** content reused together should be releasable together under a shared version.
+- **Common Closure Principle (CCP):** place classes that change for the same reason and at the same time together. Most business systems prioritize reducing the maintenance change surface.
+- **Common Reuse Principle (CRP):** do not force consumers to depend on content they do not need.
 
-## 依赖原则
+These principles are in tension: REP and CCP favor larger components, while CRP favors smaller ones. Trade off according to current evidence about change and reuse rather than seeking a permanent decomposition.
 
-- **无依赖环（ADP）**：组件依赖图必须是 DAG。打破环可反转依赖，或把双方真正共同拥有的概念提取为新组件。
-- **稳定依赖（SDP）**：依赖指向位置更稳定的组件。一个经常受外界牵动的组件不应成为大量稳定组件的前置条件。
-- **稳定抽象（SAP）**：位置稳定的组件应提供可扩展抽象；不稳定组件应保持具体、易改。
+## Dependency Principles
 
-稳定性描述的是依赖位置，不等于变化频率。
+- **Acyclic Dependencies Principle (ADP):** the component dependency graph must be a DAG. Break a cycle by inverting a dependency or extracting a new component for the concepts genuinely shared by both sides.
+- **Stable Dependencies Principle (SDP):** dependencies point toward components in more stable positions. A component frequently pulled by external change should not become a prerequisite for many stable components.
+- **Stable Abstractions Principle (SAP):** a component in a stable position should provide extensible abstractions; an unstable component should remain concrete and easy to change.
 
-## 诊断度量
+Stability describes dependency position, not frequency of change.
 
-- `Fan-in`：外部组件对本组件内部类型的依赖数。
-- `Fan-out`：本组件内部类型对外部组件的依赖数。
-- 不稳定度 `I = Fan-out / (Fan-in + Fan-out)`，范围 0–1。
-- 抽象度 `A = 抽象类型数 / 总类型数`，范围 0–1。
-- 距主序列距离 `D = |A + I - 1|`，范围 0–1。
+## Diagnostic Metrics
 
-`D` 接近 1 的组件值得复审：
+- `Fan-in`: the number of dependencies from types in external components to types inside this component.
+- `Fan-out`: the number of dependencies from types inside this component to types in external components.
+- Instability `I = Fan-out / (Fan-in + Fan-out)`, ranging from 0 to 1.
+- Abstractness `A = number of abstract types / total number of types`, ranging from 0 to 1.
+- Distance from the main sequence `D = |A + I - 1|`, ranging from 0 to 1.
 
-- 稳定且具体：难改、难扩展。
-- 不稳定且高度抽象：抽象无人使用。
+A component with `D` near 1 merits review:
 
-这些值只定位风险，不能单独驱动拆分。优先用代表性变更验证：一次真实需求会修改多少组件、触发多少重建和部署。
+- stable and concrete: difficult to change and extend;
+- unstable and highly abstract: abstractions with no consumers.
 
-## 让边界可执行
+These values only locate risk and must not drive decomposition on their own. Prefer validation through a representative change: how many components would one real requirement modify, rebuild, and redeploy?
 
-- 用语言可见性、模块系统或源码树隔离边界，避免把所有类型公开。
-- 顶层组织应暴露业务意图，不只暴露框架层名。
-- 基础设施按业务边界隔离，避免一个区域的交付代码绕过业务规则直连另一区域的数据库。
+## Make Boundaries Enforceable
+
+- Use language visibility, module systems, or source-tree isolation to enforce boundaries instead of making every type public.
+- Top-level organization should expose business intent, not only framework layer names.
+- Isolate infrastructure along business boundaries so delivery code in one area cannot bypass business rules and connect directly to another area's database.

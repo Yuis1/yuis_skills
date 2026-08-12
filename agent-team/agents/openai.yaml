@@ -1,4 +1,4 @@
 interface:
-  display_name: "多 Agent 协作"
-  short_description: "控制多 Agent 的委派、会话、工作树、单 Writer 和 Reviewer 权限"
-  default_prompt: "使用 $agent-team 组织这次多 Agent 分工与 Reviewer 隔离。"
+  display_name: "Multi-Agent Collaboration"
+  short_description: "Control delegation, sessions, worktrees, single-Writer ownership, and Reviewer permissions"
+  default_prompt: "Use $agent-team to organize this multi-Agent delegation and Reviewer isolation."

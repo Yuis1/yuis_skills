@@ -1,47 +1,49 @@
 ---
 name: review-evidence
-description: 为复杂任务冻结验收范围并生成可复现证据。用于独立复审或高风险验收。
+description: Freeze acceptance scope and produce reproducible evidence for complex tasks. Use for independent review or high-risk acceptance.
 ---
 
-# 复杂复审与证据
+[English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-只在复杂、高风险或需要独立对抗性复审的任务中使用。常规变更不需要制作完整证据包。
+# Complex Review and Evidence
 
-## 冻结验收范围
+Use this only for complex, high-risk work or work that requires independent adversarial review. Routine changes do not need a complete evidence package.
 
-复审前建立一份权威验收矩阵：
+## Freeze Acceptance Scope
 
-- 行为合同及对应证据；
-- `must_remove`：必须消失的旧行为、路径或依赖；
-- `must_retain`：必须保留的行为和数据；
-- `out_of_scope`：明确不在本次处理的内容；
-- 环境边界；
-- stop condition：什么结果足以结束复审。
+Before review, establish one authoritative acceptance matrix containing:
 
-Reviewer 依据这份矩阵复核，不重新解释已批准范围。新发现只有在违反既有合同，或涉及安全、数据一致性、生产正确性时阻断；其余进入独立事项。
+- behavioral contracts and their corresponding evidence;
+- `must_remove`: old behavior, paths, or dependencies that must disappear;
+- `must_retain`: behavior and data that must remain;
+- `out_of_scope`: content explicitly excluded from this change;
+- environment boundaries; and
+- the stop condition: which result is sufficient to end the review.
 
-## 冻结候选版本
+The Reviewer verifies against this matrix rather than reinterpreting the approved scope. A new discovery blocks only when it violates an existing contract or concerns security, data consistency, or production correctness; track everything else separately.
 
-先完成结构与合同自审，再冻结 candidate。正式证据必须绑定：
+## Freeze the Candidate Version
 
-- 当前 Commit 或不可混淆的候选版本；
-- 基线与影响范围；
-- 运行环境和验证输入；
-- 精确命令、真实结果和退出状态；
-- 跳过项、证据缺口和剩余风险。
+Complete the structural and contract self-review first, then freeze the candidate. Formal evidence must be tied to:
 
-Commit、基线、环境或验证输入变化后，旧证据立即失效。SHA、计数和退出结果等可由工具生成的事实不得手工抄写成另一份权威。
+- the current Commit or another unambiguous candidate version;
+- the baseline and affected scope;
+- the runtime environment and verification input;
+- exact commands, actual results, and exit status; and
+- skipped items, evidence gaps, and remaining risk.
 
-## 独立复核
+When the Commit, baseline, environment, or verification input changes, the old evidence becomes invalid immediately. Do not manually copy facts a tool can generate—such as SHAs, counts, and exit results—into a second authoritative source.
 
-Reviewer 从验收矩阵和证据包开始：
+## Independent Verification
 
-1. 独立确认变更范围、Owner 和真实依赖闭包。
-2. 按风险抽查关键命令，不机械重跑所有命令。
-3. 检查行为合同，也检查边界泄漏、透传层、隐含调用顺序和代表性变更放大。
-4. 将失败明确分为：本次回归、历史基线、测试缺陷、偶发失败、环境故障或未执行。
-5. 跳过、未执行或证据不足时，明确写“未证明”，不得报告通过。
+The Reviewer starts from the acceptance matrix and evidence package:
 
-## 完成条件
+1. Independently confirm the change scope, Owners, and true dependency closure.
+2. Sample critical commands by risk instead of mechanically rerunning every command.
+3. Check behavioral contracts as well as boundary leakage, pass-through layers, implicit call order, and representative change amplification.
+4. Classify each failure explicitly as a regression in this change, historical baseline, test defect, flaky failure, environment failure, or not executed.
+5. When work is skipped, not executed, or under-evidenced, state “unproven”; do not report it as passed.
 
-验收矩阵中每项都有绑定当前候选的证据或明确缺口；必须删除与必须保留项均已核对；剩余风险有 Owner。如何判断证据能力见 `test-evidence`，架构结构复核见 `system-design`，独立 Reviewer 的会话与权限隔离见 `agent-team`。
+## Completion Criteria
+
+Every item in the acceptance matrix has evidence tied to the current candidate or an explicit gap; all `must_remove` and `must_retain` items have been checked; and every remaining risk has an Owner. See `test-evidence` for evidence capability, `system-design` for structural architecture review, and `agent-team` for session and permission isolation of independent Reviewers.

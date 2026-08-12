@@ -1,4 +1,4 @@
 interface:
-  display_name: "系统设计"
-  short_description: "规划系统边界、依赖方向、业务 Owner 与组件切分"
-  default_prompt: "使用 $system-design 设计或评审这个系统的结构。"
+  display_name: "System Design"
+  short_description: "Plan system boundaries, dependency direction, business Owners, and component decomposition"
+  default_prompt: "Use $system-design to design or review this system's structure."

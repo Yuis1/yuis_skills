@@ -1,43 +1,45 @@
 ---
 name: safe-refactor
-description: 控制大范围重构的执行节奏。用于跨模块代码重构、替换底座或避免大爆炸重构。
+description: Control the execution cadence of broad refactoring. Use for cross-module refactoring, platform replacement, or avoiding big-bang refactoring.
 ---
 
-# 安全重构
+[English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-重构按可工作的纵向切片推进。不要同时铺开多个互相等待的横向改造。
+# Safe Refactoring
 
-## 动手前
+Advance refactoring through working vertical slices. Do not start multiple horizontal transformations that wait on one another.
 
-1. 冻结必须保持的行为、当前证据、目标结构和明确不做的事。
-2. 画出旧路径与新路径的边界，找出能端到端完成一次真实行为的最小切片。
-3. 记录基线：调用方数量、旧入口、依赖边和当前验证结果。
-4. 把行为变化与结构搬迁分开；无法分开时，明确新增行为及其独立证据。
+## Before Changing Code
 
-## 执行节奏
+1. Freeze the behavior that must remain, current evidence, target structure, and explicit non-goals.
+2. Draw the boundaries of the old and new paths, then find the smallest slice that can complete one real behavior end to end.
+3. Record the baseline: caller count, old entry points, dependency edges, and current verification results.
+4. Separate behavior changes from structural movement. When they cannot be separated, identify the new behavior and its independent evidence explicitly.
 
-每次只推进一个纵向切片：
+## Execution Cadence
 
-1. 建立新路径或兼容桥。
-2. 迁移一个真实调用方或一组不可再分的调用方。
-3. 运行该切片的最窄行为验证和必要的结构检查。
-4. 确认旧路径使用量、旧依赖或旧代码实际下降。
-5. 提交一个可独立评审、可停止、可恢复的中间状态，再开始下一片。
+Advance only one vertical slice at a time:
 
-同一依赖链上只允许一个活动中的结构切换。多个切片若必须互相等完才能通过，就已经退化为大爆炸重构。
+1. Establish the new path or compatibility bridge.
+2. Migrate one real caller or one indivisible group of callers.
+3. Run the narrowest behavioral verification and any necessary structural checks for that slice.
+4. Confirm that use of the old path, old dependencies, or old code has actually decreased.
+5. Commit an intermediate state that can be independently reviewed, stopped, and recovered before starting the next slice.
 
-## 前滚与清理
+Allow only one active structural transition on the same dependency chain. If multiple slices must all finish before any can pass, the work has already degraded into big-bang refactoring.
 
-- 涉及数据、协议或跨版本兼容期时，迁移阶段见 `arch-evolve`；兼容桥必须有 Owner、期限和删除条件。
-- 删除旧路径前，必须证明所有调用方已迁移，公开行为由新路径覆盖。
-- 只清理由本次重构产生的孤儿 Import、变量、函数和兼容层；历史死代码另开任务。
-- 高风险正确性修复优先。无法安全降低历史指标时，限制新增风险并登记有期限的例外。
+## Roll-Forward and Cleanup
 
-## 立即停下并重排
+- For data, protocol, or cross-version compatibility windows, follow the migration phases in `arch-evolve`. Every compatibility bridge needs an Owner, deadline, and deletion condition.
+- Before deleting the old path, prove that every caller has migrated and the new path covers the public behavior.
+- Clean up only imports, variables, functions, and compatibility layers orphaned by this refactoring. Track historical dead code separately.
+- Prioritize high-risk correctness fixes. When a historical metric cannot be reduced safely, prevent new risk and register a time-bounded exception.
 
-- 两个以上切片互相阻塞，无法形成绿色中间状态。
-- 为让新结构可用，必须同时改动多个无关业务 Owner。
-- 进度只能用“已创建新框架/新目录”描述，旧调用和旧依赖没有下降。
-- 验收范围持续扩大，或恢复路径尚未明确。
+## Stop and Replan Immediately
 
-架构量子、服务拆分、共享数据库或破坏性数据与协议迁移见 `arch-evolve`。验证证据的选择见 `test-evidence`；复杂、高风险候选的独立验收见 `review-evidence`。
+- More than one slice is mutually blocked, preventing a green intermediate state.
+- Making the new structure usable requires simultaneous changes to multiple unrelated business Owners.
+- Progress can only be described as “the new framework/directory exists,” while old calls and dependencies have not decreased.
+- Acceptance scope keeps expanding, or the recovery path is still unclear.
+
+See `arch-evolve` for architectural quanta, service decomposition, shared databases, and breaking data or protocol migrations. See `test-evidence` for selecting verification evidence and `review-evidence` for independent acceptance of complex, high-risk candidates.

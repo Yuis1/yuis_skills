@@ -72,14 +72,14 @@ class ProjectStateTest(unittest.TestCase):
     def test_skill_keeps_critical_fail_closed_contracts(self) -> None:
         text = SKILL.read_text(encoding="utf-8")
         for phrase in (
-            "用户现有 Profile 是认证 Owner",
+            "existing Profile owns authentication",
             "Project-only Memory",
             "Chat",
             "Pro",
-            "最新旗舰 GPT",
-            "不关闭浏览器或用户标签页",
-            "输出 Cookie",
-            "不得自动执行",
+            "latest visible flagship GPT",
+            "only its own ChatGPT tab",
+            "emit cookies",
+            "do not execute them",
         ):
             self.assertIn(phrase, text)
 

@@ -1,4 +1,4 @@
 interface:
-  display_name: "架构守护"
-  short_description: "把架构约束转成可执行检查、CI 门禁、基线棘轮和例外机制"
-  default_prompt: "使用 $arch-guard 为这些架构约束设计自动守护。"
+  display_name: "Architecture Enforcement"
+  short_description: "Turn architecture constraints into executable checks, CI Gates, baseline ratchets, and exemptions"
+  default_prompt: "Use $arch-guard to design automated enforcement for these architecture constraints."

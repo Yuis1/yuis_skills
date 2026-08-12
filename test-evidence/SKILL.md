@@ -1,43 +1,45 @@
 ---
 name: test-evidence
-description: 判断验证证据能否证明改动正确。用于非代码验证、静态与运行证据、遗留测试迁移。
+description: Determine whether verification evidence proves a change correct. Use for non-code verification, static and runtime evidence, or legacy-test migration.
 ---
 
-# 测试与验证证据
+[English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-先写清要证明的结论，再选择能直接证明它的验证方式。测试数量、代码行数和命令数量都不是完成标准。
+# Test and Verification Evidence
 
-## 选择证据
+State the conclusion to prove before selecting a verification method that proves it directly. Test count, lines of code, and command count are not completion criteria.
 
-1. 写明目标行为、Owner、依赖、风险和最小验证路径。
-2. 判断结论属于哪类：
-   - **行为结论**：执行公开接口、状态转换、真实组件或受控集成。
-   - **静态结论**：用 AST、依赖图或源码检查证明 Import、Owner 或静态边界。
-   - **非代码结论**：配置、文档、依赖、CLI 和基础设施按风险使用静态检查、dry-run、集成、幂等性、目标状态或 smoke 验证。
-3. 说明证据的能力边界。静态检查不能证明运行行为；mock 不能替代真实集成结论。
-4. 绑定当前变更重新运行，记录实际命令、结果、环境和未覆盖风险。
+## Select Evidence
 
-## 新行为与缺陷
+1. State the target behavior, Owner, dependencies, risks, and minimum verification path.
+2. Classify the conclusion:
+   - **Behavioral conclusion:** exercise a public interface, state transition, real component, or controlled integration.
+   - **Static conclusion:** use an AST, dependency graph, or source inspection to prove imports, Owners, or static boundaries.
+   - **Non-code conclusion:** for configuration, documentation, dependencies, CLI behavior, and infrastructure, select static checks, dry runs, integration, idempotency, target-state checks, or smoke verification according to risk.
+3. State the capability boundary of the evidence. A static check cannot prove runtime behavior; a mock cannot substitute for a real-integration conclusion.
+4. Rerun against the current change and record the actual command, result, environment, and uncovered risk.
 
-- 在实现目标行为前，测试应当因为该行为还不存在而失败。
-- 如果测试只是因为文件名、源码字符串或内部结构变化而失败，它没有证明目标行为。
-- 可复现缺陷应补回归测试；先证明测试能复现缺陷，再修复。
-- 文档、配置或基础设施变更不应为了形式上的“先失败”而添加伪测试。
+## New Behavior and Defects
 
-## 证据不足
+- Before implementing target behavior, the test should fail because that behavior does not yet exist.
+- If a test fails only because a filename, source string, or internal structure changed, it does not prove the target behavior.
+- A reproducible defect requires a regression test. First prove that the test reproduces the defect, then fix it.
+- Documentation, configuration, and infrastructure changes should not gain sham tests merely to manufacture a formal “red first” stage.
 
-无法稳定自动化，或当前环境无法执行时：
+## Insufficient Evidence
 
-- 标记“证据不足”，不是“通过”或“失败”；
-- 记录可复核命令、实际结果、受限原因和剩余风险；
-- 指明应在什么受支持环境复跑。
+When stable automation is impossible or the current environment cannot execute it:
 
-异步、浏览器、实时通信和进程级验证必须声明资源生命周期、超时和支持环境。资源由创建者或所属 Fixture 关闭。
+- mark it “insufficient evidence,” not “passed” or “failed”;
+- record the reproducible command, actual result, limiting reason, and remaining risk; and
+- identify the supported environment in which it should be rerun.
 
-## 覆盖判断
+For asynchronous, browser, real-time communication, and process-level verification, state the resource lifecycle, timeout, and supported environment. The creator or owning Fixture closes resources.
 
-- 测试数量和 LOC 不是覆盖率。按合同枚举关键状态：鉴权、协议与错误、排序分页、降级与新鲜度、并发一致性和副作用。
-- 参数化状态矩阵或差分合同可以替代重复用例，但不得丢合同。
-- 测试底座重置若阻塞产品变更，先冻结产品候选，再将底座变更拆成独立切片。
+## Coverage Judgment
 
-涉及遗留测试迁移或大规模删改 Fixture 时，继续读 [LEGACY.md](LEGACY.md)。复杂候选的证据包与独立复审见 `review-evidence`。
+- Test count and LOC are not coverage. Enumerate critical states by contract: authentication and authorization, protocol and errors, sorting and pagination, degradation and freshness, concurrency consistency, and side effects.
+- A parameterized state matrix or differential contract may replace repeated cases, but it must not omit any contract.
+- If resetting the test foundation blocks a product change, freeze the product candidate first and split the foundation work into an independent slice.
+
+For legacy-test migration or broad Fixture deletion, continue with [LEGACY.md](LEGACY.md). See `review-evidence` for evidence packages and independent review of complex candidates.

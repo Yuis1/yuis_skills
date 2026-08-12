@@ -1,43 +1,43 @@
 # Troubleshooting
 
-只读取与 CLI 错误码同名的小节。
+Read only the section whose heading matches the CLI error code.
 
 ## COMMAND_MISSING
 
-请求 `yuis_ops` Owner 应用 `chatgpt_chat` 角色；不要手工安装或创建链接。
+Ask the `yuis_ops` Owner to apply the `chatgpt_chat` role. Do not install anything or create links manually.
 
 ## BROWSER_NOT_CONNECTED
 
-确认日常 Edge 或 Chrome 正在运行且 Playwriter 扩展已启用。CLI 已自动等待重连；不得改用测试浏览器、专用 Profile、云浏览器或复制 Cookie。
+Confirm that the user's everyday Edge or Chrome is running and that the Playwriter extension is enabled. The CLI has already waited for reconnection; do not switch to a test browser, dedicated Profile, cloud browser, or copied cookies.
 
 ## BROWSER_PROFILE_AMBIGUOUS
 
-首选浏览器家族连接了多个 Profile。只保留目标 Profile 的 Playwriter 连接后重试；不得根据邮箱、当前标签页或最近活动猜测账号。
+The preferred browser family has multiple connected Profiles. Keep Playwriter connected only in the intended Profile, then retry. Do not guess from an email address, current tab, or recent activity.
 
 ## AUTH_REQUIRED
 
-当前 Profile 没有 ChatGPT 登录状态。正常设计应沿用用户已有登录；如果确实退出，只能在同一日常 Profile 完成认证。不得读取或迁移凭据。
+The current Profile has no authenticated ChatGPT session. The normal design reuses the user's existing session; if it has genuinely signed out, authenticate only in the same everyday Profile. Do not read or migrate credentials.
 
 ## AUTH_UNVERIFIED
 
-页面既不能证明已登录，也没有显示登录入口。报告可见 UI 回归；不得发送。
+The page proves neither an authenticated state nor a visible login entry point. Report a visible-UI regression; do not send.
 
 ## CHALLENGE_REQUIRED
 
-不要规避可见挑战。运行时不会降低安全约束或切换到其他 Profile。
+Do not bypass a visible challenge. The runtime does not relax security constraints or switch to another Profile.
 
 ## RUNTIME_MISSING
 
-请求托管 `chatgpt_chat.yml` 收敛；不要自行安装 Playwriter、npm 或浏览器包。
+Ask for managed convergence through `chatgpt_chat.yml`. Do not install Playwriter, npm packages, or browser packages yourself.
 
 ## BROWSER_BUSY
 
-另一个操作正在控制 ChatGPT。等待完成；不得并行启动第二个操作。
+Another operation is controlling ChatGPT. Wait for it to finish; do not launch a second operation in parallel.
 
 ## project_missing
 
-这是状态而非错误。只有在 Projects 列表加载并确认无精确同名项目后才会返回；需要新会话时调用 `ask --new`。
+This is a state, not an error. It is returned only after the Projects list has loaded and no exact-name Project is present. Call `ask --new` when a new conversation is required.
 
 ## Generic browser operation failure
 
-只读取脱敏诊断尾部。没有匹配错误码时报告 ChatGPT UI 或 Playwriter 回归；普通调用不要读取源码。
+Read only the redacted tail of the diagnostic log. When no error code matches, report a ChatGPT UI or Playwriter regression. Routine calls must not read source code.
