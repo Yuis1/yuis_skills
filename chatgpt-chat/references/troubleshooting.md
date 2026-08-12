@@ -8,7 +8,19 @@ Ask the `yuis_ops` Owner to apply the `chatgpt_chat` role. Do not install anythi
 
 ## BROWSER_NOT_CONNECTED
 
-Confirm that the user's everyday Edge or Chrome is running and that the Playwriter extension is enabled. The CLI has already waited for reconnection; do not switch to a test browser, dedicated Profile, cloud browser, or copied cookies.
+Confirm that the user's everyday Edge or Chrome is running and that the Playwriter extension is enabled. The CLI has already waited for the originally selected Profile to reconnect; do not switch to a test browser, dedicated Profile, cloud browser, or copied cookies.
+
+## PAGE_CLOSED
+
+The CLI-owned ChatGPT tab closed during the operation. Keep the selected browser Profile running and retry once. The CLI has already discarded the old Page handle, reset the Playwriter session once when safe, and created a fresh owned tab; do not close user tabs or restart with another Profile.
+
+## RELAY_DISCONNECTED
+
+The Playwriter connection to the selected browser Profile was interrupted and did not recover within the bounded attempt. Keep the same browser Profile running with Playwriter enabled, then retry. Do not select another connected Profile.
+
+## ASK_SUBMISSION_UNKNOWN
+
+The connection ended after submission may have started but before the CLI could prove whether ChatGPT accepted it. Inspect the visible Project conversation before issuing another `ask`; the CLI intentionally did not send the prompt again.
 
 ## BROWSER_PROFILE_AMBIGUOUS
 
@@ -38,6 +50,6 @@ Another operation is controlling ChatGPT. Wait for it to finish; do not launch a
 
 This is a state, not an error. It is returned only after the Projects list has loaded and no exact-name Project is present. Call `ask --new` when a new conversation is required.
 
-## Generic browser operation failure
+## BROWSER_OPERATION_FAILED
 
-Read only the redacted tail of the diagnostic log. When no error code matches, report a ChatGPT UI or Playwriter regression. Routine calls must not read source code.
+Retry once. If it repeats, report the actionable summary and diagnostic identifier to the repository Owner. The CLI already returns a redacted summary; routine consumers should not tail the driver log or read source code.

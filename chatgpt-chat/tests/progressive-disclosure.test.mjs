@@ -14,9 +14,9 @@ test("normal use stays on the public CLI seam", () => {
 });
 
 test("browser diversity and reconnect are hidden behind one workflow", () => {
-  assert.match(skill, /prefers the only connected Edge Profile/);
-  assert.match(skill, /then the only Chrome Profile/);
-  assert.match(skill, /reconnection.*bounded retry.*automatic/s);
+  assert.match(skill, /prefers the sole Edge Profile/);
+  assert.match(skill, /then Chrome/);
+  assert.match(skill, /retry once on that Profile/);
   assert.match(skill, /rather than guessing an account/);
 });
 
@@ -26,6 +26,8 @@ test("normal use retains governed conversations and project sources", () => {
   assert.match(skill, /source-remove/);
   assert.match(skill, /confirm-project-source-delete/);
   assert.match(skill, /response_path/);
+  assert.match(skill, /chatgpt-chat doctor/);
+  assert.match(skill, /uncertain submission fails closed/);
 });
 
 test("low-frequency detail is disclosed only for a matching failure", () => {

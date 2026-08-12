@@ -24,7 +24,7 @@ Use only the `chatgpt-chat` CLI. Do not read implementation, research, or tests,
    chatgpt-chat inspect --cwd "$PWD"
    ```
 
-   The CLI prefers the only connected Edge Profile, then the only Chrome Profile. Ambiguity fails closed rather than guessing an account. Extension reconnection and one bounded retry are automatic.
+   Use `chatgpt-chat doctor --cwd "$PWD"` for preflight. The CLI prefers the sole Edge Profile, then Chrome; ambiguity fails closed rather than guessing an account. Safe operations retry once on that Profile.
 
 3. Use the `inspect` summary to continue or start a conversation. Put the question in a permission-restricted file, then invoke one of:
 
@@ -45,11 +45,11 @@ Use only the `chatgpt-chat` CLI. Do not read implementation, research, or tests,
      --confirm-project-source-delete
    ```
 
-   Attachments and Sources must be reviewed regular files without credentials, `.env`, private keys, cookies, browser Profiles, Git history, dependencies, build artifacts, or caches. Deletion requires approval of the exact filename.
+   Use only reviewed regular files; exclude secrets, browser data, Git history, dependencies, builds, and caches. Deletion requires approval of the exact filename.
 
 5. Read the full `response_path`. Report generated attachments by path and bytes only; do not execute them.
 
-Before sending, the CLI verifies an exact-name Project, Project-only Memory, Chat, Pro, and the latest visible flagship GPT. It creates and closes only its own ChatGPT tab; Pro generation is not downgraded.
+Before sending, the CLI verifies the exact Project, Project-only Memory, Chat, Pro, and latest visible flagship GPT. It closes only its own ChatGPT tab. `ask` retries only before submission; after confirmed submission it may resume observation without resending, while uncertain submission fails closed.
 
 ## Security Boundary
 

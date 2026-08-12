@@ -48,6 +48,35 @@ test("login verifies ChatGPT in the connected browser profile through the CLI se
   assert.equal(result.stdout.trim().split("\n").length, 1);
 });
 
+test("doctor reports a compact, account-free browser preflight", () => {
+  const { project, adapter } = fixture(`export async function doctor() {
+    return {
+      schema_version: 1,
+      command: "doctor",
+      status: "ready",
+      browser_family: "edge",
+      profile_selection: "single",
+      extension: "online",
+      chatgpt_tab: { created: true, authentication: "authenticated", closed_by_cli: true }
+    };
+  }\n`);
+  const result = spawnSync(process.execPath, [cli, "doctor", "--cwd", project], {
+    encoding: "utf8",
+    env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    schema_version: 1,
+    command: "doctor",
+    status: "ready",
+    browser_family: "edge",
+    profile_selection: "single",
+    extension: "online",
+    chatgpt_tab: { created: true, authentication: "authenticated", closed_by_cli: true },
+  });
+  assert.doesNotMatch(result.stdout, /profile_path|@|account|cookie|storage/i);
+});
+
 test("inspect emits one compact JSON result through the CLI seam", () => {
   const { project, adapter } = fixture();
   const result = spawnSync(process.execPath, [cli, "inspect", "--cwd", project], {
@@ -304,6 +333,23 @@ test("an unauthenticated connected profile returns one actionable safe error", (
   assert.doesNotMatch(result.stderr, /cookie|storage|profile path/i);
 });
 
+test("a closed owned page returns an actionable stable code without requiring log inspection", () => {
+  const { project, adapter, root } = fixture(`export async function inspect() {
+    throw Object.assign(new Error("page.waitForTimeout: Target page has been closed"), {
+      code: "PAGE_CLOSED",
+      diagnostics: { phase: "inspect", recovery_attempted: true, attempts: 2 }
+    });
+  }\n`);
+  const result = spawnSync(process.execPath, [cli, "inspect", "--cwd", project], {
+    encoding: "utf8",
+    env: { ...process.env, HOME: root, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /^PAGE_CLOSED: .*CLI-owned ChatGPT tab/);
+  assert.match(result.stderr, /phase=inspect/);
+  assert.doesNotMatch(result.stderr, /tail|driver\.log|page\.waitForTimeout|profile/i);
+});
+
 test("a missing managed browser runtime returns an action instead of inviting self-install", () => {
   const { project, adapter } = fixture(`export async function inspect() {
     throw Object.assign(new Error("internal module path"), { code: "RUNTIME_MISSING" });
@@ -327,7 +373,7 @@ test("adapter failures do not expose signed URLs or receipt data", () => {
   });
   assert.notEqual(result.status, 0);
   assert.equal(result.stdout, "");
-  assert.equal(result.stderr, "browser operation failed; inspect local diagnostics for details\n");
+  assert.equal(result.stderr, "BROWSER_OPERATION_FAILED: the browser operation failed; retry once or ask the repository Owner to inspect diagnostics\n");
   const diagnostic = readFileSync(join(root, ".local/state/chatgpt_chat/driver.log"), "utf8");
   assert.match(diagnostic, /request failed https:\/\/chatgpt.com\/backend-api\/file\?\[redacted\]/);
   assert.doesNotMatch(diagnostic, /secret|private|x-oai-is-receipt/i);

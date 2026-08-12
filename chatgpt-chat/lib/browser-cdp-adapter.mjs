@@ -44,6 +44,27 @@ async function runBrowserWorkflow(input, cwd) {
   }
 }
 
+export async function doctor({ cwd }) {
+  const transport = await openBrowserTransport({ command: "doctor" }, { cwd });
+  try {
+    return {
+      schema_version: 1,
+      command: "doctor",
+      status: "ready",
+      browser_family: transport.browser.browser.toLowerCase(),
+      profile_selection: "single",
+      extension: "online",
+      chatgpt_tab: {
+        created: true,
+        authentication: transport.result.authentication,
+        closed_by_cli: true,
+      },
+    };
+  } finally {
+    await closeBrowserTransport(transport);
+  }
+}
+
 export async function login({ cwd }) {
   const transport = await openLoginTransport({ cwd }, { cwd });
   try {
