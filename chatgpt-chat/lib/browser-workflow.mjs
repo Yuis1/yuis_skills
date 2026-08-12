@@ -130,12 +130,13 @@ export async function ensureBestInteraction(page) {
   return { mode: "chat", effort: "Pro", model: preferred };
 }
 
-export async function runWorkflow(page, input) {
+export async function runWorkflow(page, input, { onPhase = () => {} } = {}) {
   if (input.command === "login") {
     await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 45_000 });
     return { authenticated: true };
   }
   await requireAuthentication(page);
+  if (input.command === "doctor") return { authentication: "authenticated" };
   async function waitForProject(projectUrl, projectName) {
   const main = page.locator("main");
   const visibleProjectName = main.getByText(projectName, { exact: true }).first();
@@ -441,20 +442,30 @@ async function run() {
     }
     await page.goto(input.conversationUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
   }
-  const textbox = page.locator("#prompt-textarea");
-  await textbox.waitFor({ state: "visible", timeout: 30_000 });
-  const uploadedAttachments = await uploadAttachments(input.attachmentPaths);
-  await textbox.fill(input.prompt);
-  const send = page.locator('[data-testid="send-button"]');
-  await send.waitFor({ state: "visible", timeout: 30_000 });
-  const uploadDeadline = Date.now() + 60_000;
-  while (!(await send.isEnabled())) {
-    if (Date.now() >= uploadDeadline) throw new Error("Uploaded attachments did not become ready to send");
-    await page.waitForTimeout(500);
+  let uploadedAttachments = [];
+  let conversationUrl;
+  if (input.resumeConversationUrl) {
+    await page.goto(input.resumeConversationUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
+    conversationUrl = input.resumeConversationUrl;
+    onPhase("submitted_confirmed", { conversationUrl });
+  } else {
+    const textbox = page.locator("#prompt-textarea");
+    await textbox.waitFor({ state: "visible", timeout: 30_000 });
+    uploadedAttachments = await uploadAttachments(input.attachmentPaths);
+    await textbox.fill(input.prompt);
+    const send = page.locator('[data-testid="send-button"]');
+    await send.waitFor({ state: "visible", timeout: 30_000 });
+    const uploadDeadline = Date.now() + 60_000;
+    while (!(await send.isEnabled())) {
+      if (Date.now() >= uploadDeadline) throw new Error("Uploaded attachments did not become ready to send");
+      await page.waitForTimeout(500);
+    }
+    onPhase("submitting");
+    await send.click();
+    await page.waitForURL(/\/c\//, { timeout: 30_000 });
+    conversationUrl = page.url();
+    onPhase("submitted_confirmed", { conversationUrl });
   }
-  await send.click();
-  await page.waitForURL(/\/c\//, { timeout: 30_000 });
-  const conversationUrl = page.url();
   const { turn, text } = await waitForCompletedResponse();
   const responsePath = path.join(input.artifactDirectory, `${new Date().toISOString().replace(/[:.]/g, "-")}-response.txt`);
   fs.writeFileSync(responsePath, `${text}\n`, { mode: 0o600, flag: "wx" });

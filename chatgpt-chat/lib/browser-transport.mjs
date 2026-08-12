@@ -1,14 +1,19 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
+import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const RESULT_MARKER = "CHATGPT_CHAT_RESULT:";
+const ERROR_MARKER = "CHATGPT_CHAT_ERROR:";
 
-function codedError(code, message) {
-  return Object.assign(new Error(message), { code });
+function codedError(code, message, diagnostics = {}, cause = undefined) {
+  return Object.assign(new Error(message, cause ? { cause } : undefined), {
+    code,
+    diagnostics: { diagnostic_id: randomUUID(), ...diagnostics },
+  });
 }
 
 export function parseBrowserList(output) {
@@ -64,20 +69,78 @@ function workflowProgram(input) {
   const workflowUrl = new URL(`./browser-workflow.mjs?version=${Date.now()}`, import.meta.url).href;
   return `
 const ownedPage = await context.newPage();
+let phase = "pre_submit";
+let phaseDetail = {};
 try {
   const { runWorkflow } = await globalThis.import(${JSON.stringify(workflowUrl)});
-  const result = await runWorkflow(ownedPage, ${JSON.stringify(input)});
+  const result = await runWorkflow(ownedPage, ${JSON.stringify(input)}, {
+    onPhase(nextPhase, detail = {}) { phase = nextPhase; phaseDetail = detail; },
+  });
   console.log(${JSON.stringify(RESULT_MARKER)} + JSON.stringify(result));
+} catch (error) {
+  console.log(${JSON.stringify(ERROR_MARKER)} + JSON.stringify({
+    phase,
+    ...phaseDetail,
+    message: String(error?.message ?? error),
+  }));
+  throw error;
 } finally {
   if (!ownedPage.isClosed()) await ownedPage.close().catch(() => {});
 }
 `;
 }
 
-function recoverableExtensionError(error) {
-  return /Extension (?:connection closed|not connected|request timeout)|Target page, context or browser has been closed|Browser disconnected|No Playwright pages are available|fetch failed/i.test(
-    `${error?.message ?? error}`,
-  );
+function parseWorkflowError(output) {
+  const marked = String(output).split(/\r?\n/).find((line) => line.includes(ERROR_MARKER));
+  if (!marked) return null;
+  try {
+    return JSON.parse(marked.slice(marked.indexOf(ERROR_MARKER) + ERROR_MARKER.length));
+  } catch {
+    return null;
+  }
+}
+
+function classifyBrowserError(error, input, { attempts, recoveryAttempted } = {}) {
+  const workflow = parseWorkflowError(error?.message ?? error);
+  const message = String(workflow?.message ?? error?.message ?? error);
+  const phase = workflow?.phase ?? (input.command === "ask" ? "unknown" : input.command);
+  const diagnostics = {
+    phase,
+    recovery_attempted: Boolean(recoveryAttempted),
+    attempts: attempts ?? 1,
+  };
+  if (input.command === "ask" && phase === "submitted_confirmed" && workflow?.conversationUrl) {
+    return codedError(
+      "ASK_RESPONSE_INTERRUPTED",
+      "The response observation was interrupted after submission was confirmed",
+      { ...diagnostics, conversation_url: workflow.conversationUrl },
+      error,
+    );
+  }
+  if (input.command === "ask" && phase !== "pre_submit") {
+    return codedError(
+      "ASK_SUBMISSION_UNKNOWN",
+      "The browser connection ended after submission may have started",
+      diagnostics,
+      error,
+    );
+  }
+  if (/Target page, context or browser has been closed|Page closed|page has been closed/i.test(message)) {
+    return codedError("PAGE_CLOSED", "The CLI-owned ChatGPT tab closed during the operation", diagnostics, error);
+  }
+  if (/Extension (?:connection closed|not connected|request timeout)|Browser disconnected|No Playwright pages are available|fetch failed/i.test(message)) {
+    return codedError("RELAY_DISCONNECTED", "The Playwriter connection to the selected browser Profile was interrupted", diagnostics, error);
+  }
+  return error;
+}
+
+function isRecoverableBrowserError(error) {
+  return ["PAGE_CLOSED", "RELAY_DISCONNECTED", "ASK_RESPONSE_INTERRUPTED"].includes(error?.code);
+}
+
+function canRetry(input, error) {
+  if (["doctor", "login", "inspect", "source-list"].includes(input.command)) return true;
+  return input.command === "ask" && ["pre_submit", "submitted_confirmed"].includes(error?.diagnostics?.phase);
 }
 
 async function defaultDiscovery({ home = homedir() } = {}) {
@@ -148,23 +211,57 @@ export async function openBrowserTransport(input, {
   const runtime = await discover();
   const browser = chooseConnectedBrowser(runtime.browsers);
   const session = await runtime.client.createSession({ browserKey: browser.key, cwd });
-  const program = workflowProgram(input);
+  let program = workflowProgram(input);
   const timeout = operationTimeout(input);
+  const execute = async (attempts, recoveryAttempted) => {
+    try {
+      const execution = await runtime.client.execute(session.id, program, timeout);
+      if (execution.isError) throw new Error(execution.text);
+      return execution;
+    } catch (error) {
+      throw classifyBrowserError(error, input, { attempts, recoveryAttempted });
+    }
+  };
   let execution;
   try {
-    execution = await runtime.client.execute(session.id, program, timeout);
+    execution = await execute(1, false);
   } catch (error) {
-    if (!recoverableExtensionError(error)) {
+    if (!isRecoverableBrowserError(error) || !canRetry(input, error)) {
       await runtime.client.deleteSession(session.id).catch(() => {});
       throw error;
     }
-    await runtime.client.waitForBrowser(browser.key);
-    await runtime.client.resetSession(session.id);
-    execution = await runtime.client.execute(session.id, program, timeout);
-  }
-  if (execution.isError) {
-    await runtime.client.deleteSession(session.id).catch(() => {});
-    throw new Error(execution.text);
+    try {
+      await runtime.client.waitForBrowser(browser.key);
+    } catch (waitError) {
+      await runtime.client.deleteSession(session.id).catch(() => {});
+      throw codedError(
+        "BROWSER_NOT_CONNECTED",
+        "The originally selected browser Profile did not reconnect in time",
+        { phase: error.diagnostics?.phase ?? "unknown", recovery_attempted: true, attempts: 1 },
+        waitError,
+      );
+    }
+    try {
+      await runtime.client.resetSession(session.id);
+    } catch (resetError) {
+      await runtime.client.deleteSession(session.id).catch(() => {});
+      throw codedError(
+        "RELAY_DISCONNECTED",
+        "The Playwriter session could not reconnect to the selected browser Profile",
+        { phase: error.diagnostics?.phase ?? "unknown", recovery_attempted: true, attempts: 1 },
+        resetError,
+      );
+    }
+    if (error.code === "ASK_RESPONSE_INTERRUPTED") {
+      input = { ...input, resumeConversationUrl: error.diagnostics.conversation_url };
+      program = workflowProgram(input);
+    }
+    try {
+      execution = await execute(2, true);
+    } catch (retryError) {
+      await runtime.client.deleteSession(session.id).catch(() => {});
+      throw retryError;
+    }
   }
   return {
     mode: "extension",

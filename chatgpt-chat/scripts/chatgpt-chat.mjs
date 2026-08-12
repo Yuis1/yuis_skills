@@ -13,8 +13,8 @@ function publicError(message) {
 
 function parseArguments(argv) {
   const [command, ...rest] = argv;
-  if (!new Set(["login", "inspect", "ask", "source-list", "source-add", "source-remove"]).has(command)) {
-    throw publicError("usage: chatgpt-chat <login|inspect|ask|source-list|source-add|source-remove> [options]");
+  if (!new Set(["doctor", "login", "inspect", "ask", "source-list", "source-add", "source-remove"]).has(command)) {
+    throw publicError("usage: chatgpt-chat <doctor|login|inspect|ask|source-list|source-add|source-remove> [options]");
   }
   const input = {
     command,
@@ -116,6 +116,17 @@ function validateResult(input, result) {
   if (!result || result.schema_version !== 1 || result.command !== input.command) {
     throw publicError("browser adapter returned an invalid result");
   }
+  if (input.command === "doctor") {
+    const valid = result.status === "ready"
+      && /^(edge|chrome)$/.test(result.browser_family)
+      && result.profile_selection === "single"
+      && result.extension === "online"
+      && result.chatgpt_tab?.created === true
+      && result.chatgpt_tab?.authentication === "authenticated"
+      && result.chatgpt_tab?.closed_by_cli === true;
+    if (!valid) throw publicError("browser preflight contract not satisfied");
+    return result;
+  }
   if (input.command === "login") {
     if (result.status !== "login_window_open") throw publicError("browser adapter returned an invalid login result");
     return result;
@@ -168,15 +179,27 @@ function recordDiagnostic(error) {
   chmodSync(path, 0o600);
 }
 
+function publicDiagnostics(error) {
+  const diagnostics = error?.diagnostics;
+  if (!diagnostics || typeof diagnostics !== "object") return "";
+  const allowed = ["phase", "recovery_attempted", "attempts", "diagnostic_id"];
+  const fields = allowed
+    .filter((key) => diagnostics[key] !== undefined)
+    .map((key) => `${key}=${String(diagnostics[key])}`);
+  return fields.length ? ` (${fields.join(", ")})` : "";
+}
+
 async function main() {
   const input = parseArguments(process.argv.slice(2));
   validateAttachmentPaths([...input.attachmentPaths, ...input.sourcePaths]);
   const adapterUrl = process.env.CHATGPT_CHAT_ADAPTER_MODULE
     ?? new URL("../lib/browser-cdp-adapter.mjs", import.meta.url).href;
   const adapter = await import(adapterUrl);
-  const result = input.command === "login"
-    ? await adapter.login({ cwd: input.cwd })
-    : input.command === "inspect"
+  const result = input.command === "doctor"
+    ? await adapter.doctor({ cwd: input.cwd })
+    : input.command === "login"
+      ? await adapter.login({ cwd: input.cwd })
+      : input.command === "inspect"
       ? await adapter.inspect({ cwd: input.cwd })
       : input.command === "ask"
         ? await adapter.ask({
@@ -205,12 +228,16 @@ main().then(
       BROWSER_NOT_CONNECTED: "BROWSER_NOT_CONNECTED: start Edge or Chrome with its managed Playwriter extension and retry",
       BROWSER_PROFILE_AMBIGUOUS: "BROWSER_PROFILE_AMBIGUOUS: keep exactly one Profile connected in the preferred browser family",
       BROWSER_BUSY: "BROWSER_BUSY: another ChatGPT browser operation is active; wait for it to finish",
+      PAGE_CLOSED: "PAGE_CLOSED: the CLI-owned ChatGPT tab closed; keep the browser running and retry",
+      RELAY_DISCONNECTED: "RELAY_DISCONNECTED: the browser extension connection was interrupted; keep the same Profile running and retry",
+      ASK_SUBMISSION_UNKNOWN: "ASK_SUBMISSION_UNKNOWN: the connection ended after sending may have started; check the conversation before retrying",
     };
     if (!(error instanceof PublicError) && !safeAdapterMessages[error?.code]) recordDiagnostic(error);
     const message = error instanceof PublicError
       ? error.message
       : safeAdapterMessages[error?.code]
-        ?? "browser operation failed; inspect local diagnostics for details";
+        ? `${safeAdapterMessages[error.code]}${publicDiagnostics(error)}`
+        : "BROWSER_OPERATION_FAILED: the browser operation failed; retry once or ask the repository Owner to inspect diagnostics";
     process.stderr.write(`${message}\n`);
     process.exit(1);
   },

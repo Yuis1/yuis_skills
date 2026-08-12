@@ -12,11 +12,11 @@ The runtime never reads or copies cookies. Each command creates a Playwriter ses
 
 A healthy Playwriter extension survives page reload and navigation and automatically reconnects its WebSocket. Local relay logs also showed automatic reconnection after close code 1001 without a user click. Refreshing ChatGPT is not itself a reconnect mechanism: while the control channel is down, automation cannot issue a page refresh through that channel.
 
-The transport instead waits for the same stable browser key to reappear, resets the Playwriter session, and retries the complete idempotent pre-send workflow once. Operations remain serialized to avoid the previous overload pattern of 16 concurrent clients and a large injected script timing out. Recovery is bounded; ambiguity or repeated failure remains fail-closed.
+The transport instead waits for the same stable browser key to reappear, resets the Playwriter session, discards old Page handles, and creates a fresh task-owned tab. Read-only operations and a provably pre-submit `ask` retry at most once. After ChatGPT has assigned a conversation URL, recovery may resume response observation in a fresh owned tab without sending again. If submission cannot be proved either way, the command returns `ASK_SUBMISSION_UNKNOWN` and does not retry. Operations remain serialized to avoid the previous overload pattern of 16 concurrent clients and a large injected script timing out.
 
 ## Security boundary
 
-The existing Profile avoids duplicate login but gives the extension broad authority over Profile pages. The product workflow narrows its intended behavior to a new ChatGPT tab, although this restriction is policy enforced rather than browser least privilege. Browser credentials, storage, headers, signed URLs, and receipts are never emitted.
+The existing Profile avoids duplicate login but gives the extension broad authority over Profile pages. The product workflow narrows its intended behavior to a newly created task-owned tab and never enumerates or closes existing tabs, although this restriction is policy enforced rather than browser least privilege. Navigation is not domain-allowlisted because third-party federated login must remain possible. Browser credentials, storage, headers, signed URLs, Profile labels, and receipts are never emitted.
 
 ## ChatGPT UI contract
 
