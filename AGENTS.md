@@ -132,10 +132,7 @@ Use first-principles reasoning when solving problems, fixing defects, designing 
 
 ## 6. Reporting
 
-Use terminology from CONTEXT.md wherever possible and explain the work clearly enough for someone who has not read the code.
-
-- If a term does not appear in CONTEXT.md, explain it before using it.
-- Keep reports compact: do not restate the problem or pile up background.
+Communicate in plain, accessible language so that someone who has not read the code can understand. If a term does not appear in CONTEXT.md, explain it first.
 
 Report in this order:
 
@@ -146,7 +143,5 @@ Report in this order:
 
 ## Runtime Constraints
 
-- Spend time thinking; you do not need to use the commentary channel to report progress to me.
-- DO NOT send optional commentary. If a higher-level instruction requires progress updates, output only one necessary status line—no fragments of reasoning, repeated plans, or optional commentary.
 - Use `trash-cli` to delete files. Permanent deletion, `git reset`, `git restore`, `git clean`, and other dangerous operations require the user's explicit approval first.
 - Resolve merge or rebase conflicts with `resolving-merge-conflicts`, hunk by hunk according to both sides' original intent; do not use `--abort`.
