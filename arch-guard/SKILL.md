@@ -18,13 +18,15 @@ Automatically block only risks that are important, stable, objectively decidable
    - Stable, high value, low false-positive rate: put it in merge-request CI and allow it to block.
    - Requires contextual judgment: put it in a Review Checklist or ADR.
    - Infrequent or expensive: put it in specialized verification.
-5. For a legacy project, establish a baseline first and block only new or worsened violations. Do not mechanically split or compress code merely to pass.
-6. For every exception, record the rule, reason, scope, Owner, risk, review date, retirement condition, and tracking item.
+5. For historical quality debt, establish a baseline and block new or worsened violations. This is not an exemption for known security, data-loss or authorization defects. Do not mechanically split or compress code merely to pass.
+6. Record exceptions with rule, reason, scope, Owner, risk, review date and retirement condition in the existing issue, ADR or check configuration; avoid a duplicate ledger.
 
 ## Gate Responsibilities
 
+Map these responsibilities to the project's existing checks; the labels do not require five separate pipelines.
+
 - **Static Gate:** formatting, Lint, types, and rules directly decidable by static tools.
-- **Architecture Gate:** dependency direction, cycles, Owners, and static boundaries. It cannot prove runtime behavior.
+- **Architecture Gate:** dependency direction, cycles, explicit Owner declarations and static boundaries. It cannot establish business ownership or runtime behavior by itself.
 - **Test Gate:** public behavior, state transitions, real components, or controlled integrations.
 - **Preflight:** a fast local entry point that must share its decision implementation with CI; local success does not replace CI.
 - **Toolchain-Evidence Gate:** pins tools and environments and preserves actual exit results, skipped items, and evidence locations.

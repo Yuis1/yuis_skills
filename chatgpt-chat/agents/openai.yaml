@@ -1,4 +1,4 @@
 interface:
   display_name: "ChatGPT Web"
-  short_description: "Consult ChatGPT Web through the user's existing Edge/Chrome Profile"
+  short_description: "Research hard, repo-independent questions across many sources"
   default_prompt: "Use the normal $chatgpt-chat CLI path for this consultation. Leave browser selection, extension reconnection, and tab lifecycle to the CLI. Manage reviewed and redacted Project Sources only when the user explicitly requests it. Do not read implementation or research documentation unless the CLI returns an explicit error code."

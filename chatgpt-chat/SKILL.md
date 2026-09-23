@@ -1,10 +1,22 @@
 ---
 name: chatgpt-chat
-description: Consult ChatGPT Web through the user's authenticated Microsoft Edge or Google Chrome Profile.
+description: Consult ChatGPT Web through the user's authenticated Edge or Chrome Profile when research is separable from repository-file analysis, frontier or difficult, and requires extensive online literature; also use when explicitly requested.
 compatibility: Managed Linux desktop with Microsoft Edge or Google Chrome, the Playwriter extension, and the chatgpt-chat CLI.
 ---
 
 # ChatGPT Chat
+
+## When to Use
+
+Decide whether this Skill applies before running `command -v chatgpt-chat`, `inspect`, `doctor`, or any browser operation. For automatic invocation, **all three** conditions must hold:
+
+1. The research question is reasonably separable from analysis of repository files or diffs. The repository may provide context, but its files are not the main evidence needed for the answer.
+2. The subject is frontier or genuinely difficult.
+3. The answer requires extensive online literature from multiple sources, beyond a small documentation lookup.
+
+For example, a difficult emerging research question requiring a broad literature review can qualify. Routine repository troubleshooting, code or diff review, local-file analysis, and a question answered by a few documentation pages do not qualify merely because they involve planning, architecture, or an important decision.
+
+If the user explicitly requests `chatgpt-chat` or ChatGPT Web, follow that instruction through the normal path below. The automatic-invocation gate does not override an explicit request or the security boundary.
 
 ## Normal Path
 

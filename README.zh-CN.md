@@ -30,7 +30,7 @@
 | 判断验证是否真正成立 | `test-evidence` | 区分行为、静态和非代码证据，安全迁移遗留测试 |
 | 开发或优化 Agent 产品 | `agent-dev` | 版本化治理 Prompt、模型、Schema、工具、编排和评测 |
 | 组织多 Agent 并行工作 | `agent-team` | 控制派发成本、会话复用、工作树、Writer 与 Reviewer 权限 |
-| 咨询已登录的 ChatGPT Web | `chatgpt-chat` | 通过用户现有 Edge/Chrome Profile 管理 Project、长回答与附件 |
+| 研究可与仓库文件分析分离、前沿或有难度且需大量在线文献的问题 | `chatgpt-chat` | 通过用户现有 Edge/Chrome Profile 咨询 ChatGPT Web |
 
 常见组合：
 
@@ -60,7 +60,7 @@
 |---|---|---|
 | 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team` | 系统架构、演进、自动守护、重构、证据与 Agent 协作 |
 | [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`、`grill-me`、`grill-with-docs`、`prototype`、`to-spec`、`to-tickets`、`wayfinder`、`implement`、`ask-matt`、`research`、`code-review`、`tdd`、`diagnosing-bugs`、`improve-codebase-architecture`、`resolving-merge-conflicts` | 需求对齐、规划、实现、测试、排障、代码评审与模块设计 |
-| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `gpt-taste`、`design-taste-frontend`、`redesign-existing-projects` | 新前端设计与既有界面翻新 |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend`、`redesign-existing-projects` | 新前端设计与既有界面翻新 |
 
 `agent-team` 还依赖 Paseo 环境提供的 `paseo-advisor` 和 `paseo-committee`。不使用 Paseo 时，不要安装 `agent-team`，并删除 `AGENTS.md` 中对应的技能指引。
 
@@ -81,6 +81,8 @@
 - 结构检查负责发现镜像缺失，以及标题、代码块、链接、路径、命令和规范性标记等易分叉内容的差异；语言质量和语义等价仍须由人工或语义复审保证。
 
 任何一种语言都不是翻译分支或次级事实源。如果一项修改无法在不改变含义的前提下同步到另一版本，应停止合并并先解决底层内容决策。修改流程和验证边界详见[双语维护契约](docs/bilingual-maintenance.zh-CN.md)。
+
+[2026 年 9 月维护记录](docs/optimization-2026-09-23.md)说明当前的触发和授权边界。
 
 ## 安装
 
@@ -130,8 +132,10 @@ git -C ../taste-skill checkout --detach \
 
 npx skills@latest add ../mattpocock-skills --global --skill '*'
 npx skills@latest add ../taste-skill --global \
-  --skill design-taste-frontend gpt-taste redesign-existing-projects
+  --skill design-taste-frontend redesign-existing-projects
 ```
+
+原版 `gpt-taste` 要求模拟执行并无条件采用营销布局，因此不纳入受控安装集合。其余视觉技能仅在产品任务适用时选择，保留已有设计系统和功能。
 
 ### 用户级规则
 

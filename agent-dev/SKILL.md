@@ -1,29 +1,28 @@
 ---
 name: agent-dev
-description: Govern an Agent product's Prompts, models, Schemas, tools, and evaluations.
+description: Change agent prompts, models, tool contracts or orchestration and compare behavior. Ordinary application edits do not require this workflow.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
 # Agent Development
 
-## Changes and Evaluation
+## Define and Verify the Change
 
-- Changes to Prompts, models, Schemas, tools, and Agent orchestration must be versioned. Use the same evaluation set to compare gains, regressions, and cost.
-- Do not disguise decisions that require semantic understanding as model decisions by using case-specific regexes, keywords, or fixed phrasing. Fixed protocols, identifiers, hard safety constraints, and auditable deterministic rules are exceptions.
-- Do not ask an LLM to emit large blocks of code, structured content, or SVG in one pass. Prefer JSON plus templates; if it must emit code or large structured content, use multiple React rounds.
+Version prompt, model, schema, tool and orchestration changes. Identify the intended behavior, a representative case and the failure or cost to improve; compare candidates on the same relevant inputs and report regressions and evidence gaps.
 
-## Optimization Order
+Diagnose inputs, context, tools and the task boundary before adding prompt rules. Fix a known cause directly; add an orchestration step only when its measured benefit warrants the extra work. Follow existing model policy rather than maintaining another default table.
 
-- When Agent behavior is unsatisfactory, do not patch or paper over it with more rule code. Optimize in this order:
-  1. Check the input, context, and task boundary.
-  2. Establish reproduction cases and an evaluation set.
-  3. Improve the Prompt, Schema, and tools.
-  4. Adjust model configuration.
-  5. Adjust or add orchestration nodes only after demonstrating that the benefit exceeds the cost.
+Use semantic judgment for semantic decisions. Deterministic parsing, identifiers, authorization checks and auditable protocol rules remain deterministic; do not dress brittle keyword matching up as model reasoning.
 
-## Prompt Writing
+## Generate and Inspect Useful Units
 
-- Use business language the role understands. Unless the role itself serves development, operations, or testing, do not expose internal module names, configuration-package names, implementation names, pipeline names, or debugging semantics.
-- Optimize the KV Cache without changing meaning or message priority. Order Prompt content from most stable to least stable: invariant system rules → low-frequency context → medium- and high-frequency context → current-turn input.
-- Remove deprecated fields, outputs that are always empty, and legacy model-specific formats from the Prompt. The runtime owns compatibility logic.
+Choose output size from the task and the available validation feedback. A complete file or mechanical transformation can be generated in one pass. Split uncertain or long work into independently checkable units, inspect each result and continue. Use JSON with trusted templates only when a repeated structure benefits from that approach. Never substitute simulated tool output for execution evidence or require disclosure of private reasoning.
+
+## Keep Prompts Relevant
+
+Use language the intended role understands. Expose implementation names only when they help that role make a decision. Remove deprecated fields, permanently empty outputs and obsolete provider formats; the runtime owns compatibility.
+
+Keep reusable instructions stable where useful, without changing meaning or instruction priority for cache savings. Verify provider caching behavior before claiming a performance gain.
+
+Deliver the behavior change, comparison cases, actual results and remaining limits. Use `test-evidence` for configuration or integration claims; model availability alone does not prove task quality.

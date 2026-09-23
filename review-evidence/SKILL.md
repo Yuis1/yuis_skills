@@ -32,18 +32,18 @@ Complete the structural and contract self-review first, then freeze the candidat
 - exact commands, actual results, and exit status; and
 - skipped items, evidence gaps, and remaining risk.
 
-When the Commit, baseline, environment, or verification input changes, the old evidence becomes invalid immediately. Do not manually copy facts a tool can generate—such as SHAs, counts, and exit results—into a second authoritative source.
+Evidence remains a record of its original candidate. When the candidate, baseline, environment or inputs change, assess the impact and rerun affected checks; justify any reuse by unchanged inputs and dependencies. High-risk boundaries may require a full rerun. Do not manually copy facts a tool can generate—such as SHAs, counts, and exit results—into a second authoritative source.
 
 ## Independent Verification
 
-The Reviewer starts from the acceptance matrix and evidence package:
+Use fresh review context, the specification and raw evidence; copying the author's conclusions into a different model does not establish independence. The Reviewer starts from the acceptance matrix and evidence package:
 
 1. Independently confirm the change scope, Owners, and true dependency closure.
 2. Sample critical commands by risk instead of mechanically rerunning every command.
-3. Check behavioral contracts as well as boundary leakage, pass-through layers, implicit call order, and representative change amplification.
+3. Check behavioral contracts, adding structural checks for boundary leakage, forwarding and change amplification only where the affected scope requires them.
 4. Classify each failure explicitly as a regression in this change, historical baseline, test defect, flaky failure, environment failure, or not executed.
 5. When work is skipped, not executed, or under-evidenced, state “unproven”; do not report it as passed.
 
 ## Completion Criteria
 
-Every item in the acceptance matrix has evidence tied to the current candidate or an explicit gap; all `must_remove` and `must_retain` items have been checked; and every remaining risk has an Owner. See `test-evidence` for evidence capability, `system-design` for structural architecture review, and `agent-team` for session and permission isolation of independent Reviewers.
+The review is complete when every acceptance item has candidate-bound evidence or a recorded gap, `must_remove` and `must_retain` are checked, and risks have an Owner. Acceptance passes only when mandatory checks pass; gaps mean unproven unless an authorized, explicit exception accepts them. Report review completion, verification success and exception acceptance separately. See `test-evidence` for evidence capability, `system-design` for structural architecture review, and `agent-team` for session and permission isolation of independent Reviewers.

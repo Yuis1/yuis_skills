@@ -1,27 +1,34 @@
 ---
 name: agent-team
-description: Organize delegation, sessions, and worktrees for parallel multi-Agent work.
+description: Organize authorized parallel work, session handoffs and worktree writers. Routine single-agent tasks do not need a team.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-# Organizing Parallel Development
+# Organizing Parallel Work
 
-## Delegation Principle
+## Decide Whether to Delegate
 
-Coase's theorem: delegate only when the benefit of a Sub-agent significantly exceeds the cost of delegation.
+Follow the user's and active runtime's delegation limits first. Delegate only independent work whose benefit exceeds startup, handoff and integration cost. Routine planning stays with the parent; an advisor or committee needs a concrete unresolved question or an explicit request.
 
-## Planning and Sessions
+Only the root agent delegates. Children and reviewers report missing help to their parent instead of creating further agents, including detached agents or agents started through another tool.
 
-- During planning, use `paseo-advisor` or `paseo-committee` according to task difficulty, selecting among the strongest available ChatGPT, Claude, GLM, and other models.
-- Prefer reusing a session when the task depends on continuing context, or when starting a new session would require reading many of the same files. For temporary network or rate-limit failures, send “continue” and wait ten minutes.
-- Use a stronger model or reasoning level in the existing session when the current intelligence level cannot handle the task—for example, after more than three rounds of major rework on the same task. Compress the context before changing models.
-- Start a new session when most of the context required by the task has changed.
+## Give the Worker a Bounded Task
 
-## Permissions and Worktrees
+State the goal, input or candidate version, read/write scope, acceptance checks, prohibited side effects and expected return. Read `delegation-models` when available for unspecified model and effort defaults; explicit user choices win. Do not change the parent's model, the manual picker or global configuration to satisfy a worker assignment.
 
-- Codex: use `modeId=full-access` for writes or runtime verification; `auto` is sufficient for static review only.
-- Paseo Worktree: record the baseline SHA first. After creation, verify that both `HEAD` and `merge-base` equal that SHA; do not trust the branch name alone.
-- Only the Root Agent may delegate Sub-agents. By default, Sub-agents must not create, start, or delegate other Agents, including Paseo run/create and detached or root Agents; they ask the parent Agent when assistance is needed.
-- Each worktree may have at most one full-access Writer at a time. Reviewers must not delegate further.
-- Every task that must report back is created by the parent Agent with `relationship=subagent` and `notifyOnFinish=true`. Do not poll; archive the Agent promptly after completion.
+Use the current runtime's exposed tool schema and, for Paseo, its installed official `paseo` skill. Codex native delegation and Paseo creation have different interfaces; do not copy arguments between them or guess unavailable options. Workspace placement and parentage are distinct.
+
+## Isolate Writes and Permissions
+
+- Each worktree has at most one active writer, regardless of permission mode. Give concurrent writers separate worktrees; reviewers remain read-only unless authorized otherwise.
+- Use permissions sufficient for the authorized task. A test writing cache files does not itself require unrestricted host access; a mode name is not proof of isolation.
+- Before branching off, record the resolved baseline SHA and verify the new HEAD and merge-base against it. For an existing branch or PR, verify the requested ref and comparison base instead of requiring its HEAD to equal the base.
+
+## Continue, Recover and Finish
+
+Reuse a session when its task, relevant context and permission boundary still match. Use fresh context for independent review or substantially changed work; summarize evidence pointers when handing off, not automatically before every model change.
+
+Classify failure before retrying. Retry only safe transient operations within the task's budget. If an external submission may have happened, query its status or report uncertainty; never blindly resend. Missing inputs and broken tools need their own fixes, not a stronger model or a fixed wait.
+
+Use completion notifications when supported; make bounded status checks when notifications fail, a budget expires or the user asks. Read and integrate results before archiving, and keep a session available when follow-up is expected. Completion means the parent has checked the result against the task and reported remaining gaps.
