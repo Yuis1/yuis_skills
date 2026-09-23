@@ -18,6 +18,7 @@ PAIRS = (
     (ROOT / "README.md", ROOT / "README.zh-CN.md"),
     (ROOT / "AGENTS.md", ROOT / "AGENTS.zh-CN.md"),
     (ROOT / "docs/bilingual-maintenance.md", ROOT / "docs/bilingual-maintenance.zh-CN.md"),
+    (ROOT / "docs/optimization-2026-09-23.md", ROOT / "docs/optimization-2026-09-23.zh-CN.md"),
     (ROOT / "docs/research/bilingual-agent-skills.md", ROOT / "docs/research/bilingual-agent-skills.zh-CN.md"),
     *((directory / "SKILL.md", directory / "SKILL.zh-CN.md") for directory in SKILL_DIRS),
     (ROOT / "system-design/COMPONENTS.md", ROOT / "system-design/COMPONENTS.zh-CN.md"),

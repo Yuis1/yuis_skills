@@ -1,6 +1,6 @@
 ---
 name: arch-evolve
-description: Plan system evolution and breaking migrations. Use for architectural quanta, service coupling, shared databases, or Expand-Contract.
+description: Plan breaking data or protocol migrations and changes that require coordinated deployment or recovery.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
@@ -11,11 +11,7 @@ Evolution does not replace an architecture all at once. Keep the system operable
 
 ## Find the Real Coupling First
 
-An architectural quantum is an independently deployable artifact with:
-
-- high functional cohesion;
-- high static coupling; and
-- synchronous dynamic coupling.
+First identify what must change, deploy or recover together. An architectural quantum names such a runtime-coupled deployment unit; it is a diagnostic concept, not a reason to add coupling.
 
 Do not judge evolutionary capacity from labels such as “monolith” or “microservices.” Enumerate:
 
@@ -25,7 +21,7 @@ Do not judge evolutionary capacity from labels such as “monolith” or “micr
 - **Coordination:** central orchestration or service choreography.
 - **Connascence:** when one part changes, which other parts must change with it to preserve correctness.
 
-A shared database, a central orchestrator, or a UI synchronously and tightly coupled to every service often compresses multiple services into one quantum. Independent deployment does not automatically mean independent evolution.
+A shared database, orchestrator or synchronous UI can require coordinated changes. Check version compatibility, failure propagation and actual deployment requirements before concluding that services form one unit.
 
 ## Plan a Safe Migration
 
@@ -35,6 +31,8 @@ By default, split breaking data or protocol changes into three phases:
 2. **Migrate:** switch consumers one at a time; verify every step independently and continuously observe whether the old path is still in use.
 3. **Contract:** remove the old structure and path only after every consumer has moved, the compatibility window has ended, and the evidence is complete.
 
+If no concurrent consumers need compatibility and an authorized maintenance window is acceptable, a validated offline cutover can be simpler than dual writes.
+
 This is safe roll-forward, not a rollback guarantee. Mark irreversible points—such as dropping tables or columns, discarding data, and retiring an old protocol—individually. Rollback capability must be proven item by item.
 
 ## Migration Discipline
@@ -43,8 +41,8 @@ This is safe roll-forward, not a rollback guarantee. Mark irreversible points—
 - When separating a shared database, establish the data Owner first, migrate readers and writers next, and remove shared access last.
 - Synchronization and dual writes require an explicit Owner, validation method, deadline, and deletion condition.
 - Protect correctness, compatibility, and observability throughout the migration. Do not excuse current inconsistency by saying that the migration will eventually finish.
-- Persistently increasing cycle time indicates slower evolutionary feedback; reduce slice size or coupling.
+- Longer cycle time is a diagnostic signal: distinguish coupling from environment, requirement and review delays before changing the design.
 
 ## Delivery Evidence
 
-Produce a quantum map, coupling inventory, migration phases, acceptance criteria for every phase, irreversible points, recovery strategy, and old-path deletion conditions. See `system-design` for static structure, `safe-refactor` for the execution cadence of code-level old-path migration, and `arch-guard` for continuous enforcement.
+One migration table can cover affected consumers, phases, acceptance checks, irreversible points, recovery and old-path exit conditions. See `system-design` for static structure, `safe-refactor` for the execution cadence of code-level old-path migration, and `arch-guard` for continuous enforcement.

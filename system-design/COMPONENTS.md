@@ -34,12 +34,14 @@ Stability describes dependency position, not frequency of change.
 - Abstractness `A = number of abstract types / total number of types`, ranging from 0 to 1.
 - Distance from the main sequence `D = |A + I - 1|`, ranging from 0 to 1.
 
+If a denominator is zero, the corresponding metric is undefined. Language and type models affect these measures; do not compare unlike projects as if the values were universal.
+
 A component with `D` near 1 merits review:
 
 - stable and concrete: difficult to change and extend;
 - unstable and highly abstract: abstractions with no consumers.
 
-These values only locate risk and must not drive decomposition on their own. Prefer validation through a representative change: how many components would one real requirement modify, rebuild, and redeploy?
+Stable concrete value types and libraries can be appropriate; a metric is not a reason to introduce abstraction. These values only locate risk and must not drive decomposition on their own. Prefer validation through a representative change: how many components would one real requirement modify, rebuild, and redeploy?
 
 ## Make Boundaries Enforceable
 

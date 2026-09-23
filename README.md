@@ -30,7 +30,7 @@ The project systematizes those lessons as a user-level `AGENTS.md` and a collect
 | Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; migrate legacy tests safely |
 | Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through versioning |
 | Organize parallel multi-Agent work | `agent-team` | Control delegation cost, session reuse, worktrees, and Writer/Reviewer permissions |
-| Consult an authenticated ChatGPT Web session | `chatgpt-chat` | Manage Projects, long-form responses, and attachments through the user's existing Edge/Chrome Profile |
+| Research a frontier or difficult question separable from repository files that needs extensive online literature | `chatgpt-chat` | Consult ChatGPT Web through the user's existing Edge/Chrome Profile |
 
 Common combinations:
 
@@ -60,7 +60,7 @@ The file deliberately keeps only cross-project principles and hard constraints p
 |---|---|---|
 | This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team` | System architecture, evolution, automated enforcement, refactoring, evidence, and Agent collaboration |
 | [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`, `grill-me`, `grill-with-docs`, `prototype`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `ask-matt`, `research`, `code-review`, `tdd`, `diagnosing-bugs`, `improve-codebase-architecture`, `resolving-merge-conflicts` | Requirements alignment, planning, implementation, testing, diagnosis, code review, and module design |
-| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `gpt-taste`, `design-taste-frontend`, `redesign-existing-projects` | New frontend design and modernization of existing interfaces |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend`, `redesign-existing-projects` | New frontend design and modernization of existing interfaces |
 
 `agent-team` also depends on the `paseo-advisor` and `paseo-committee` capabilities provided by a Paseo environment. If you do not use Paseo, do not install `agent-team`, and remove the corresponding Skill guidance from `AGENTS.md`.
 
@@ -81,6 +81,8 @@ English and Simplified Chinese are equal-authority mirrors. Contributors may mai
 - Structural checks detect missing mirrors and drift-prone differences in headings, code blocks, links, paths, commands, and normative markers. Human or semantic review remains responsible for linguistic quality and meaning equivalence.
 
 Neither language is a translation branch or a secondary source. If a proposed edit cannot be mirrored without changing meaning, stop and resolve the underlying content decision before merging. See the [bilingual maintenance contract](docs/bilingual-maintenance.md) for the editing workflow and validation boundary.
+
+The [September 2026 maintenance record](docs/optimization-2026-09-23.md) explains the current trigger and authorization boundaries.
 
 ## Installation
 
@@ -130,8 +132,10 @@ git -C ../taste-skill checkout --detach \
 
 npx skills@latest add ../mattpocock-skills --global --skill '*'
 npx skills@latest add ../taste-skill --global \
-  --skill design-taste-frontend gpt-taste redesign-existing-projects
+  --skill design-taste-frontend redesign-existing-projects
 ```
+
+The original `gpt-taste` skill is excluded from the managed install set because it requests simulated execution and unconditional marketing layouts. Select the remaining visual skills only when the product brief fits; preserve existing design systems and functionality.
 
 ### User-Level Rules
 
