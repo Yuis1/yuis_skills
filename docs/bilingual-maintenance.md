@@ -13,7 +13,7 @@ English and Simplified Chinese documents in this repository are equal-authority 
 
 ## Editing Workflow
 
-1. Edit either language in the contributor's native language.
+1. Start with the version in the contributor's native language.
 2. Update the paired document before merging. Preserve every requirement, prohibition, default, exception, example, command, link, and scope boundary.
 3. Run:
 

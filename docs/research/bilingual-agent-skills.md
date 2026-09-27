@@ -2,7 +2,7 @@
 
 # Bilingual and multilingual Agent Skills repositories
 
-**Research date:** 2026-08-12. This note uses the current local Pi 0.83.0 documentation and the first-party documentation for the Agent Skills specification, Codex CLI 0.146.0, Claude Code 2.1.220, and OpenCode 1.18.9.
+**Research date:** 2026-08-12. This note uses the Pi 0.83.0 documentation available locally at the time of research and the first-party documentation for the Agent Skills specification, Codex CLI 0.146.0, Claude Code 2.1.220, and OpenCode 1.18.9.
 
 ## Decision summary
 
@@ -19,7 +19,7 @@ skill-name/
 
 The repository's existing `SKILL.zh-CN.md` naming is also safe **when it stays inside the canonical skill directory**. `references/zh-CN.md` is the more explicit Agent Skills layout. In either form, do not add a second `SKILL.md`, a `foo-zh` skill directory, or a localized `name` field.
 
-Language selection is a **post-discovery, model-level choice**, not a skill-discovery feature: the canonical body can say that an explicitly requested language takes precedence, otherwise the language of the user's latest request selects the corresponding reference. The selected reference changes presentation language only; it does not change the skill name, scope, tools, safety rules, or workflow. None of the reviewed standards defines a portable `language`, `locale`, translation relation, or locale-negotiation field.
+Language selection is a **post-discovery, model-level choice**, not a skill-discovery feature: the entry-point body can say that an explicitly requested language takes precedence, otherwise the language of the user's latest request selects the corresponding reference. The selected reference changes presentation language only; it does not change the skill name, scope, tools, safety rules, or workflow. None of the reviewed standards defines a portable `language`, `locale`, translation relation, or locale-negotiation field.
 
 Mechanical checks can prove discovery safety, mirror coverage, structural alignment, and preservation of high-risk literals and normative markers. They cannot prove that two natural-language documents have exactly the same meaning. Bilingual human review and paired behavioral evaluations remain required.
 
@@ -27,11 +27,11 @@ Mechanical checks can prove discovery safety, mirror coverage, structural alignm
 
 | Source | Relevant contract | Consequence for bilingual skills |
 |---|---|---|
-| [Agent Skills specification][spec] | A skill is a directory with `SKILL.md`; `name` and `description` are required; `name` must match the directory; other files and `references/` are allowed; loading is progressive. | A translation belongs among supporting resources, not beside the skill as a second entry point. Keep the identity fields only in the canonical file. |
-| [Agent Skills client-integration guide][integration] | Clients normally scan directories containing a file named exactly `SKILL.md`, disclose only name/description first, and must handle name collisions deterministically. | A second discovered file is a second catalog candidate. The client standard has no language-selection step to merge it back into the first skill. |
+| [Agent Skills specification][spec] | A skill is a directory with `SKILL.md`; `name` and `description` are required; `name` must match the directory; other files and `references/` are allowed; loading is progressive. | A translation belongs among supporting resources, not beside the skill as a second entry point. Keep the identity fields only in the entry-point file. |
+| [Agent Skills client-integration guide][integration] | Clients normally scan directories containing a file named exactly `SKILL.md`, disclose only name/description first, and must handle name collisions deterministically. | A second discovered file is a second candidate in the skill catalog. The client standard has no language-selection step to merge it back into the first skill. |
 | [Pi skills documentation][pi] | Pi scans `.agents/skills` and other locations for directories containing `SKILL.md` recursively; direct root `.md` files are a special case only in Pi-native roots. Missing descriptions are not loaded, unknown frontmatter is ignored, and same-name collisions warn and keep the first skill. | A non-`SKILL.md` translation nested inside the skill directory is not a second entry under the documented shared layout. Do not flatten it into a Pi-native root or create a nested `SKILL.md`. |
 | [Codex build-skills documentation][codex] | Codex scans `.agents/skills` at repository/user/admin/system scopes, supports symlinked skill folders, uses descriptions for implicit invocation, and does not merge same-name skills. `agents/openai.yaml` is optional UI/policy metadata. | One shared folder can be exposed to Codex. A Chinese display label can live in Codex-only UI metadata, but that metadata is not a portable locale selector. |
-| [Claude Code skills documentation][claude] | Project/personal skills use `<skill-name>/SKILL.md`; supporting files are loaded on demand; directory names determine ordinary command names; nested duplicate names can become directory-qualified variants. Claude-specific frontmatter extends the standard, while nonstandard fields can fail packaging outside Claude Code. | Keep the canonical frontmatter to the standard intersection for portability. A translation must be a referenced supporting file, not another Claude skill/command. |
+| [Claude Code skills documentation][claude] | Project/personal skills use `<skill-name>/SKILL.md`; supporting files are loaded on demand; directory names determine ordinary command names; nested duplicate names can become directory-qualified variants. Claude-specific frontmatter extends the standard, while nonstandard fields can fail packaging outside Claude Code. | Keep the entry-point frontmatter to the standard intersection for portability. A translation must be a referenced supporting file, not another Claude skill/command. |
 | [OpenCode Agent Skills documentation][opencode] | OpenCode searches `skills/*/SKILL.md` in `.opencode`, `.claude`, and `.agents` locations; it requires name-directory equality, lists skills by name/description, and tells users to keep names unique. | Do not rely on an extra nested `SKILL.md` being ignored by every client, and do not expose the same identity through multiple OpenCode search roots unless the resolved catalog has been checked. |
 
 The specification's `skills-ref validate` tool validates the skill directory and frontmatter; its reference implementation does not compare translated prose or supporting files. See the [reference library][skills-ref], especially its [`validator.py`][validator].
@@ -44,7 +44,7 @@ The specification's `skills-ref validate` tool validates the skill directory and
 2. Put the mirror at `SKILL.zh-CN.md` in the same skill directory. This repository chooses that explicit same-directory convention; `references/zh-CN.md` is also safe under the standard but is not used here. The mirror is a normal Markdown resource and should not contain a second Agent Skills frontmatter block. A short title, backlink, and machine-readable HTML comment are sufficient.
 3. Keep `SKILL.md` under the recommended size and link the mirror with a relative path. The spec and Pi both resolve supporting resources relative to the skill root; the spec recommends shallow references.
 4. Use an ASCII identity such as `agent-dev`, not `agent-dev-zh` and not a Chinese directory/name. The specification permits lowercase alphanumeric characters and hyphens, while OpenCode documents the stricter ASCII regex. ASCII is the safe intersection.
-5. Keep canonical frontmatter to the cross-client fields: `name`, `description`, `license`, `compatibility`, and `metadata`. Do not invent a top-level `language` or `locale` field. The spec's `allowed-tools` and each client's invocation-control fields have uneven support; use client-specific adapters when such behavior is necessary.
+5. Keep entry-point frontmatter to the cross-client fields: `name`, `description`, `license`, `compatibility`, and `metadata`. Do not invent a top-level `language` or `locale` field. The spec's `allowed-tools` and each client's invocation-control fields have uneven support; use client-specific adapters when such behavior is necessary.
 6. Keep executable code, paths, option names, environment variables, URLs, and assets shared. A translation must not fork operational artifacts.
 
 The current repository policy in [`README.md`](../../README.md#bilingual-maintenance) already states the key invariants: same directory, one discoverable `SKILL.md`, paired links, same-change-set updates, and structural checks followed by human semantic review. The paired [`agent-dev` files](../../agent-dev/SKILL.md) demonstrate the entry-point-to-mirror link. The Codex-specific [`agents/openai.yaml`](../../agent-dev/agents/openai.yaml) demonstrates a separate UI metadata layer; it does not create another skill identity.
@@ -67,7 +67,7 @@ Symlinks solve source duplication, not identity duplication. Codex and Claude do
 No reviewed client negotiates a skill locale. The portable approach is:
 
 1. Let the normal catalog discover `skill-name` from the English `SKILL.md` description.
-2. In the canonical body, state the selector in English so every client can follow it:
+2. In the entry-point body, state the selector in English so every client can follow it:
    - an explicit request for Chinese selects `SKILL.zh-CN.md`;
    - otherwise the language of the latest user request selects an available mirror;
    - if no mirror exists, use the canonical English instructions;
@@ -75,7 +75,7 @@ No reviewed client negotiates a skill locale. The portable approach is:
 3. Keep the skill command/mention unchanged (`/skill-name`, `$skill-name`, or the client's equivalent). Do not ask users to invoke a language-suffixed skill.
 4. If a client has a separate presentation layer, localize that layer there. For example, Codex's optional `agents/openai.yaml` can provide a Chinese display name or default prompt, but it does not alter discovery or create locale semantics.
 
-The canonical `description` should remain concise, describe what the skill does and when to use it, and contain trigger terms. If Chinese-only users need stronger implicit discovery, add a small set of Chinese trigger terms to that same description; do not add a second localized description as another catalog record. This follows the specification, Pi, and Codex guidance that descriptions drive activation.
+The entry-point `description` should remain concise, describe what the skill does and when to use it, and contain trigger terms. If Chinese-only users need stronger implicit discovery, add a small set of Chinese trigger terms to that same description; do not add a second localized description as another catalog record. This follows the specification, Pi, and Codex guidance that descriptions drive activation.
 
 A repository may let either language be edited first, but both files must change in one reviewable change set. Treat the shared unit IDs, commands, paths, and normative markers as the contract. This preserves the repository's equal-authority mirror policy without pretending that a client can discover two language variants as one object.
 
@@ -86,7 +86,7 @@ A small repository checker should run in addition to the standard validator. The
 ### 1. Discovery and identity
 
 - Find every intended canonical skill directory and assert exactly one uppercase `SKILL.md`.
-- Parse canonical frontmatter and run `skills-ref validate`; additionally require the stricter cross-client ASCII name regex and name-directory equality.
+- Parse entry-point frontmatter and run `skills-ref validate`; additionally require the stricter cross-client ASCII name regex and name-directory equality.
 - Assert that no mirror directory contains `SKILL.md`, that no mirror is installed as a sibling skill directory, and that no mirror has a second discoverable frontmatter entry.
 - Resolve the configured discovery roots and assert one effective skill identity per client. Report same-name collisions rather than relying on first-found order.
 - Check that every mirror path is inside the canonical skill directory, every link target exists, and all relative paths remain valid.
@@ -138,7 +138,7 @@ For each pull request touching a skill or mirror, the preflight/CI gate should b
 5. Paired English/Chinese evaluation for behaviorally significant changes.
 6. Human bilingual review for meaning, security, and usability.
 
-This yields one discoverable skill to all five clients, a predictable language choice after activation, and useful automated drift detection without claiming that a parser can certify translation quality.
+This gives each reviewed client one discoverable skill, a predictable language choice after activation, and useful automated drift detection without claiming that a parser can certify translation quality.
 
 ## Primary sources
 

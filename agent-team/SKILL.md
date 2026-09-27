@@ -13,7 +13,7 @@ Follow the user's and active runtime's delegation limits first. Delegate only in
 
 Only the root agent delegates. Children and reviewers report missing help to their parent instead of creating further agents, including detached agents or agents started through another tool.
 
-For a continuing objective, keep one consequential path under the root's direct ownership. Delegate outcomes that advance the objective, not a stream of tiny follow-ups that leaves the root only coordinating and accepting work.
+For a continuing objective, keep the root directly responsible for one workstream that materially advances the objective. Delegate outcomes that advance the objective, not a stream of tiny follow-ups that leaves the root only coordinating work and reviewing results.
 
 ## Give the Worker a Bounded Task
 
@@ -33,4 +33,4 @@ Reuse a session when its task, relevant context and permission boundary still ma
 
 Classify failure before retrying. Retry only safe transient operations within the task's budget. If an external submission may have happened, query its status or report uncertainty; never blindly resend. Missing inputs and broken tools need their own fixes, not a stronger model or a fixed wait.
 
-Use completion notifications when supported; make bounded status checks when notifications fail, a budget expires or the user asks. A worker completion notification is a result event, not a new user objective or a signal that the root objective is complete. Review and integrate the result, then recheck the original objective and choose the next action from its remaining bottlenecks. Continue authorized work unless the objective is complete, the user has paused it, or a decision is genuinely required. Report at meaningful milestones rather than ending a root turn for each worker result. Read results before archiving, and keep a session available when follow-up is expected. A worker task is complete when the parent has checked its result and recorded any remaining gap; that does not complete the root objective.
+Use completion notifications when supported; make bounded status checks when notifications fail, a budget expires or the user asks. A worker completion notification is a result event, not a new user objective or a signal that the root objective is complete. Review and integrate the result, then recheck the original objective and choose the next action from its remaining bottlenecks. Continue authorized work unless the objective is complete, the user has paused it, or a decision is genuinely required. Report at meaningful milestones rather than ending the root agent's turn whenever a worker returns a result. Read results before archiving, and keep a session available when follow-up is expected. A worker task is complete when the parent has checked its result and recorded any remaining gap; that does not complete the root objective.

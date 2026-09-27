@@ -13,7 +13,7 @@ Component structure evolves with reuse patterns and reasons for change. Do not d
 ## Cohesion Principles
 
 - **Reuse/Release Equivalence Principle (REP):** content reused together should be releasable together under a shared version.
-- **Common Closure Principle (CCP):** place classes that change for the same reason and at the same time together. Most business systems prioritize reducing the maintenance change surface.
+- **Common Closure Principle (CCP):** place classes that change for the same reason and at the same time together. Most business systems prioritize limiting the scope of changes needed for maintenance.
 - **Common Reuse Principle (CRP):** do not force consumers to depend on content they do not need.
 
 These principles are in tension: REP and CCP favor larger components, while CRP favors smaller ones. Trade off according to current evidence about change and reuse rather than seeking a permanent decomposition.
@@ -21,7 +21,7 @@ These principles are in tension: REP and CCP favor larger components, while CRP 
 ## Dependency Principles
 
 - **Acyclic Dependencies Principle (ADP):** the component dependency graph must be a DAG. Break a cycle by inverting a dependency or extracting a new component for the concepts genuinely shared by both sides.
-- **Stable Dependencies Principle (SDP):** dependencies point toward components in more stable positions. A component frequently pulled by external change should not become a prerequisite for many stable components.
+- **Stable Dependencies Principle (SDP):** dependencies point toward components with more stable positions in the dependency graph. A component frequently pulled by external change should not become a prerequisite for many stable components.
 - **Stable Abstractions Principle (SAP):** a component in a stable position should provide extensible abstractions; an unstable component should remain concrete and easy to change.
 
 Stability describes dependency position, not frequency of change.

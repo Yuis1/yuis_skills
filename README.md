@@ -4,15 +4,15 @@
 
 ## Overview
 
-> **Goal:** Make Coding Agents genuinely effective in large, complex engineering environments by continuously improving a loop of requirements alignment → architectural decisions → Agent-team implementation → adversarial refinement → quality enforcement → human feedback → rule consolidation.
+> **Goal:** Make coding agents effective in large, complex engineering projects through a continuous cycle of requirements alignment → architectural decisions → agent-team implementation → adversarial review and refinement → quality checks → human feedback → lessons incorporated into rules.
 
 This project distills the practical failure modes I have encountered while using AI to develop complex systems over an extended period:
 
 - **Code decay and uncontrolled complexity:** giant files, rising cyclomatic complexity, accumulated regexes and patches, speculative abstractions, excessive defensive code, and orphaned legacy code
-- **Architectural antipatterns:** god entry points, unclear Owners for business facts, uncontrolled dependency direction, shallow modules, complex interfaces, and horizontal big-bang refactoring
-- **False completion:** ceremonial red tests and bug fixes that sacrifice user experience
-- **Unsystematic feedback:** failure to align before implementation, missing architecture enforcement and code-quality gates, mediocre taste, and failure to persist bug evidence
-- **Prompt and documentation defects:** exposing internal reasoning, lacking narrative structure, and using terminology that has not been aligned
+- **Architectural antipatterns:** overloaded entry points, unclear ownership of business facts, uncontrolled dependency direction, shallow modules, complex interfaces, and all-at-once refactoring across architectural layers
+- **False completion:** tests made to fail merely to satisfy a test-first ritual and bug fixes that sacrifice user experience
+- **Unsystematic feedback:** failure to align before implementation, missing architecture enforcement and code-quality gates, weak design judgment, and failure to persist bug evidence
+- **Prompt and documentation defects:** exposing internal reasoning, lacking narrative structure, and using terminology without a shared understanding
 
 The project systematizes those lessons as a user-level `AGENTS.md` and a collection of Skills that Agents can discover automatically, load on demand, execute independently, and compose.
 
@@ -52,9 +52,9 @@ Examples:
 
 > Every sentence in this file is written in the blood of a real production mishap.
 
-The repository-root [`AGENTS.md`](./AGENTS.md) contains the user-level rules that accompany these Skills. It is both the project rule set for maintaining this repository and the authoritative source distributed to Coding Agents. Publish it one way from the repository through Ansible or another configuration-management system; do not maintain the repository and user-directory copies manually in parallel.
+The repository-root [`AGENTS.md`](./AGENTS.md) contains the user-level rules that accompany these Skills. It is both the project rule set for maintaining this repository and the authoritative source distributed to Coding Agents. Publish it in one direction from the repository through Ansible or another configuration-management system; do not maintain the repository and user-directory copies manually in parallel.
 
-The file deliberately keeps only cross-project principles and hard constraints permanently in context while loading concrete Skills on demand, so it is not a complete standalone Prompt. Install the following three Skill groups alongside it:
+Only cross-project principles and hard constraints stay in persistent context; concrete skills load on demand. The file is therefore not a complete standalone prompt. Install the following three Skill groups alongside it:
 
 | Source | Skills used by `AGENTS.md` | Purpose |
 |---|---|---|
@@ -66,11 +66,11 @@ The file deliberately keeps only cross-project principles and hard constraints p
 
 If a Skill group is absent, the principles written directly in `AGENTS.md` remain in force, but the Agent cannot load the referenced workflow. You may also remove Skill references and tool constraints that do not apply to your environment; do not retain names that cannot be resolved or have never been installed.
 
-This is a reference configuration with a deliberate, personal workflow bias—not a universal security baseline. Review every rule before adoption, especially Paseo integration, local reference paths, model selection, and reporting preferences.
+This is a reference configuration with a deliberate, personal workflow bias—not a universal security baseline. Review each rule before adopting the collection, especially Paseo integration, local reference paths, model selection, and reporting preferences.
 
 ## Bilingual Maintenance
 
-English and Simplified Chinese are equal-authority mirrors. Contributors may maintain either language in their native language, but every change must update the paired document in the same change set without altering meaning, obligation strength, examples, or scope.
+English and Simplified Chinese are equal-authority mirrors. Contributors may start with the version in their native language, but every change must update the paired document in the same change set without altering meaning, obligation strength, examples, or scope.
 
 - English is the default discoverable form: `README.md`, `AGENTS.md`, and each `SKILL.md`.
 - Simplified Chinese mirrors use `.zh-CN.md`, such as `README.zh-CN.md`, `AGENTS.zh-CN.md`, and `SKILL.zh-CN.md`.
@@ -150,7 +150,7 @@ Publish one way from this repository through Ansible or another configuration-ma
 
 ## Security
 
-Agent Skills influence an Agent's judgment and actions; read them before installation. Except for `chatgpt-chat`, the Skills in this repository contain instructions and metadata only. `chatgpt-chat` controls the user's existing Edge/Chrome Profile through the Playwriter extension so it can reuse the authenticated session. The extension has broad page-control capability; although the business workflow operates only on ChatGPT tabs that it creates, review its credential boundary separately before installation and enablement.
+Agent Skills influence an Agent's judgment and actions; read them before installation. Except for `chatgpt-chat`, the Skills in this repository contain instructions and metadata only. `chatgpt-chat` controls the user's existing Edge/Chrome Profile through the Playwriter extension so it can reuse the authenticated session. The extension has broad page-control capability; although the skill workflow operates only on ChatGPT tabs that it creates, review its credential boundary separately before installation and enablement.
 
 We also recommend combining `trash-cli`, [DCG](https://github.com/Dicklesworthstone/destructive_command_guard), BTRFS snapshots, and off-site backups as a defense-in-depth safety foundation.
 
