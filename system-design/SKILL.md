@@ -16,7 +16,7 @@ Apply the project's documented architecture. Do not invent layers for absent res
 1. **Identify axes of change:** list what this requirement changes, what must remain, and which external systems, data, and side effects it affects.
 2. **Identify Owners:** give every business fact exactly one authoritative writer; mark caches, indexes, projections, and Read Models as rebuildable derivatives.
 3. **Map boundaries and dependencies:** mark Domain, Application, driving adapters, infrastructure adapters, and the composition root. Source dependencies point toward more stable business policy, and the graph must remain acyclic.
-4. **Check interface depth:** a boundary should hide a cohesive body of knowledge or external complexity, and make common use shortest and safest. Remove pass-through layers without semantic translation, Ports that mirror concrete implementations, and giant Resolvers.
+4. **Check interface depth:** a boundary should hide a cohesive body of knowledge or external complexity, and make common operations as simple and safe as possible. Remove pass-through layers without semantic translation, Ports that mirror concrete implementations, and giant Resolvers.
 5. **Check runtime boundaries:** state who owns transactions, consistency, concurrency, configuration, trust verification, and external side effects.
 6. **Check evolution cost:** walk one representative change through the dependency graph and record the Owners, components, and deployment units that must change together.
 

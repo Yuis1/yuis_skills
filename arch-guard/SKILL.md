@@ -7,7 +7,7 @@ description: Turn architecture constraints into automated enforcement. Use for a
 
 # Automated Architecture Enforcement
 
-Automatically block only risks that are important, stable, objectively decidable, and controllable in false positives. Claim only what the tool can prove.
+Use automated blocking only for important risks with stable, objectively assessable criteria and a manageable false-positive rate. Claim only what the tool can prove.
 
 ## Establish Enforcement Rules
 
@@ -37,7 +37,7 @@ For each Gate, state its inputs, outputs, blocking conditions, and behavior when
 
 - For complex analysis, **prefer mature parsers, compilers, Lint frameworks, or dependency-graph tools**.
 - If a decision requires nearly complete language semantics, narrow the supported scope or move it to human review instead of expanding a home-grown approximate compiler.
-- Cyclomatic complexity, line count, dependency count, and distance from the main sequence are risk signals only; they cannot independently become decomposition targets.
+- Cyclomatic complexity, line count, dependency count, and distance from the main sequence are risk signals only; they must not serve as decomposition targets on their own.
 - Static import checks prove only source dependencies. Shared databases, synchronous calls, transactions, and runtime orchestration require runtime evidence or architecture documentation.
 - Monitoring constitutes architecture enforcement only when the objective, allowed deviation, and alert criteria are explicit.
 

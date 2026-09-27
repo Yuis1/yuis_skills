@@ -4,7 +4,7 @@
 
 ## Scope and Authority
 
-These are stable cross-project boundaries and preferences. Project documentation owns its architecture, quality entry points, environments and exceptions; skills own task-specific procedures. Read the applicable project instructions before acting. A shorter global file does not cancel an existing project contract.
+These are stable cross-project boundaries and preferences. Project documentation defines the architecture, quality-check entry points, environments and exceptions; skills define task-specific procedures. Read the applicable project instructions before acting. A shorter global file does not cancel an existing project contract.
 
 Complete the authorized objective and necessary validation without unrelated cleanup, speculative features or abstractions. Preserve user changes in a dirty worktree and isolate the intended files. Ask only when a missing decision materially affects scope, correctness, authorization or irreversible outcomes; existing authorization remains valid.
 
@@ -31,7 +31,7 @@ Tie completion to the actual diff and fresh, relevant acceptance results. Persis
 
 ## Architecture and Change
 
-Keep authoritative writers, dependencies and side effects clear. Hide cohesive knowledge behind useful interfaces, not empty forwarding layers. Use change amplification, cognitive load and unknown dependencies to assess complexity; line counts, file counts and complexity metrics are review signals, not mechanical decomposition targets.
+Keep authoritative writers, dependencies and side effects clear. Encapsulate related knowledge behind useful interfaces, not empty forwarding layers. Use change amplification, cognitive load and unknown dependencies to assess complexity; line counts, file counts and complexity metrics are review signals, not mechanical decomposition targets.
 
 The shared architecture baseline remains in `system-design`; read it for structural decisions. Cross-process data, persistent data and machine outputs have authoritative versioned schemas and explicit compatibility and recovery strategies. Use `arch-evolve` for breaking migrations and `arch-guard` for stable automated constraints. These skills do not require creating absent responsibilities or a new pipeline for every check.
 

@@ -9,9 +9,9 @@ description: Change agent prompts, models, tool contracts or orchestration and c
 
 ## Define and Verify the Change
 
-Version prompt, model, schema, tool and orchestration changes. Identify the intended behavior, a representative case and the failure or cost to improve; compare candidates on the same relevant inputs and report regressions and evidence gaps.
+Version prompt, model, schema, tool and orchestration changes. Identify the intended behavior, a representative case and the failure to address or cost to reduce; compare candidates on the same relevant inputs and report regressions and evidence gaps.
 
-Diagnose inputs, context, tools and the task boundary before adding prompt rules. Fix a known cause directly; add an orchestration step only when its measured benefit warrants the extra work. Follow existing model policy rather than maintaining another default table.
+Diagnose inputs, context, tools and the task boundary before adding prompt rules. Fix a known cause directly; add an orchestration step only when its measured benefit warrants the extra work. Follow existing model policy rather than maintaining a separate set of defaults.
 
 Use semantic judgment for semantic decisions. Deterministic parsing, identifiers, authorization checks and auditable protocol rules remain deterministic; do not dress brittle keyword matching up as model reasoning.
 
@@ -21,7 +21,7 @@ Choose output size from the task and the available validation feedback. A comple
 
 ## Keep Prompts Relevant
 
-Use language the intended role understands. Expose implementation names only when they help that role make a decision. Remove deprecated fields, permanently empty outputs and obsolete provider formats; the runtime owns compatibility.
+Use language the intended role understands. Mention implementation-specific names only when they help that role make a decision. Remove deprecated fields, permanently empty outputs and obsolete provider formats; the runtime owns compatibility.
 
 Keep reusable instructions stable where useful, without changing meaning or instruction priority for cache savings. Verify provider caching behavior before claiming a performance gain.
 

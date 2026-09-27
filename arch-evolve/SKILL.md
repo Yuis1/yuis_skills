@@ -33,7 +33,7 @@ By default, split breaking data or protocol changes into three phases:
 
 If no concurrent consumers need compatibility and an authorized maintenance window is acceptable, a validated offline cutover can be simpler than dual writes.
 
-This is safe roll-forward, not a rollback guarantee. Mark irreversible points—such as dropping tables or columns, discarding data, and retiring an old protocol—individually. Rollback capability must be proven item by item.
+This approach supports safe roll-forward; it does not guarantee that rollback is possible. Mark irreversible points—such as dropping tables or columns, discarding data, and retiring an old protocol—individually. Rollback capability must be proven item by item.
 
 ## Migration Discipline
 
@@ -45,4 +45,4 @@ This is safe roll-forward, not a rollback guarantee. Mark irreversible points—
 
 ## Delivery Evidence
 
-One migration table can cover affected consumers, phases, acceptance checks, irreversible points, recovery and old-path exit conditions. See `system-design` for static structure, `safe-refactor` for the execution cadence of code-level old-path migration, and `arch-guard` for continuous enforcement.
+One migration table can cover affected consumers, phases, acceptance checks, irreversible points, recovery and old-path exit conditions. See `system-design` for static structure, `safe-refactor` for migrating old code paths in verifiable slices, and `arch-guard` for continuous enforcement.

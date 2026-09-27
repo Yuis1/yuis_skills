@@ -2,7 +2,7 @@
 
 # System Structure Review Checklist
 
-Read this only for structural review or when locating the source of complexity. Tie every finding to an actual call, dependency, or representative change; do not convict by terminology alone.
+Read this only for structural review or when locating the source of complexity. Tie every finding to an actual call, dependency, or representative change; do not infer a defect from terminology alone.
 
 ## Evidence of Complexity
 
