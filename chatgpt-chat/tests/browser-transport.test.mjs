@@ -64,7 +64,7 @@ test("opens the shared workflow in a task-owned tab and deletes only its session
   });
   assert.deepEqual(transport.result, { status: "ok" });
   assert.match(calls[1][2], /context\.newPage\(\)/);
-  assert.match(calls[1][2], /globalThis\.import/);
+  assert.match(calls[1][2], /await import\(/);
   assert.match(calls[1][2], /ownedPage\.close\(\)/);
   assert.doesNotMatch(calls[1][2], /context\.pages\(\).*\.close/);
   await closeBrowserTransport(transport);
@@ -260,4 +260,25 @@ test("does not close a browser context or pre-existing tab", async () => {
   assert.match(program, /if \(!ownedPage\.isClosed\(\)\) await ownedPage\.close/);
   assert.doesNotMatch(program, /context\.close\(|browser\.close\(|context\.pages\(\)/);
   await closeBrowserTransport(transport);
+});
+
+test('workflow runs with the native module loader used by Playwriter 0.7', async () => {
+  const vm = await import('node:vm');
+  let closed = false;
+  const ownedPage = { goto: async () => {}, isClosed: () => false, close: async () => { closed = true; } };
+  const client = {
+    createSession: async () => ({ id: 'native' }),
+    async execute(id, code) {
+      const output = [];
+      const context = vm.createContext({ context: { newPage: async () => ownedPage }, console: { log: s => output.push(s) } });
+      await new vm.Script(`(async () => { ${code} })()`, {
+        importModuleDynamically: vm.constants.USE_MAIN_CONTEXT_DEFAULT_LOADER,
+      }).runInContext(context);
+      return { text: output.join('\n') };
+    },
+    deleteSession: async () => {},
+  };
+  const result = await openBrowserTransport({ command: 'login' }, { discover: async () => ({ browsers: [edge], client }) });
+  assert.equal(result.result.authenticated, true);
+  assert.equal(closed, true);
 });

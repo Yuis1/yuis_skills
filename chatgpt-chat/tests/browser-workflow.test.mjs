@@ -62,6 +62,7 @@ test("selects the new Advanced model and effort submenus", async () => {
       throw new Error(`unexpected selector ${selector}`);
     },
     getByRole(role, options) {
+      if (role === "button") return visibleLocator({ count: 0 });
       if (role === "menuitem" && options?.name === "Show advanced options") return visibleLocator({ onClick: () => actions.push("advanced") });
       if (role !== "menu") throw new Error(`unexpected role ${role}`);
       if (options?.name) {
@@ -111,4 +112,86 @@ test("opens a project by clicking its exact-name project button", async () => {
 
   assert.equal(result, "https://chatgpt.com/g/g-p-example/project");
   assert.deepEqual(actions, ["project"]);
+});
+
+test('current model picker verifies Pro power and the selected flagship', async () => {
+  let power = 0;
+  let focused = '';
+  const levels = ['Instant', 'Medium', 'High', 'Extra High', 'Pro'];
+  const trigger = {
+    isVisible: async () => true,
+    focus: async () => { focused = 'trigger'; },
+    innerText: async () => levels[power],
+  };
+  const menu = {
+    waitFor: async () => {},
+    getByRole(role, options = {}) {
+      if (role === 'status') return { innerText: async () => `${levels[power]}, ${power + 1} of 5.` };
+      if (role === 'menuitem') return { focus: async () => { focused = options.name; } };
+      if (role === 'menuitemradio') {
+        const items = ['GPT-6', 'GPT-5.6 Sol'].map(label => ({
+          innerText: async () => label,
+          isVisible: async () => true,
+          getAttribute: async name => name === 'aria-checked' ? String(label === 'GPT-6') : null,
+        }));
+        if (options.name) return items[options.name === 'GPT-6' ? 0 : 1];
+        return { count: async () => 2, nth: i => items[i] };
+      }
+      throw new Error(`Unexpected role ${role}`);
+    },
+  };
+  const page = {
+    locator(selector) {
+      if (selector === '[data-testid="modal-conversation-history-rate-limit"]') return visibleLocator({ count: 0 });
+      throw new Error('Legacy-only picker cannot operate the current UI');
+    },
+    getByRole(role) { return role === 'button' ? trigger : menu; },
+    keyboard: { press: async key => { if (key === 'ArrowRight' && focused === 'Power') power = Math.min(4, power + 1); } },
+  };
+  assert.deepEqual(await ensureBestInteraction(page), { mode: 'chat', effort: 'Pro', model: 'GPT-6' });
+});
+
+test('project prompt controls support current accessible names without matching another project', async () => {
+  const { getPromptControls } = await import('../lib/browser-workflow.mjs');
+  const loc = count => ({ count: async () => count, size: count, or(other) { return loc(count + other.size); } });
+  const page = {
+    locator: () => loc(0),
+    getByRole: (role, { name, exact }) => loc(exact && (
+      role === 'textbox' && name === 'New chat in yuis_ops' || role === 'button' && name === 'Send'
+    ) ? 1 : 0),
+  };
+  assert.equal(await getPromptControls(page, 'yuis_ops').textbox.count(), 1);
+  assert.equal(await getPromptControls(page, 'yuis_ops').send.count(), 1);
+  assert.equal(await getPromptControls(page, 'another-project').textbox.count(), 0);
+});
+
+test('collects the current completed assistant response without requiring legacy message attributes', async () => {
+  const { waitForCompletedResponse } = await import('../lib/browser-workflow.mjs');
+  const turn = {};
+  const empty = { count: async () => 0, first() { return this; }, last() { return this; }, isVisible: async () => false };
+  const content = { count: async () => 1, last() { return this; }, innerText: async () => 'CHATGPT_CHAT_REPAIR_OK_20261015', locator: () => turn };
+  const page = {
+    locator: selector => selector === '[data-markdown-text-style="assistant-message"]' ? content : empty,
+    getByRole: role => role === 'status'
+      ? { filter: () => ({ ...empty, isVisible: async () => true }) } : empty,
+    waitForTimeout: async () => { throw new Error('Completed current response was missed'); },
+  };
+  const result = await waitForCompletedResponse(page);
+  assert.equal(result.text, 'CHATGPT_CHAT_REPAIR_OK_20261015');
+  assert.equal(result.turn, turn);
+});
+
+
+test('reads a completed conversation after reload when its live-region announcement is empty', async () => {
+  const { waitForCompletedResponse } = await import('../lib/browser-workflow.mjs');
+  const turn = {};
+  const empty = { count: async () => 0, first() { return this; }, last() { return this; }, filter() { return this; }, isVisible: async () => false };
+  const content = { count: async () => 1, last() { return this; }, innerText: async () => 'SAVED_REPLY', locator: () => turn };
+  const page = {
+    locator: selector => selector === '[data-markdown-text-style="assistant-message"]' ? content : empty,
+    getByRole: (role, options) => role === 'button' && options?.name === 'Regenerate response'
+      ? { ...empty, isVisible: async () => true } : empty,
+    waitForTimeout: async ms => { if (ms !== 2000) throw new Error('Missed completed saved reply'); },
+  };
+  assert.equal((await waitForCompletedResponse(page)).text, 'SAVED_REPLY');
 });
