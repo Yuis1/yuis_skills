@@ -34,7 +34,9 @@ async function visibleCount(locator) {
 
 export async function requireAuthentication(page) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 45_000 });
-  await page.locator('#prompt-textarea, a[href^="/auth/login"]').first()
+  const composer = page.locator("#prompt-textarea")
+    .or(page.getByRole("textbox", { name: "Ask ChatGPT", exact: true }));
+  await composer.or(page.locator('a[href^="/auth/login"]')).first()
     .waitFor({ state: "visible", timeout: 15_000 })
     .catch(() => {});
   await page.waitForTimeout(1_000);
@@ -42,7 +44,7 @@ export async function requireAuthentication(page) {
     challengeFrame: await page.locator('iframe[src*="challenge"], iframe[src*="cloudflare"]').count(),
     loginControl: await visibleCount(page.getByRole("link", { name: /log in|登录/i }))
       + await visibleCount(page.getByRole("button", { name: /log in|登录/i })),
-    composer: await visibleCount(page.locator("#prompt-textarea")),
+    composer: await visibleCount(composer),
     accountControl: await visibleCount(page.locator('[data-testid="accounts-profile-button"]'))
       + await visibleCount(page.getByRole("button", { name: /profile|个人资料|账户|account/i })),
   };
@@ -92,6 +94,48 @@ async function dismissTransientOverlays(page) {
 
 export async function ensureBestInteraction(page) {
   await dismissTransientOverlays(page);
+  const currentTrigger = page.getByRole("button", { name: "Select ChatGPT model", exact: true });
+  if (await currentTrigger.isVisible().catch(() => false)) {
+    // Use the UI's documented keyboard control; background tabs may throttle
+    // animation frames needed by pointer stability checks.
+    await currentTrigger.focus();
+    await page.keyboard.press("Enter");
+    const menu = page.getByRole("menu", { name: "Select ChatGPT model", exact: true });
+    await menu.waitFor({ state: "visible", timeout: 10_000 });
+    const power = menu.getByRole("menuitem", { name: "Power", exact: true });
+    await power.focus();
+    let pro = false;
+    for (let step = 0; step < 6; step += 1) {
+      const status = (await menu.getByRole("status").innerText()).trim();
+      if (/^Pro,\s*\d+ of \d+\.$/.test(status)) { pro = true; break; }
+      await page.keyboard.press("ArrowRight");
+    }
+    if (!pro) throw new Error("Pro effort is unavailable");
+    await menu.getByRole("menuitem", { name: "Select model", exact: true }).focus();
+    await page.keyboard.press("Enter");
+    const choices = menu.getByRole("menuitemradio");
+    const labels = [];
+    for (let index = 0; index < await choices.count(); index += 1) {
+      const choice = choices.nth(index);
+      if (!await choice.isVisible()) continue;
+      const label = (await choice.innerText()).trim();
+      if (modelRank(label)[0] >= 0) labels.push(label);
+    }
+    labels.sort(compareModels);
+    if (!labels.length) throw new Error("No flagship GPT model is available");
+    const preferred = labels[0];
+    const choice = menu.getByRole("menuitemradio", { name: preferred, exact: true });
+    if (await choice.getAttribute("aria-checked") !== "true") {
+      await choice.focus();
+      await page.keyboard.press("Enter");
+      if (await choice.getAttribute("aria-checked") !== "true") {
+        throw new Error("Flagship model selection is not verified");
+      }
+    }
+    await page.keyboard.press("Escape");
+    if (!/\bPro\b/.test(await currentTrigger.innerText())) throw new Error("Pro effort is not verified");
+    return { mode: "chat", effort: "Pro", model: preferred };
+  }
   const form = page.locator("main form");
   const trigger = form.getByRole("button", { name: /^(Instant|Medium|High|Extra High|Pro)$/ }).first();
   const openAdvancedPicker = async () => {
@@ -130,6 +174,67 @@ export async function ensureBestInteraction(page) {
   return { mode: "chat", effort: "Pro", model: preferred };
 }
 
+export function getPromptControls(page, projectName) {
+  return {
+    textbox: page.locator("#prompt-textarea")
+      .or(page.getByRole("textbox", { name: `New chat in ${projectName}`, exact: true })),
+    send: page.locator('[data-testid="send-button"]')
+      .or(page.getByRole("button", { name: "Send", exact: true })),
+  };
+}
+
+export async function waitForCompletedResponse(page) {
+  const pollMilliseconds = Number(process.env.CHATGPT_CHAT_POLL_MILLISECONDS || 600_000);
+  if (!Number.isFinite(pollMilliseconds) || pollMilliseconds < 1_000) throw new Error("Invalid polling interval");
+  const messages = page.locator('[data-message-author-role="assistant"]');
+  const responseActions = page.getByRole("group", { name: /Response actions|回复操作/i });
+  for (;;) {
+    const stop = page.locator('[data-testid="stop-button"]');
+    if (await stop.count() && await stop.first().isVisible()) {
+      await page.waitForTimeout(pollMilliseconds);
+      continue;
+    }
+    const currentMessages = page.locator('[data-markdown-text-style="assistant-message"]');
+    const completionVisible = await page.getByRole("status")
+      .filter({ hasText: /^Response complete$/ }).last().isVisible().catch(() => false);
+    const regenerationVisible = !completionVisible && await page.getByRole("button", { name: "Regenerate response", exact: true })
+      .last().isVisible().catch(() => false);
+    if (await currentMessages.count() && (completionVisible || regenerationVisible)) {
+      const content = currentMessages.last();
+      const text = (await content.innerText()).trim();
+      if (!completionVisible) {
+        await page.waitForTimeout(2_000);
+        if (text !== (await content.innerText()).trim()) continue;
+      }
+      if (text) return {
+        turn: content.locator('xpath=ancestor::*[@data-content-search-unit-key][1]'),
+        text,
+      };
+    }
+    if (!(await messages.count())) {
+      await page.waitForTimeout(Math.min(pollMilliseconds, 10_000));
+      continue;
+    }
+    const content = messages.last();
+    const actions = responseActions.last();
+    if (await responseActions.count()) {
+      await actions.waitFor({ state: "visible", timeout: 5_000 });
+      return { turn: actions.locator("xpath=ancestor::article[1]"), text: (await content.innerText()).trim() };
+    }
+    const first = (await content.innerText()).trim();
+    if (!first) {
+      await page.waitForTimeout(Math.min(pollMilliseconds, 10_000));
+      continue;
+    }
+    await page.waitForTimeout(2_000);
+    const second = (await content.innerText()).trim();
+    if (first === second && !(await stop.count() && await stop.first().isVisible())) {
+      return { turn: content.locator("xpath=ancestor::article[1]"), text: second };
+    }
+  }
+}
+
+
 export async function runWorkflow(page, input, { onPhase = () => {} } = {}) {
   if (input.command === "login") {
     await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 45_000 });
@@ -155,8 +260,11 @@ export async function runWorkflow(page, input, { onPhase = () => {} } = {}) {
 }
 
 async function verifyProjectOnlyMemory() {
-  await page.getByRole("button", { name: /Show project details|显示项目详情/i }).click();
-  await page.getByRole("menuitem", { name: /Project settings|项目设置/i }).click();
+  const details = page.getByRole("button", { name: /^(Show project details|Project actions|显示项目详情)$/i });
+  await details.focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("menuitem", { name: /Project settings|项目设置/i }).focus();
+  await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog");
   await dialog.waitFor({ state: "visible", timeout: 10_000 });
   const text = await dialog.innerText();
@@ -199,39 +307,6 @@ async function createProject(projectName) {
   return page.url();
 }
 
-async function waitForCompletedResponse() {
-  const pollMilliseconds = Number(process.env.CHATGPT_CHAT_POLL_MILLISECONDS || 600_000);
-  if (!Number.isFinite(pollMilliseconds) || pollMilliseconds < 1_000) throw new Error("Invalid polling interval");
-  const messages = page.locator('[data-message-author-role="assistant"]');
-  const responseActions = page.getByRole("group", { name: /Response actions|回复操作/i });
-  for (;;) {
-    const stop = page.locator('[data-testid="stop-button"]');
-    if (await stop.count() && await stop.first().isVisible()) {
-      await page.waitForTimeout(pollMilliseconds);
-      continue;
-    }
-    if (!(await messages.count())) {
-      await page.waitForTimeout(Math.min(pollMilliseconds, 10_000));
-      continue;
-    }
-    const content = messages.last();
-    const actions = responseActions.last();
-    if (await responseActions.count()) {
-      await actions.waitFor({ state: "visible", timeout: 5_000 });
-      return { turn: actions.locator("xpath=ancestor::article[1]"), text: (await content.innerText()).trim() };
-    }
-    const first = (await content.innerText()).trim();
-    if (!first) {
-      await page.waitForTimeout(Math.min(pollMilliseconds, 10_000));
-      continue;
-    }
-    await page.waitForTimeout(2_000);
-    const second = (await content.innerText()).trim();
-    if (first === second && !(await stop.count() && await stop.first().isVisible())) {
-      return { turn: content.locator("xpath=ancestor::article[1]"), text: second };
-    }
-  }
-}
 
 function writeUniqueAttachment(directory, filename, body) {
   const extension = path.extname(filename);
@@ -449,11 +524,10 @@ async function run() {
     conversationUrl = input.resumeConversationUrl;
     onPhase("submitted_confirmed", { conversationUrl });
   } else {
-    const textbox = page.locator("#prompt-textarea");
+    const { textbox, send } = getPromptControls(page, input.projectName);
     await textbox.waitFor({ state: "visible", timeout: 30_000 });
     uploadedAttachments = await uploadAttachments(input.attachmentPaths);
     await textbox.fill(input.prompt);
-    const send = page.locator('[data-testid="send-button"]');
     await send.waitFor({ state: "visible", timeout: 30_000 });
     const uploadDeadline = Date.now() + 60_000;
     while (!(await send.isEnabled())) {
@@ -466,7 +540,7 @@ async function run() {
     conversationUrl = page.url();
     onPhase("submitted_confirmed", { conversationUrl });
   }
-  const { turn, text } = await waitForCompletedResponse();
+  const { turn, text } = await waitForCompletedResponse(page);
   const responsePath = path.join(input.artifactDirectory, `${new Date().toISOString().replace(/[:.]/g, "-")}-response.txt`);
   fs.writeFileSync(responsePath, `${text}\n`, { mode: 0o600, flag: "wx" });
   const attachments = await collectAttachments(turn);

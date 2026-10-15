@@ -33,5 +33,6 @@ test("normal use retains governed conversations and project sources", () => {
 test("low-frequency detail is disclosed only for a matching failure", () => {
   assert.match(skill, /Failure Only/);
   assert.match(skill, /references\/troubleshooting\.md/);
-  assert.ok(skill.length < 3_000, `SKILL.md is too large for progressive disclosure: ${skill.length}`);
+  // The explicit three-condition invocation policy expanded the normal-path contract.
+  assert.ok(skill.length < 4_500, `SKILL.md is too large for progressive disclosure: ${skill.length}`);
 });

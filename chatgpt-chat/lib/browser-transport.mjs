@@ -72,7 +72,7 @@ const ownedPage = await context.newPage();
 let phase = "pre_submit";
 let phaseDetail = {};
 try {
-  const { runWorkflow } = await globalThis.import(${JSON.stringify(workflowUrl)});
+  const { runWorkflow } = await import(${JSON.stringify(workflowUrl)});
   const result = await runWorkflow(ownedPage, ${JSON.stringify(input)}, {
     onPhase(nextPhase, detail = {}) { phase = nextPhase; phaseDetail = detail; },
   });

@@ -26,3 +26,21 @@ Sources:
 
 - [Playwriter documentation](https://playwriter.dev/)
 - [OpenAI: Projects in ChatGPT](https://help.openai.com/en/articles/10169521-projects-in-chatgpt)
+
+
+## October 2026 compatibility
+
+The managed runtime requires Playwriter 0.7.0 and native dynamic `import()`.
+The current ChatGPT home and project composers expose accessible textbox names;
+legacy `#prompt-textarea` remains a fallback. Project actions and the model/power
+picker are verified through visible UI controls. Current response extraction
+supports assistant markdown and the completion announcement, plus stable text
+with the regeneration control when reopening a completed conversation.
+
+On 2026-10-15, the installed public CLI completed a text ask in the existing
+`yuis_ops` project with project-only memory, Chat, Pro and GPT-6, and persisted
+the exact fixed smoke response. Tests cover native module loading, current and
+legacy authentication, model selection, prompt controls and completed/reloaded
+responses. New project creation, attachments, source mutations and Chrome were
+not revalidated against the changed UI. The matching deployment evidence lives
+in yuis_ops at `docs/evidence/services/chatgpt-chat-extension-recovery-2026-10-15.md`.
