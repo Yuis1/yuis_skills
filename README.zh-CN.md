@@ -30,6 +30,7 @@
 | 判断验证是否真正成立 | `test-evidence` | 区分行为、静态和非代码证据，安全迁移遗留测试 |
 | 开发或优化 Agent 产品 | `agent-dev` | 版本化治理 Prompt、模型、Schema、工具、编排和评测 |
 | 组织多 Agent 并行工作 | `agent-team` | 控制派发成本、会话复用、工作树、Writer 与 Reviewer 权限 |
+| 重构并重写受限的提示词 | `ambitious-prompt-rewrite` | 在高度、深度与广度上将平庸任务升维为专业级自闭环指令 |
 | 研究可与仓库文件分析分离、前沿或有难度且需大量在线文献的问题 | `chatgpt-chat` | 通过用户现有 Edge/Chrome Profile 咨询 ChatGPT Web |
 
 常见组合：
@@ -43,6 +44,7 @@
 示例：
 
 - “使用 `system-design` 评审订单与支付的边界，并给出职责归属图和依赖图。”
+- “使用 `ambitious-prompt-rewrite` 把这个平庸的崩溃修复需求升维成多视角的持久化工程指令。”
 - “使用 `safe-refactor` 把这次平台替换拆成可独立验证的纵向切片。”
 - “使用 `review-evidence` 为这个高风险变更冻结验收范围并准备复审证据。”
 
@@ -58,7 +60,7 @@
 
 | 来源 | `AGENTS.md` 使用的技能 | 作用 |
 |---|---|---|
-| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team` | 系统架构、演进、自动守护、重构、证据与 Agent 协作 |
+| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team`、`ambitious-prompt-rewrite` | 系统架构、演进、自动守护、重构、证据、Agent 协作与提示词升维 |
 | [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`、`grill-me`、`grill-with-docs`、`prototype`、`to-spec`、`to-tickets`、`wayfinder`、`implement`、`ask-matt`、`research`、`code-review`、`tdd`、`diagnosing-bugs`、`improve-codebase-architecture`、`resolving-merge-conflicts` | 需求对齐、规划、实现、测试、排障、代码评审与模块设计 |
 | [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend`、`redesign-existing-projects` | 新前端设计与既有界面翻新 |
 
@@ -96,7 +98,8 @@ cd yuis_skills
 
 skills=(
   system-design arch-guard arch-evolve safe-refactor
-  review-evidence test-evidence agent-dev agent-team chatgpt-chat
+  review-evidence test-evidence agent-dev agent-team
+  ambitious-prompt-rewrite chatgpt-chat
 )
 repo_dir="$(pwd -P)"
 

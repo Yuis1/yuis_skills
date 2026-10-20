@@ -30,6 +30,7 @@ The project systematizes those lessons as a user-level `AGENTS.md` and a collect
 | Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; migrate legacy tests safely |
 | Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through versioning |
 | Organize parallel multi-Agent work | `agent-team` | Control delegation cost, session reuse, worktrees, and Writer/Reviewer permissions |
+| Reframe and rewrite constrained prompts | `ambitious-prompt-rewrite` | Elevate routine tasks across altitude, depth, and range into professional, durable directives |
 | Research a frontier or difficult question separable from repository files that needs extensive online literature | `chatgpt-chat` | Consult ChatGPT Web through the user's existing Edge/Chrome Profile |
 
 Common combinations:
@@ -43,6 +44,7 @@ After installation, an Agent can select Skills from the task and their descripti
 Examples:
 
 - “Use `system-design` to review the boundary between ordering and payments, and provide an Owner map and dependency graph.”
+- “Use `ambitious-prompt-rewrite` to elevate this routine crash-fix request into a durable, multi-angle engineering prompt.”
 - “Use `safe-refactor` to divide this platform replacement into independently verifiable vertical slices.”
 - “Use `review-evidence` to freeze acceptance scope and prepare review evidence for this high-risk change.”
 
@@ -58,7 +60,7 @@ Only cross-project principles and hard constraints stay in persistent context; c
 
 | Source | Skills used by `AGENTS.md` | Purpose |
 |---|---|---|
-| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team` | System architecture, evolution, automated enforcement, refactoring, evidence, and Agent collaboration |
+| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team`, `ambitious-prompt-rewrite` | System architecture, evolution, automated enforcement, refactoring, evidence, Agent collaboration, and prompt elevation |
 | [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`, `grill-me`, `grill-with-docs`, `prototype`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `ask-matt`, `research`, `code-review`, `tdd`, `diagnosing-bugs`, `improve-codebase-architecture`, `resolving-merge-conflicts` | Requirements alignment, planning, implementation, testing, diagnosis, code review, and module design |
 | [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend`, `redesign-existing-projects` | New frontend design and modernization of existing interfaces |
 
@@ -96,7 +98,8 @@ cd yuis_skills
 
 skills=(
   system-design arch-guard arch-evolve safe-refactor
-  review-evidence test-evidence agent-dev agent-team chatgpt-chat
+  review-evidence test-evidence agent-dev agent-team
+  ambitious-prompt-rewrite chatgpt-chat
 )
 repo_dir="$(pwd -P)"
 

@@ -39,6 +39,7 @@ Use `safe-refactor` for cross-module structural migrations: one active transitio
 
 ## Select Workflows by Need
 
+- Use `ambitious-prompt-rewrite` to elevate routine or artificially constrained prompts across altitude, depth, and range before committing to execution.
 - Use `agent-dev` for agent prompts, tool contracts, schemas, models and orchestration changes. Existing model preferences stay in their managed source; manual choices and delegated defaults are distinct.
 - Use `agent-team` for authorized parallel work. Only the root delegates; children report back instead of recursively creating agents. Each worktree has at most one active writer. Consult `delegation-models` for unspecified worker defaults, without changing manual model or effort selection.
 - Review routine changes against requirements and project standards directly. Use `code-review` when a formal two-axis review is needed, and `review-evidence` for complex or high-risk independent acceptance. Do not force issue setup or an evidence package onto a small diff.
