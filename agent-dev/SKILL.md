@@ -11,7 +11,7 @@ description: Change agent prompts, models, tool contracts or orchestration and c
 
 Version prompt, model, schema, tool and orchestration changes. Identify the intended behavior, a representative case and the failure to address or cost to reduce; compare candidates on the same relevant inputs and report regressions and evidence gaps.
 
-Diagnose inputs, context, tools and the task boundary before adding prompt rules. Fix a known cause directly; add an orchestration step only when its measured benefit warrants the extra work. Follow existing model policy rather than maintaining a separate set of defaults.
+Diagnose inputs, context, tools and the task boundary before adding prompt rules. Fix a known cause directly; add an orchestration step only when its measured benefit warrants the extra work. Follow existing model policy rather than maintaining a separate set of defaults. Prioritize durable loop infrastructure over brittle prompt patches: when designing agents for recurring failure modes, provide the necessary autonomous verification foundations—such as raw trace fetchers, version-to-commit mapping, and isolated reproduction test environments—so the model can independently reproduce, fix, and verify.
 
 Use semantic judgment for semantic decisions. Deterministic parsing, identifiers, authorization checks and auditable protocol rules remain deterministic; do not dress brittle keyword matching up as model reasoning.
 

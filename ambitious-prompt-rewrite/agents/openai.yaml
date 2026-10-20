@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ambitious Prompt Rewrite"
+  short_description: "Elevate and rewrite shallow, constrained prompts into professional, durable directives"
+  default_prompt: "Use $ambitious-prompt-rewrite to elevate this task across altitude, depth, and range."

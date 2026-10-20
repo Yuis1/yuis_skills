@@ -21,6 +21,8 @@ State the goal, input or candidate version, read/write scope, acceptance checks,
 
 Use the current runtime's exposed tool schema and, for Paseo, its installed official `paseo` skill. Codex native delegation and Paseo creation have different interfaces; do not copy arguments between them or guess unavailable options. Workspace placement and parentage are distinct.
 
+When delegating to multidisciplinary angles (such as adversarial review, forensic verification, or narrative editing), assign concrete methodologies, tools, and evidence standards derived from the core verbs of the task. Strictly prohibit superficial role-playing personas or stylistic imitation; the worker must execute the domain's actual investigative practices.
+
 ## Isolate Writes and Permissions
 
 - Each worktree has at most one active writer, regardless of permission mode. Give concurrent writers separate worktrees; reviewers remain read-only unless authorized otherwise.
