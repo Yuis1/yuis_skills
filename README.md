@@ -10,7 +10,8 @@ This project distills the practical failure modes I have encountered while using
 
 - **Code decay and uncontrolled complexity:** giant files, rising cyclomatic complexity, accumulated regexes and patches, speculative abstractions, excessive defensive code, and orphaned legacy code
 - **Architectural antipatterns:** overloaded entry points, unclear ownership of business facts, uncontrolled dependency direction, shallow modules, complex interfaces, and all-at-once refactoring across architectural layers
-- **False completion:** tests made to fail merely to satisfy a test-first ritual and bug fixes that sacrifice user experience
+- **False completion and test cheating:** tests made to fail merely to satisfy a test-first ritual, softening assertions or injecting skips to fake passing tests, and bug fixes that sacrifice user experience
+- **Context rot and coordination overhead:** sprawling multi-hour sessions, unmanaged worktree accumulation, interface drift across parallel teams, and orchestrators reduced to bloated communication bottlenecks
 - **Unsystematic feedback:** failure to align before implementation, missing architecture enforcement and code-quality gates, weak design judgment, and failure to persist bug evidence
 - **Prompt and documentation defects:** exposing internal reasoning, lacking narrative structure, and using terminology without a shared understanding
 
@@ -22,14 +23,14 @@ The project systematizes those lessons as a user-level `AGENTS.md` and a collect
 
 | Scenario | Skill | What it addresses |
 |---|---|---|
-| Design or review system structure | `system-design` | Establish business Owners, boundaries, and components; verify dependency direction and side-effect ownership |
+| Design or review system structure | `system-design` | Establish business Owners, boundaries, and components; verify dependency direction, side-effect ownership, and contract-first schema locks |
 | Automate architecture rules | `arch-guard` | Design architecture tests, CI Gates, baseline ratchets, and exception handling |
 | Evolve services, data, or protocols | `arch-evolve` | Analyze architectural quanta and runtime coupling; plan Expand-Contract migrations and irreversible points |
 | Execute cross-module refactoring | `safe-refactor` | Replace old paths through working vertical slices, avoiding big-bang refactoring and prolonged interlocks |
-| Accept complex or high-risk work | `review-evidence` | Freeze acceptance scope and produce reproducible evidence tied to a candidate version |
-| Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; migrate legacy tests safely |
-| Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through versioning |
-| Organize parallel multi-Agent work | `agent-team` | Control delegation cost, session reuse, worktrees, and Writer/Reviewer permissions |
+| Accept complex or high-risk work | `review-evidence` | Tier review evidence by risk; freeze candidate versions and produce unified machine manifests without manual copying |
+| Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; enforce preflight probes, failure observability, and immutable test targets |
+| Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through deterministic tooling and behavioral benchmarks |
+| Organize parallel multi-Agent work | `agent-team` | Control task contracts, worktree leases, stateless worker sessions, context-poisoning circuit breakers, and root digest isolation |
 | Reframe and rewrite constrained prompts | `ambitious-prompt-rewrite` | Elevate routine tasks across altitude, depth, and range into professional, durable directives |
 | Research a frontier or difficult question separable from repository files that needs extensive online literature | `chatgpt-chat` | Consult ChatGPT Web through the user's existing Edge/Chrome Profile |
 
