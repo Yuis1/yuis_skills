@@ -107,6 +107,35 @@
   > 2. **净空间释放验收（Net Space Release）**：清理工作的完成标准不是“执行了删除命令”，而是“物理磁盘可用空间真实回升且未留无主孤儿对象”。
   > 3. **精准清理闭环（Precise Purge）**：在用户明确授权的废弃候选目录（如特定测试输出目录）范围内，清理流程必须完成从逻辑废弃到指定 Trash 目录精准 Purge 的完整闭环；严禁进行全盘无范围约束的永久清理。
 
+### 3.5 机制 E：工作树租约与短命会话回收（Worktree Lease & Ephemeral Reclamation）
+*应用位置：`agent-team`, `AGENTS.md`*
+
+- **核心概念（Leading Words）**：`Worktree Lease`, `Stateless Worker`, `Orchestrator Digest Isolation`
+- **拟议正向规则**：
+  > 并行开发中的工作树与子会话均作为受限的临时租约（Ephemeral Lease）管理：
+  > 1. **短命无状态 Worker（Stateless Worker）**：对原子任务契约优先使用短命、无状态的 Worker 会话，避免长时间跨任务的连续会话积累过长上下文引发推理降智与记忆混淆；任务验收集成后，立即销毁/回收该 Worker 会话。
+  > 2. **工作树即用即收（Worktree Reclamation）**：任务合并或废弃后，必须显式移除对应工作树（`git worktree remove`），释放分支锁定、Git 元数据和磁盘空间；派发新任务前强制扫描并清理孤儿工作树，彻底根除“维护几十个工作树不治理”的蔓延乱象。
+  > 3. **总控上下文摘要隔离（Orchestrator Digest Isolation）**：严禁将子 Agent 冗长的多轮推演思考链、海量控制台日志直接转发进总控上下文；总控仅读取子任务交付的结构化交接单（包含改动文件、测试命令、退出码、diff 摘要）与 `git diff --stat`。
+
+### 3.6 机制 F：契约先行锁与防接口漂移（Contract-First Lock）
+*应用位置：`system-design`, `AGENTS.md`*
+
+- **核心概念（Leading Words）**：`Contract-First Lock`, `Schema Authority`
+- **拟议正向规则**：
+  > 跨端或跨子系统（后端/Web/移动端）并行实现前，必须先确立架构级契约锁定：
+  > 1. 将公共 API Schema、数据传输结构与协议定义作为唯一事实源，统一维护在专有的契约目录（如 `/contracts`、OpenAPI、Protobuf）中；
+  > 2. 仅架构设计阶段或指定的契约 Owner 有权修改公有契约；各端叶子 Worker 基于冻结的 Schema、生成的强类型客户端或 Mock 服务独立并行开发，严禁在实现中单方面私自篡改公共接口。
+
+### 3.7 机制 G：防阻塞命令行禁令（Anti-Blocking Command Discipline）
+*应用位置：`test-evidence`, `AGENTS.md`*
+
+- **核心概念（Leading Words）**：`Anti-Blocking`, `Non-Interactive Execution`
+- **拟议正向规则**：
+  > 所有自动化测试与构建命令必须以非交互方式并在显式超时内运行：
+  > 1. 强制设定非交互环境变量与标志（如设置 `CI=true`，显式追加 `--watch=false`、`--watchAll=false`），杜绝终端因监听模式或 `y/n` 交互提示而无声假死挂起；
+  > 2. 严禁无守护管理直接启动不退出的后台服务；
+  > 3. 验证执行范围本地化优先：微小修改仅运行受影响切片或模块的针对性测试，避免无节制触发全量构建。
+
 ---
 
 ## 4. 最小变更实施顺序（三阶段推进）
