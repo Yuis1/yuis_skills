@@ -1,4 +1,4 @@
 interface:
   display_name: "Agent Development"
-  short_description: "Govern Agent Prompts, models, Schemas, and tools through versioned evaluation"
-  default_prompt: "Use $agent-dev to design and verify this Agent behavior change."
+  short_description: "Govern agent prompts, model evaluations, tool contracts, and orchestration loops"
+  default_prompt: "Use $agent-dev to design and verify this agent behavior change."

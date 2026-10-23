@@ -1,4 +1,4 @@
 interface:
   display_name: "Safe Refactoring"
-  short_description: "Control cross-module refactoring through verifiable vertical slices and avoid big-bang changes"
+  short_description: "Migrate codebases through verifiable vertical slices, compatibility bridges, and caller retirement"
   default_prompt: "Use $safe-refactor to divide this refactoring into safe, verifiable slices."

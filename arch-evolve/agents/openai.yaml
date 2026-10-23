@@ -1,4 +1,4 @@
 interface:
   display_name: "Architecture Evolution"
-  short_description: "Plan architectural quanta, coupling, and safe breaking data or protocol migrations"
+  short_description: "Plan breaking data or protocol migrations, Expand-Contract transitions, and runtime decoupling"
   default_prompt: "Use $arch-evolve to plan this architecture evolution or breaking migration."

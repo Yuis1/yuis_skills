@@ -1,6 +1,6 @@
 ---
 name: arch-evolve
-description: Plan breaking data or protocol migrations and changes that require coordinated deployment or recovery.
+description: Plan breaking data or protocol migrations, Expand-Contract transitions, and runtime decoupling. Use for coordinated deployments or irreversible cutovers.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)

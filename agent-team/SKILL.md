@@ -1,6 +1,6 @@
 ---
 name: agent-team
-description: Organize authorized parallel work, session handoffs and worktree writers. Routine single-agent tasks do not need a team.
+description: Coordinate parallel agents, bounded task contracts, worktree isolation, and session handoffs. Use for concurrent workstreams or multi-angle reviews.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
@@ -11,28 +11,32 @@ description: Organize authorized parallel work, session handoffs and worktree wr
 
 Follow the user's and active runtime's delegation limits first. Delegate only independent work whose benefit exceeds startup, handoff and integration cost. Routine planning stays with the parent; an advisor or committee needs a concrete unresolved question or an explicit request.
 
-Only the root agent delegates. Children and reviewers report missing help to their parent instead of creating further agents, including detached agents or agents started through another tool.
+Root-only delegation remains the default: workers and reviewers report needed assistance back to their parent instead of spawning detached agents. When the user explicitly authorizes hierarchical delegation for large multi-subsystem efforts, designated domain leads may assign bounded tasks to direct workers; leaf workers do not delegate further.
 
-For a continuing objective, keep the root directly responsible for one workstream that materially advances the objective. Delegate outcomes that advance the objective, not a stream of tiny follow-ups that leaves the root only coordinating work and reviewing results.
+Keep the root directly responsible for one critical workstream that materially advances the objective. Delegate concrete outcomes rather than a continuous stream of micro-tasks that reduces the root to status forwarding and sign-offs.
 
-## Give the Worker a Bounded Task
+## Bind Workers by Task Contract
 
-State the goal, input or candidate version, read/write scope, acceptance checks, prohibited side effects and expected return. Read `delegation-models` when available for unspecified model and effort defaults; explicit user choices win. Do not change the parent's model, the manual picker or global configuration to satisfy a worker assignment.
+State the goal, inputs or candidate versions, read/write boundaries, acceptance checks, and escalation thresholds. Within this `Task Contract`, the worker drives autonomous closure on internal call-chain repairs, private adapters, and local tests without stopping for routine approvals.
 
-Use the current runtime's exposed tool schema and, for Paseo, its installed official `paseo` skill. Codex native delegation and Paseo creation have different interfaces; do not copy arguments between them or guess unavailable options. Workspace placement and parentage are distinct.
+Escalate to the parent only on critical side effects:
+- introducing public protocol or cross-component API changes beyond the contract;
+- accessing unauthorized network endpoints, cross-domain credentials, or elevated permissions;
+- performing irreversible persistence migrations or destructive file overwrites;
+- encountering execution denials like `dcg` or permission blocks. When blocked by false positives on operations confirmed safe within scope, decompose into targeted smaller commands or use `dcg` allowlist/allow-once; escalate genuine out-of-scope destruction risks.
 
-When delegating to multidisciplinary angles (such as adversarial review, forensic verification, or narrative editing), assign concrete methodologies, tools, and evidence standards derived from the core verbs of the task. Strictly prohibit superficial role-playing personas or stylistic imitation; the worker must execute the domain's actual investigative practices.
+Read `delegation-models` when available for unspecified model and effort defaults; explicit user choices win. Assign concrete domain methodologies, tools, and evidence standards for specialized angles (such as adversarial review or forensic verification); avoid cosmetic role-playing. Use the active runtime's exposed tool schema directly (`paseo`, Codex native delegation, or CLI).
 
 ## Isolate Writes and Permissions
 
-- Each worktree has at most one active writer, regardless of permission mode. Give concurrent writers separate worktrees; reviewers remain read-only unless authorized otherwise.
-- Use permissions sufficient for the authorized task. A test writing cache files does not itself require unrestricted host access; a mode name is not proof of isolation.
-- Before branching off, record the resolved baseline SHA and verify the new HEAD and merge-base against it. For an existing branch or PR, verify the requested ref and comparison base instead of requiring its HEAD to equal the base.
+- Assign at most one active writer per worktree, regardless of permission mode. Concurrent writers work in separate worktrees; reviewers remain read-only unless authorized otherwise.
+- Grant permissions sufficient for the authorized task. Writing local test caches does not warrant host-level privileges; a mode label is not proof of isolation.
+- Record the baseline commit SHA before branching, and verify HEAD and merge-base against it. For an existing branch or PR, verify the requested ref and comparison base directly.
 
 ## Continue, Recover and Finish
 
-Reuse a session when its task, relevant context and permission boundary still match. Use fresh context for independent review or substantially changed work; summarize evidence pointers when handing off, not automatically before every model change.
+Reuse an existing session when its task, relevant context and permission boundary match. Use fresh context for independent adversarial review or substantially changed work; summarize evidence pointers when handing off.
 
-Classify failure before retrying. Retry only safe transient operations within the task's budget. If an external submission may have happened, query its status or report uncertainty; never blindly resend. Missing inputs and broken tools need their own fixes, not a stronger model or a fixed wait.
+Classify failures before retrying, and retry only safe transient operations within the task budget. If an external submission may have occurred, query its status or record uncertainty; never blindly resend. Handle missing inputs and tooling defects directly; a different model or arbitrary wait cannot cure a broken tool.
 
-Use completion notifications when supported; make bounded status checks when notifications fail, a budget expires or the user asks. A worker completion notification is a result event, not a new user objective or a signal that the root objective is complete. Review and integrate the result, then recheck the original objective and choose the next action from its remaining bottlenecks. Continue authorized work unless the objective is complete, the user has paused it, or a decision is genuinely required. Report at meaningful milestones rather than ending the root agent's turn whenever a worker returns a result. Read results before archiving, and keep a session available when follow-up is expected. A worker task is complete when the parent has checked its result and recorded any remaining gap; that does not complete the root objective.
+Deduplicate completion notifications and heartbeats by event ID or state hash. Absorb unchanged heartbeats idempotently without emitting repetitive narrative reports or re-dispatching identical work. A worker completion notification is a progress event, not proof that the root objective is complete. Review and integrate the result, check the remaining objective bottlenecks, and proceed with authorized work unless blocked by a genuine decision. Report at meaningful milestones, keep sessions available when follow-up is expected, and close them once accepted.

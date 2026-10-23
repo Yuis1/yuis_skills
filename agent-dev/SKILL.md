@@ -1,6 +1,6 @@
 ---
 name: agent-dev
-description: Change agent prompts, models, tool contracts or orchestration and compare behavior. Ordinary application edits do not require this workflow.
+description: Govern agent prompts, model evaluations, tool contracts, and orchestration loops. Use for agent capabilities, evaluation benchmarks, or behavioral regressions.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
@@ -9,20 +9,20 @@ description: Change agent prompts, models, tool contracts or orchestration and c
 
 ## Define and Verify the Change
 
-Version prompt, model, schema, tool and orchestration changes. Identify the intended behavior, a representative case and the failure to address or cost to reduce; compare candidates on the same relevant inputs and report regressions and evidence gaps.
+Version prompt, model, schema, tool, and orchestration changes. Establish behavioral evaluation benchmarks with representative cases, and compare candidates on identical inputs to measure regressions, cost, and evidence gaps.
 
-Diagnose inputs, context, tools and the task boundary before adding prompt rules. Fix a known cause directly; add an orchestration step only when its measured benefit warrants the extra work. Follow existing model policy rather than maintaining a separate set of defaults. Prioritize durable loop infrastructure over brittle prompt patches: when designing agents for recurring failure modes, provide the necessary autonomous verification foundations—such as raw trace fetchers, version-to-commit mapping, and isolated reproduction test environments—so the model can independently reproduce, fix, and verify.
+Diagnose inputs, context, tools, and task boundaries before adding prompt instructions. Fix known root causes directly with deterministic tools rather than stacking brittle prompt patches. When designing agents for recurring failure modes, provide autonomous verification foundations—such as raw trace fetchers, commit-state mappings, and sandboxed reproduction environments—so the model can independently reproduce, fix, and verify.
 
-Use semantic judgment for semantic decisions. Deterministic parsing, identifiers, authorization checks and auditable protocol rules remain deterministic; do not dress brittle keyword matching up as model reasoning.
+Reserve semantic judgment for semantic decisions. Deterministic parsing, state indexing, authorization checks, and auditable protocol rules remain deterministic code, avoiding brittle keyword matching disguised as model reasoning.
 
 ## Generate and Inspect Useful Units
 
-Choose output size from the task and the available validation feedback. A complete file or mechanical transformation can be generated in one pass. Split uncertain or long work into independently checkable units, inspect each result and continue. Use JSON with trusted templates only when a repeated structure benefits from that approach. Never substitute simulated tool output for execution evidence or require disclosure of private reasoning.
+Choose generation unit size from task scope and available validation feedback. Complete files or mechanical transformations can generate in one pass; split uncertain or long work into independently checkable units, inspecting each result before proceeding. Use JSON with trusted schemas only when repeating structures warrant them. Enforce genuine tool execution evidence, disallowing simulated tool output or model self-certification.
 
 ## Keep Prompts Relevant
 
-Use language the intended role understands. Mention implementation-specific names only when they help that role make a decision. Remove deprecated fields, permanently empty outputs and obsolete provider formats; the runtime owns compatibility.
+Frame instructions around the role's domain vocabulary, omitting implementation internals unless needed for tool calling. Prune deprecated fields, permanently empty outputs, and obsolete provider formats. Rely on deterministic runtime tools for state tracking, timeouts, and logging rather than descriptive prompt bloat.
 
-Keep reusable instructions stable where useful, without changing meaning or instruction priority for cache savings. Verify provider caching behavior before claiming a performance gain.
+Keep reusable instructions stable where useful, preserving instruction priority and semantics without distorting behavior for cache savings. Verify provider caching behavior before claiming performance gains.
 
-Deliver the behavior change, comparison cases, actual results and remaining limits. Use `test-evidence` for configuration or integration claims; model availability alone does not prove task quality.
+Deliver verified behavioral deltas, comparative eval results, actual execution evidence, and remaining limits. Use `test-evidence` for configuration or integration claims; model availability alone does not prove task quality.
