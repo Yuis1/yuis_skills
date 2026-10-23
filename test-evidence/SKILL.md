@@ -25,6 +25,8 @@ State the conclusion to prove before selecting a verification method that proves
 - A filename, generated file or CLI string can itself be the public contract. Test it directly when that is the claim; source-text checks do not substitute for unrelated runtime behavior.
 - A reproducible defect requires a regression test. First prove that the test reproduces the defect, then fix it. Investigate from the rawest inputs—such as native stack traces, runtime logs, or AST representations—rather than digested summaries or speculative guesses.
 - Test fixtures must declare their capability boundaries and reject real host operations by default. When a fixture itself fails repeatedly on clock, type, or mapping errors, stop retrying and classify it as an infrastructure defect rather than a product regression.
+- Run test and verification commands non-interactively with bounded timeouts. Enforce non-interactive execution (such as setting `CI=true` and disabling watch modes) to prevent silent process hangs; never launch unbounded daemons or interactive prompts during verification.
+- Scope verification commands to the modified slice or module first. Running unconstrained full-suite builds or global test runs on every minor edit amplifies turn latency without adding proportional evidence.
 
 ## Insufficient Evidence and Lifecycle
 
