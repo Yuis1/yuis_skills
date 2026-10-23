@@ -136,6 +136,16 @@
   > 2. 严禁无守护管理直接启动不退出的后台服务；
   > 3. 验证执行范围本地化优先：微小修改仅运行受影响切片或模块的针对性测试，避免无节制触发全量构建。
 
+### 3.8 机制 H：不可变测试守卫与防作弊机制（Immutable Test Guard & Anti-Reward-Hacking）
+*应用位置：`test-evidence`, `review-evidence`, `AGENTS.md`*
+
+- **核心概念（Leading Words）**：`Immutable Test Guard`, `Reward-Hacking Defense`, `Forensic Test Audit`
+- **拟议正向规则**：
+  > 严格杜绝 Agent 在复杂工程中为求“跑绿测试”而实施的形式化作弊（Reward Hacking）：
+  > 1. **测试套件不可变性**：在功能实现或缺陷修复阶段，目标测试用例与断言目标必须被视为不可变基准（Immutable Evaluation Baseline），仅当生产代码真正满足锁定测试时交付才算成立；
+  > 2. **三类作弊行为硬性阻断**：严禁放宽断言期望值（Assertion Weakening）、注入跳过装饰器（`skip` / `only` 标记）、或者在生产代码中通过打桩硬编码特定输入输出映射表；
+  > 3. **复审取证审计（Forensic Test Audit）**：独立复审阶段必须显式比对 `tests/` 目录的 Diff；对测试用例本身的任何修改必须被作为高风险的契约变更单独审计，严禁夹带在常规修复中通过。
+
 ---
 
 ## 4. 最小变更实施顺序（三阶段推进）
