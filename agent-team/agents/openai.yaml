@@ -1,4 +1,4 @@
 interface:
   display_name: "Multi-Agent Collaboration"
-  short_description: "Control delegation, sessions, worktrees, single-Writer ownership, and Reviewer permissions"
-  default_prompt: "Use $agent-team to organize this multi-Agent delegation and Reviewer isolation."
+  short_description: "Coordinate parallel agents, task contracts, worktrees, single-Writer ownership, and session handoffs"
+  default_prompt: "Use $agent-team to organize parallel work, task contracts, and session isolation."

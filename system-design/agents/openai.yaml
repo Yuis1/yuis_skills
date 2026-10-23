@@ -1,4 +1,4 @@
 interface:
   display_name: "System Design"
-  short_description: "Plan system boundaries, dependency direction, business Owners, and component decomposition"
-  default_prompt: "Use $system-design to design or review this system's structure."
+  short_description: "Map business owners, dependency direction, isolation boundaries, and lifecycle ownership"
+  default_prompt: "Use $system-design to design or review system structure, isolation boundaries, and ownership."

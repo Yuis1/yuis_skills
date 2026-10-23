@@ -1,4 +1,4 @@
 interface:
   display_name: "Complex Review"
-  short_description: "Freeze acceptance scope and produce reproducible evidence tied to a candidate version"
-  default_prompt: "Use $review-evidence to prepare independent review and evidence for this complex task."
+  short_description: "Tier review evidence, emit unified machine facts, freeze candidate versions, and conduct independent verification"
+  default_prompt: "Use $review-evidence to prepare tiered evidence and independent verification for this complex task."

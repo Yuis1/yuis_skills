@@ -1,6 +1,6 @@
 ---
 name: safe-refactor
-description: Execute cross-module or long-running structural migrations through verifiable slices. Routine local refactors do not need this workflow.
+description: Execute cross-module migrations through verifiable vertical slices, compatibility bridges, and caller retirement. Use for structural transitions or legacy path cutover.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)

@@ -1,6 +1,6 @@
 ---
 name: test-evidence
-description: Determine whether verification evidence proves a change correct. Use for non-code verification, static and runtime evidence, or legacy-test migration.
+description: Select direct verification evidence, enforce failure observability, validate environment capabilities, and judge test coverage. Use for behavioral proof, preflight checks, or legacy test migration.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
@@ -11,22 +11,22 @@ State the conclusion to prove before selecting a verification method that proves
 
 ## Select Evidence
 
-1. State the target behavior, Owner, dependencies, risks, and minimum verification path.
+1. State the target behavior, Owner, dependencies, risks, and minimum verification path. Run a lightweight preflight probe first to verify required environment capabilities; when underlying capabilities are absent, report the dependency immediately rather than constructing sham tests.
 2. Classify the conclusion:
    - **Behavioral conclusion:** exercise a public interface, state transition, real component, or controlled integration.
    - **Static conclusion:** use an AST, dependency graph, or source inspection to prove imports, explicit Owner declarations or static boundaries, not business ownership by itself.
    - **Non-code conclusion:** for configuration, documentation, dependencies, CLI behavior, and infrastructure, select static checks, dry runs, integration, idempotency, target-state checks, or smoke verification according to risk.
 3. State the capability boundary of the evidence. A static check cannot prove runtime behavior; evidence from mocks cannot establish real integration behavior. The executing model cannot act as its own judge: narrative self-assessment in the same loop is not verification evidence. Mandate an outside judge, whether an automated test, a native tool, or an isolated evaluation session.
-4. Rerun against the current change and record the actual command, result, environment, and risks not covered by verification.
+4. Enforce failure observability before running: ensure native stdout, stderr, exit code, and crash traces are captured independently. Never use pipes that discard text or merely count bytes. Expose a sanitized projection for review while keeping raw diagnostic logs in a restricted local path.
 
 ## New Behavior and Defects
 
 - For test-first work, the test must fail for the missing target behavior or reproduced defect before the fix. Existing contracts may already pass; do not manufacture a failure.
 - A filename, generated file or CLI string can itself be the public contract. Test it directly when that is the claim; source-text checks do not substitute for unrelated runtime behavior.
 - A reproducible defect requires a regression test. First prove that the test reproduces the defect, then fix it. Investigate from the rawest inputs—such as native stack traces, runtime logs, or AST representations—rather than digested summaries or speculative guesses.
-- Documentation, configuration, and infrastructure changes should not gain sham tests merely to manufacture a formal “red first” stage.
+- Test fixtures must declare their capability boundaries and reject real host operations by default. When a fixture itself fails repeatedly on clock, type, or mapping errors, stop retrying and classify it as an infrastructure defect rather than a product regression.
 
-## Insufficient Evidence
+## Insufficient Evidence and Lifecycle
 
 When stable automation is impossible or the current environment cannot execute it:
 
@@ -34,7 +34,7 @@ When stable automation is impossible or the current environment cannot execute i
 - record the reproducible command, actual result, limiting reason, and remaining risk; and
 - identify the supported environment in which it should be rerun.
 
-For asynchronous, browser, real-time communication, and process-level verification, state the resource lifecycle, timeout, and supported environment. The creator or owning Fixture closes resources.
+Asynchronous, network, and process-level verification must run under a supervised driver with explicit timeouts that reserve a cleanup buffer. The driver must terminate child processes and close resources before exit; completion requires verifying net space release and absence of orphan processes rather than merely invoking a deletion command.
 
 ## Coverage Judgment
 

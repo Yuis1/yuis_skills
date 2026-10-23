@@ -1,4 +1,4 @@
 interface:
   display_name: "Verification Evidence"
-  short_description: "Judge whether behavioral, static, non-code, and legacy-test evidence truly proves a change"
-  default_prompt: "Use $test-evidence to determine which credible verification evidence this change requires."
+  short_description: "Select direct verification evidence, enforce failure observability, validate environment capabilities, and judge test coverage"
+  default_prompt: "Use $test-evidence to select credible verification evidence, preflight checks, or failure observability."
