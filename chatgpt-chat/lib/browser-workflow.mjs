@@ -32,23 +32,55 @@ async function visibleCount(locator) {
   return visible;
 }
 
+async function ensureSidebar(page) {
+  const showSidebar = page.getByRole("button", { name: /^(show sidebar|open sidebar|打开侧边栏|显示侧边栏)$/i })
+    .or(page.locator('[aria-label*="sidebar" i][aria-expanded="false"]:not([aria-label*="options" i])'))
+    .filter({ visible: true });
+  // Wait for the home UI to hydrate, but never toggle an already-open sidebar.
+  await showSidebar.first().waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+  for (let index = 0; index < await showSidebar.count(); index += 1) {
+    const button = showSidebar.nth(index);
+    if (!await button.isVisible().catch(() => false)) continue;
+    // Background tabs can stall pointer stability checks. Activate the visible
+    // button with its native keyboard interaction, as with the model picker.
+    await button.focus({ timeout: 5_000 });
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(1_000);
+    return;
+  }
+}
+
 export async function requireAuthentication(page) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 45_000 });
-  const composer = page.locator("#prompt-textarea")
+  const composer = page.locator("#prompt-textarea, #pending-home-input, textarea[placeholder*='ChatGPT'], [contenteditable='true']")
     .or(page.getByRole("textbox", { name: "Ask ChatGPT", exact: true }));
   await composer.or(page.locator('a[href^="/auth/login"]')).first()
     .waitFor({ state: "visible", timeout: 15_000 })
     .catch(() => {});
   await page.waitForTimeout(1_000);
-  const evidence = {
-    challengeFrame: await page.locator('iframe[src*="challenge"], iframe[src*="cloudflare"]').count(),
-    loginControl: await visibleCount(page.getByRole("link", { name: /log in|登录/i }))
-      + await visibleCount(page.getByRole("button", { name: /log in|登录/i })),
-    composer: await visibleCount(composer),
-    accountControl: await visibleCount(page.locator('[data-testid="accounts-profile-button"]'))
-      + await visibleCount(page.getByRole("button", { name: /profile|个人资料|账户|account/i })),
-  };
-  const status = classifyAuthenticationEvidence(evidence);
+
+  await ensureSidebar(page);
+
+  const accountLocator = page.locator('[data-testid="accounts-profile-button"]')
+    .or(page.locator('[aria-label="Open profile menu"]'))
+    .or(page.getByRole("button", { name: /open profile menu|profile|个人资料|账户|account/i }));
+
+  // Home navigation and sidebar expansion can remount the composer/account
+  // controls. Wait for settled visible evidence, not just the initial shell.
+  let status;
+  for (let attempt = 0; attempt < 11; attempt += 1) {
+    const evidence = {
+      challengeFrame: await page.locator('iframe[src*="challenge"], iframe[src*="cloudflare"]').count(),
+      loginControl: await visibleCount(page.getByRole("link", { name: /^(log in|登录)$/i }))
+        + await visibleCount(page.getByRole("button", { name: /^(log in|登录)$/i }))
+        + await visibleCount(page.locator('a[href^="/auth/login"], a[href*="auth0.openai.com"]')),
+      composer: await visibleCount(composer),
+      accountControl: await visibleCount(accountLocator),
+    };
+    status = classifyAuthenticationEvidence(evidence);
+    if (status !== "unverified" || attempt === 10) break;
+    await page.waitForTimeout(500);
+  }
   if (status === "authenticated") return;
   if (status === "challenge") throw Object.assign(new Error("ChatGPT requires an interactive challenge"), { code: "CHALLENGE_REQUIRED" });
   if (status === "required") throw Object.assign(new Error("The connected browser Profile is not authenticated to ChatGPT"), { code: "AUTH_REQUIRED" });
@@ -57,6 +89,7 @@ export async function requireAuthentication(page) {
 
 export async function findMappedProject(page, projectName, confirmProject) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await ensureSidebar(page);
   await page.getByText(/^(projects|项目)$/i, { exact: true }).first()
     .waitFor({ state: "visible", timeout: 60_000 });
   const projectControl = () => page.getByRole("link", { name: projectName, exact: true })
@@ -176,7 +209,7 @@ export async function ensureBestInteraction(page) {
 
 export function getPromptControls(page, projectName) {
   return {
-    textbox: page.locator("#prompt-textarea")
+    textbox: page.locator("#prompt-textarea, #pending-home-input")
       .or(page.getByRole("textbox", { name: `New chat in ${projectName}`, exact: true })),
     send: page.locator('[data-testid="send-button"]')
       .or(page.getByRole("button", { name: "Send", exact: true })),

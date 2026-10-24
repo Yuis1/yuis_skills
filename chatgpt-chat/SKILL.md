@@ -30,13 +30,13 @@ Use only the `chatgpt-chat` CLI. Do not read implementation, research, or tests,
 
    If missing, report `COMMAND_MISSING` and ask the repository Owner to deploy it.
 
-2. Keep Edge or Chrome running with Playwriter enabled, then inspect the project:
+2. Inspect with the user's everyday Edge or Chrome and Playwriter enabled:
 
    ```bash
    chatgpt-chat inspect --cwd "$PWD"
    ```
 
-   Use `chatgpt-chat doctor --cwd "$PWD"` for preflight. The CLI prefers the sole Edge Profile, then Chrome; ambiguity fails closed rather than guessing an account. Safe operations retry once on that Profile.
+   Use `chatgpt-chat doctor --cwd "$PWD"` for preflight. If none is connected, the CLI may automatically launch everyday Edge (Chrome if unavailable) and wait up to 15 seconds for Playwriter. No manual pre-launch needed. It reuses the normal Profile and saved login cookies without reading/copying them or creating a test Profile. The CLI prefers the sole Edge Profile, then Chrome; ambiguity fails closed rather than guessing an account. Safe operations retry once on that Profile.
 
 3. Use the `inspect` summary to continue or start a conversation. Put the question in a permission-restricted file, then invoke one of:
 

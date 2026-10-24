@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { randomUUID } from "node:crypto";
@@ -143,13 +143,39 @@ function canRetry(input, error) {
   return input.command === "ask" && ["pre_submit", "submitted_confirmed"].includes(error?.diagnostics?.phase);
 }
 
-async function defaultDiscovery({ home = homedir() } = {}) {
+async function launchEverydayBrowser() {
+  // Inherit the desktop environment and normal Profile; never create a test
+  // Profile, enable debugging ports, or inspect authentication storage.
+  for (const [desktop, command] of [
+    ["microsoft-edge.desktop", "microsoft-edge"],
+    ["google-chrome.desktop", "google-chrome"],
+  ]) {
+    try {
+      await execFileAsync("gtk-launch", [desktop], { timeout: 2_000 });
+      return;
+    } catch { /* Desktop launcher unavailable: try the normal executable. */ }
+    try {
+      await new Promise((resolve, reject) => {
+        const child = spawn(command, [], { detached: true, stdio: "ignore" });
+        child.once("error", reject);
+        child.once("spawn", () => { child.unref(); resolve(); });
+      });
+      return;
+    } catch { /* Try the next installed everyday browser. */ }
+  }
+}
+
+export async function defaultDiscovery({
+  home = homedir(), exists = existsSync, run = execFileAsync,
+  launch = launchEverydayBrowser, now = Date.now,
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+} = {}) {
   const playwriter = join(home, ".local/bin/playwriter");
-  if (!existsSync(playwriter)) throw codedError("RUNTIME_MISSING", "The managed Playwriter CLI is not installed");
+  if (!exists(playwriter)) throw codedError("RUNTIME_MISSING", "The managed Playwriter CLI is not installed");
   const relayUrl = "http://127.0.0.1:19988";
   let output;
   try {
-    ({ stdout: output } = await execFileAsync(playwriter, ["browser", "list"], {
+    ({ stdout: output } = await run(playwriter, ["browser", "list"], {
       encoding: "utf8",
       timeout: 30_000,
       maxBuffer: 2 * 1024 * 1024,
@@ -158,7 +184,25 @@ async function defaultDiscovery({ home = homedir() } = {}) {
     if (error?.code === "ENOENT") throw codedError("RUNTIME_MISSING", "The managed Playwriter CLI is not installed");
     throw error;
   }
-  const browsers = parseBrowserList(output);
+  let browsers = parseBrowserList(output);
+  if (browsers.length === 0) {
+    await launch();
+    const deadline = now() + 15_000;
+    while (browsers.length === 0 && now() < deadline) {
+      await sleep(Math.min(500, deadline - now()));
+      const remaining = deadline - now();
+      if (remaining <= 0) break;
+      try {
+        const { stdout } = await run(playwriter, ["browser", "list"], {
+          encoding: "utf8", timeout: remaining, maxBuffer: 2 * 1024 * 1024,
+        });
+        browsers = parseBrowserList(stdout);
+      } catch (error) {
+        if (error.killed && now() >= deadline) break;
+        throw error;
+      }
+    }
+  }
   return {
     browsers,
     client: {
