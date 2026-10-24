@@ -33,6 +33,7 @@ Independent dependency chains may proceed separately. Allow only one active stru
 - For data, protocol, or cross-version compatibility windows, follow the migration phases in `arch-evolve`. Every compatibility bridge needs an Owner, deadline, and deletion condition.
 - Before deleting the old path, prove that every caller has migrated and the new path covers the public behavior.
 - Clean up only imports, variables, functions, and compatibility layers orphaned by this refactoring. Track historical dead code separately.
+- Retire slice branches and ephemeral worktrees as each vertical slice is integrated. Do not accumulate dozens of intermediate refactoring branches waiting for final project-wide completion.
 - Prioritize high-risk correctness fixes. When a historical metric cannot be reduced safely, prevent new risk and register a time-bounded exception.
 
 ## Stop and Replan Immediately

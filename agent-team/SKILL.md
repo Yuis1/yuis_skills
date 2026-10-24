@@ -17,7 +17,7 @@ Keep the root directly responsible for one critical workstream that materially a
 
 ## Bind Workers by Task Contract
 
-State the goal, inputs or candidate versions, read/write boundaries, acceptance checks, and escalation thresholds. Within this `Task Contract`, the worker drives autonomous closure on internal call-chain repairs, private adapters, and local tests without stopping for routine approvals.
+State the goal, inputs or candidate versions, read/write boundaries, acceptance checks, escalation thresholds, and the asset disposition plan (target integration line, recovery tag if needed, and retirement condition for the branch and worktree). Within this `Task Contract`, the worker drives autonomous closure on internal call-chain repairs, private adapters, and local tests without stopping for routine approvals.
 
 Escalate to the parent only on critical side effects:
 - introducing public protocol or cross-component API changes beyond the contract;
@@ -33,6 +33,7 @@ Read `delegation-models` when available for unspecified model and effort default
 - Grant permissions sufficient for the authorized task. Writing local test caches does not warrant host-level privileges; a mode label is not proof of isolation.
 - Record the baseline commit SHA before branching, and verify HEAD and merge-base against it. For an existing branch or PR, verify the requested ref and comparison base directly.
 - Manage worktree lifecycles as ephemeral leases. Assign distinct scratch ports, socket paths, or temporary databases to concurrent worktrees to avoid runtime collision. Remove completed or abandoned worktrees to release branch locks, metadata, and disk space; prune stale worktrees before spawning new parallel writers.
+- Decouple source preservation, active branches, and working directories. Preserving history requires commit SHAs or lightweight tags, not long-lived active branches or persistent checkouts. A HOLD on pending assets must isolate specific files with explicit release conditions, rather than indefinitely freezing entire worktrees or branches.
 
 ## Continue, Recover and Finish
 
@@ -40,4 +41,4 @@ Favor stateless, short-lived worker sessions scoped to single atomic Task Contra
 
 Classify failures before retrying, and retry only safe transient operations within the task budget. Trigger a context poisoning circuit breaker upon repeated repair failures or oscillating diffs: rather than compounding failed reasoning in the same session, revert to the baseline, isolate the specific negative constraint, and launch a fresh cold-start session. If an external submission may have occurred, query its status or record uncertainty; never blindly resend. Handle missing inputs and tooling defects directly; a different model or arbitrary wait cannot cure a broken tool.
 
-Protect the root orchestrator from context bloat: root inspects only structured handoff manifests, exit statuses, and `git diff --stat`, while raw child reasoning and build streams remain isolated in worker logs. Deduplicate completion notifications and heartbeats by event ID or state hash. Absorb unchanged heartbeats idempotently without emitting repetitive narrative reports or re-dispatching identical work. A worker completion notification is a progress event, not proof that the root objective is complete. Review and integrate the result, check remaining bottlenecks, and proceed with authorized work unless blocked by a genuine decision. Report at meaningful milestones, retiring ephemeral worktrees and child sessions once work is integrated.
+Protect the root orchestrator from context bloat: root inspects only structured handoff manifests, exit statuses, and `git diff --stat`, while raw child reasoning and build streams remain isolated in worker logs. Deduplicate completion notifications and heartbeats by event ID or state hash. Absorb unchanged heartbeats idempotently without emitting repetitive narrative reports or re-dispatching identical work. A worker completion notification is a progress event, not proof that the root objective is complete. Review and integrate the result, check remaining bottlenecks, and proceed with authorized work unless blocked by a genuine decision. Report at meaningful milestones. Pair integration with retirement: a worker task is complete only when its branch is merged or tagged for recovery, and its ephemeral worktree is deleted; prevent the creation rate of temporary environments from permanently outpacing retirement.
