@@ -10,6 +10,7 @@ function visibleLocator({ count = 1, text = "", checked = "false", onClick = nul
   return {
     count: async () => count,
     first() { return this; },
+    nth() { return this; },
     last() { return this; },
     filter() { return this; },
     getByRole() { return this; },
@@ -93,25 +94,31 @@ test("selects the new Advanced model and effort submenus", async () => {
 
 test("opens a project by clicking its exact-name project button", async () => {
   const actions = [];
+  let sidebarOpen = false;
   const project = visibleLocator({ onClick: () => actions.push("project") });
+  project.isVisible = async () => sidebarOpen;
   const page = {
     goto: async () => {},
     getByRole(role, options = {}) {
       if (role === "button" && options.name === "sample-project") return project;
       if (role === "link" && options.name === "sample-project") return visibleLocator({ count: 0 });
-      if (role === "button" && options.name instanceof RegExp) return visibleLocator({ count: 0 });
+      if (role === "button" && options.name instanceof RegExp) return {
+        ...visibleLocator(), focus: async () => {},
+      };
       throw new Error(`unexpected ${role}`);
     },
-    getByText: () => visibleLocator(),
+    getByText: () => ({ first() { return this; }, waitFor: async () => assert.equal(sidebarOpen, true) }),
+    waitForTimeout: async () => {},
+    keyboard: { press: async key => { assert.equal(key, 'Enter'); sidebarOpen = true; actions.push('sidebar'); } },
     waitForURL: async () => {},
     url: () => "https://chatgpt.com/g/g-p-example/project",
-    locator: () => visibleLocator(),
+    locator: () => visibleLocator({ count: 0 }),
   };
 
   const result = await findMappedProject(page, "sample-project", async () => {});
 
   assert.equal(result, "https://chatgpt.com/g/g-p-example/project");
-  assert.deepEqual(actions, ["project"]);
+  assert.deepEqual(actions, ["sidebar", "project"]);
 });
 
 test('current model picker verifies Pro power and the selected flagship', async () => {
@@ -154,8 +161,9 @@ test('current model picker verifies Pro power and the selected flagship', async 
 test('project prompt controls support current accessible names without matching another project', async () => {
   const { getPromptControls } = await import('../lib/browser-workflow.mjs');
   const loc = count => ({ count: async () => count, size: count, or(other) { return loc(count + other.size); } });
+  let pendingHome = false;
   const page = {
-    locator: () => loc(0),
+    locator: selector => loc(pendingHome && selector.includes('#pending-home-input') ? 1 : 0),
     getByRole: (role, { name, exact }) => loc(exact && (
       role === 'textbox' && name === 'New chat in yuis_ops' || role === 'button' && name === 'Send'
     ) ? 1 : 0),
@@ -163,6 +171,8 @@ test('project prompt controls support current accessible names without matching 
   assert.equal(await getPromptControls(page, 'yuis_ops').textbox.count(), 1);
   assert.equal(await getPromptControls(page, 'yuis_ops').send.count(), 1);
   assert.equal(await getPromptControls(page, 'another-project').textbox.count(), 0);
+  pendingHome = true;
+  assert.equal(await getPromptControls(page, 'another-project').textbox.count(), 1);
 });
 
 test('collects the current completed assistant response without requiring legacy message attributes', async () => {

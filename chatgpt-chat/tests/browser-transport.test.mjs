@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   chooseConnectedBrowser,
   closeBrowserTransport,
+  defaultDiscovery,
   openBrowserTransport,
   parseBrowserList,
 } from "../lib/browser-transport.mjs";
@@ -46,6 +47,39 @@ test("fails closed when the preferred browser family has multiple connected prof
     assert.equal(error.code, "BROWSER_NOT_CONNECTED");
     return true;
   });
+});
+
+test("discovery launches the everyday browser only when disconnected and polls for its extension", async () => {
+  const table = `KEY                         TYPE       BROWSER            PROFILE
+------------------------------------------------------------------------
+install:Edge:abc            extension  Edge               person@example.com`;
+  for (const initiallyConnected of [false, true]) {
+    let polls = 0;
+    let launches = 0;
+    let time = 0;
+    const runtime = await defaultDiscovery({
+      home: '/fixture',
+      exists: () => true,
+      run: async () => ({ stdout: initiallyConnected || ++polls >= 3 ? table : '' }),
+      launch: async () => { launches += 1; },
+      now: () => time,
+      sleep: async ms => { time += ms; },
+    });
+    assert.deepEqual(runtime.browsers, [edge]);
+    assert.equal(launches, initiallyConnected ? 0 : 1);
+  }
+});
+
+test("discovery stops waiting after fifteen seconds without a connected extension", async () => {
+  let time = 0;
+  const runtime = await defaultDiscovery({
+    home: '/fixture', exists: () => true,
+    run: async () => ({ stdout: '' }),
+    launch: async () => {}, now: () => time,
+    sleep: async ms => { time += ms; },
+  });
+  assert.equal(time, 15_000);
+  assert.throws(() => chooseConnectedBrowser(runtime.browsers), { code: 'BROWSER_NOT_CONNECTED' });
 });
 
 test("opens the shared workflow in a task-owned tab and deletes only its session", async () => {
