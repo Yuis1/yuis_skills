@@ -13,7 +13,7 @@ Follow the user's and active runtime's delegation limits first. Delegate only in
 
 Root-only delegation remains the default: workers and reviewers report needed assistance back to their parent instead of spawning detached agents. When the user explicitly authorizes hierarchical delegation for large multi-subsystem efforts, designated domain leads may assign bounded tasks to direct workers; leaf workers do not delegate further.
 
-Keep the root directly responsible for one critical workstream that materially advances the objective. Delegate concrete outcomes rather than a continuous stream of micro-tasks that reduces the root to status forwarding and sign-offs.
+The root orchestrator drives objective convergence, task decomposition, contract locking, acceptance adjudication, and asset lifecycle closure; it does not take on leaf-level coding or local implementation debugging, which trap the orchestrator in code-level details. Delegate concrete implementation and debugging to bounded workers, keeping the root focused on unblocking bottlenecks, adjudicating handoffs, and enforcing asset retirement.
 
 ## Bind Workers by Task Contract
 
@@ -37,7 +37,7 @@ Read `delegation-models` when available for unspecified model and effort default
 
 ## Continue, Recover and Finish
 
-Favor stateless, short-lived worker sessions scoped to single atomic Task Contracts over continuous multi-hour sessions prone to context rot. Reclaim worker sessions upon task acceptance; reuse an existing session only when the task, relevant context, and permission boundary remain strictly identical.
+Favor stateless, short-lived worker sessions scoped to single atomic Task Contracts over continuous multi-hour sessions prone to context rot. Reclaim worker sessions upon task acceptance; reuse an existing session only when the task, relevant context, and permission boundary remain strictly identical. When handing off the orchestrator role to a successor session, pause or cancel the predecessor's active goals and recurring heartbeats to prevent split-brain dual orchestration.
 
 Classify failures before retrying, and retry only safe transient operations within the task budget. Trigger a context poisoning circuit breaker upon repeated repair failures or oscillating diffs: rather than compounding failed reasoning in the same session, revert to the baseline, isolate the specific negative constraint, and launch a fresh cold-start session. If an external submission may have occurred, query its status or record uncertainty; never blindly resend. Handle missing inputs and tooling defects directly; a different model or arbitrary wait cannot cure a broken tool.
 
