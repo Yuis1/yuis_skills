@@ -219,12 +219,13 @@ export function getPromptControls(page, projectName) {
 export async function waitForCompletedResponse(page) {
   const pollMilliseconds = Number(process.env.CHATGPT_CHAT_POLL_MILLISECONDS || 600_000);
   if (!Number.isFinite(pollMilliseconds) || pollMilliseconds < 1_000) throw new Error("Invalid polling interval");
+  const stepDelay = Math.min(pollMilliseconds, 2_000);
   const messages = page.locator('[data-message-author-role="assistant"]');
   const responseActions = page.getByRole("group", { name: /Response actions|回复操作/i });
   for (;;) {
     const stop = page.locator('[data-testid="stop-button"]');
     if (await stop.count() && await stop.first().isVisible()) {
-      await page.waitForTimeout(pollMilliseconds);
+      await page.waitForTimeout(stepDelay);
       continue;
     }
     const currentMessages = page.locator('[data-markdown-text-style="assistant-message"]');

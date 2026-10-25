@@ -1,5 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
+import http from "node:http";
 import { homedir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -216,14 +217,41 @@ export async function defaultDiscovery({
         return { id: parseSessionId(stdout) };
       },
       async execute(sessionId, code, timeout) {
-        const response = await fetch(`${relayUrl}/cli/execute`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ sessionId, code, timeout }),
-          signal: AbortSignal.timeout(timeout + 30_000),
+        return new Promise((resolve, reject) => {
+          const u = new URL(`${relayUrl}/cli/execute`);
+          const payload = JSON.stringify({ sessionId, code, timeout });
+          const req = http.request({
+            hostname: u.hostname,
+            port: u.port,
+            path: u.pathname,
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "content-length": Buffer.byteLength(payload),
+            },
+            timeout: timeout + 30_000,
+          }, (res) => {
+            let body = "";
+            res.on("data", (chunk) => { body += chunk; });
+            res.on("end", () => {
+              if (res.statusCode >= 400) {
+                reject(new Error(`Playwriter execute failed with HTTP ${res.statusCode}`));
+                return;
+              }
+              try {
+                resolve(JSON.parse(body));
+              } catch (parseError) {
+                reject(parseError);
+              }
+            });
+          });
+          req.on("timeout", () => {
+            req.destroy(new Error(`Playwriter execute timed out after ${timeout}ms`));
+          });
+          req.on("error", reject);
+          req.write(payload);
+          req.end();
         });
-        if (!response.ok) throw new Error(`Playwriter execute failed with HTTP ${response.status}`);
-        return response.json();
       },
       async resetSession(sessionId) {
         await execFileAsync(playwriter, ["session", "reset", sessionId], { encoding: "utf8", timeout: 30_000 });
