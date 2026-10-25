@@ -30,7 +30,7 @@
 | 验收复杂或高风险任务 | `review-evidence` | 按风险对复审证据分级，冻结候选版本并生成统一机器事实清单 |
 | 判断验证是否真正成立 | `test-evidence` | 区分证据能力边界，落实前置环境探针、故障可解释性与不可变测试目标 |
 | 开发或优化 Agent 产品 | `agent-dev` | 版本化治理 Prompt、模型、Schema、工具、编排及确定性评测基准 |
-| 组织多 Agent 并行工作 | `agent-team` | 控制任务契约、资产去向闭环、工作树与分支退役、短命 Worker 会话与总控摘要隔离 |
+| 组织多 Agent 并行工作 | `agent-team` | 组织二级总控与领域领队，控制任务契约、工作树与分支退役、短命 Worker 会话与总控摘要隔离 |
 | 重构并重写受限的提示词 | `ambitious-prompt-rewrite` | 在高度、深度与广度上将平庸任务升维为专业级自闭环指令 |
 | 研究可与仓库文件分析分离、前沿或有难度且需大量在线文献的问题 | `chatgpt-chat` | 通过用户现有 Edge/Chrome Profile 咨询 ChatGPT Web |
 

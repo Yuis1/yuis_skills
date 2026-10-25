@@ -1,4 +1,4 @@
 interface:
   display_name: "Multi-Agent Collaboration"
-  short_description: "Coordinate parallel agents, bounded task contracts, worktree and branch retirement, and session handoffs"
-  default_prompt: "Use $agent-team to organize parallel work, task contracts, and worktree/branch retirement."
+  short_description: "Coordinate parallel agents, two-tier domain leads, task contracts, and worktree/branch retirement"
+  default_prompt: "Use $agent-team to organize parallel work, two-tier domain leads, and worktree/branch retirement."

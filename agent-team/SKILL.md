@@ -1,6 +1,6 @@
 ---
 name: agent-team
-description: Coordinate parallel agents, bounded task contracts, worktree isolation, and session handoffs. Use for concurrent workstreams or multi-angle reviews.
+description: Coordinate parallel agents, two-tier domain leads, bounded task contracts, worktree isolation, and session handoffs. Use for concurrent workstreams or multi-angle reviews.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
@@ -14,6 +14,17 @@ Follow the user's and active runtime's delegation limits first. Delegate only in
 Root-only delegation remains the default: workers and reviewers report needed assistance back to their parent instead of spawning detached agents. When the user explicitly authorizes hierarchical delegation for large multi-subsystem efforts, designated domain leads may assign bounded tasks to direct workers; leaf workers do not delegate further.
 
 The root orchestrator drives objective convergence, task decomposition, contract locking, acceptance adjudication, and asset lifecycle closure; it does not take on leaf-level coding or local implementation debugging, which trap the orchestrator in code-level details. Delegate concrete implementation and debugging to bounded workers, keeping the root focused on unblocking bottlenecks, adjudicating handoffs, and enforcing asset retirement.
+
+## Two-Tier Orchestration and Domain Leads
+
+When fast-paced parallel development requires coordinating multiple subsystems (such as client, server, data, QA, and infrastructure), deploy a two-tier orchestration hierarchy capped at a strict depth of two:
+
+1. **Root Orchestrator (Tier 1):** locks cross-domain public schemas, partitions 2–4 architectural domains, appoints high-reasoning Domain Leads, and adjudicates milestone integrations. The root never implements leaf code, nor does it inspect raw leaf logs.
+2. **Domain Leads (Tier 2):** high-reasoning models (such as Sol or Astra) holding ownership over a single architectural domain. Each lead decomposes domain goals into atomic slices, coordinates 3–6 direct leaf workers, provides isolated scratch environments, and runs domain-level verification gates. Leads do not mutate shared public schemas unilaterally.
+3. **Leaf Workers (Tier 3):** execute single bounded task contracts within dedicated worktrees. Leaf workers are hard-blocked from spawning further sub-agents (zero recursive delegation).
+4. **Cascading Digest Isolation:** leaf workers submit only structured handoff manifests (`git diff --stat`, test commands, exit codes, and output summaries) to their Domain Lead; Domain Leads aggregate verified progress into concise milestone digests for the Root Orchestrator.
+5. **Hierarchical Worktree Lifecycle:** the mainline integrates domain branches; each Domain Lead operates one domain integration worktree; each leaf worker operates an ephemeral worktree. When a leaf task merges into the domain branch, its worktree and branch are immediately deleted. When a domain milestone merges to mainline, the root tags the recovery commit and retires the domain worktree.
+6. **Domain Deadlock Circuit Breaker:** when two consecutive leaf workers fail on the same task or oscillate between conflicting fixes, the Domain Lead halts the workstream, isolates the failed technical hypothesis, and escalates to the root for architectural re-adjudication.
 
 ## Bind Workers by Task Contract
 

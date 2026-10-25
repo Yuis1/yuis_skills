@@ -30,7 +30,7 @@ The project systematizes those lessons as a user-level `AGENTS.md` and a collect
 | Accept complex or high-risk work | `review-evidence` | Tier review evidence by risk; freeze candidate versions and produce unified machine manifests without manual copying |
 | Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; enforce preflight probes, failure observability, and immutable test targets |
 | Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through deterministic tooling and behavioral benchmarks |
-| Organize parallel multi-Agent work | `agent-team` | Control task contracts, asset disposition, worktree and branch retirement, stateless worker sessions, and root digest isolation |
+| Organize parallel multi-Agent work | `agent-team` | Coordinate two-tier domain leads, bounded task contracts, worktree/branch retirement, and root digest isolation |
 | Reframe and rewrite constrained prompts | `ambitious-prompt-rewrite` | Elevate routine tasks across altitude, depth, and range into professional, durable directives |
 | Research a frontier or difficult question separable from repository files that needs extensive online literature | `chatgpt-chat` | Consult ChatGPT Web through the user's existing Edge/Chrome Profile |
 
