@@ -25,7 +25,7 @@ Repository state, versions, interfaces and execution results require current evi
 
 Plan first for new dependencies, public contracts, persisted data, multiple owners or deployable units, security boundaries and irreversible effects. Low-risk reversible work can proceed directly. A plan does not itself create another approval requirement.
 
-Production behavior changes use `tdd` by default; reproducible defects require regression tests. For configuration, documentation, dependencies and infrastructure use `test-evidence` to choose checks that directly support the claim. Never weaken assertions, skip tests, or fabricate mock results to engineer a pass. Run required checks and report actual failures, skips and unproven behavior; static checks and mocks cannot prove real service behavior.
+Production behavior changes use `tdd` by default; reproducible defects require regression tests. For configuration, documentation, dependencies and infrastructure use `test-evidence` to choose checks that directly support the claim. Never weaken assertions, skip tests, or fabricate mock results to engineer a pass. Run required checks and report actual failures, skips and unproven behavior; static checks and mocks cannot prove real service behavior. Distinguish real product regressions from verification harness defects: when an internal test controller or sampling probe fails due to its own race conditions, fix the harness autonomously without treating monitoring artifacts as product blockers.
 
 Use `diagnosing-bugs` to reproduce and locate a cause before fixing it. Do not sacrifice usability to hide a defect. If a fix would change user experience, evaluate alternatives and obtain user approval first, taking already-authorized changes into account.
 

@@ -13,7 +13,7 @@ Follow the user's and active runtime's delegation limits first. Delegate only in
 
 Root-only delegation remains the default: workers and reviewers report needed assistance back to their parent instead of spawning detached agents. When the user explicitly authorizes hierarchical delegation for large multi-subsystem efforts, designated domain leads may assign bounded tasks to direct workers; leaf workers do not delegate further.
 
-The root orchestrator drives objective convergence, task decomposition, contract locking, acceptance adjudication, and asset lifecycle closure; it does not take on leaf-level coding or local implementation debugging, which trap the orchestrator in code-level details. Delegate concrete implementation and debugging to bounded workers, keeping the root focused on unblocking bottlenecks, adjudicating handoffs, and enforcing asset retirement.
+The root orchestrator drives objective convergence, task decomposition, contract locking, acceptance adjudication, and asset lifecycle closure; it does not take on leaf-level coding or local implementation debugging, which trap the orchestrator in code-level details. Delegate concrete implementation and debugging to bounded workers, keeping the root focused on unblocking bottlenecks, adjudicating handoffs, and enforcing asset retirement. The root adjudicates delivery based on real product behavioral verification, never letting internal monitoring harness noise or fragile governance probes hold product delivery hostage.
 
 ## Two-Tier Orchestration and Domain Leads
 
@@ -28,7 +28,7 @@ When fast-paced parallel development requires coordinating multiple subsystems (
 
 ## Bind Workers by Task Contract
 
-State the goal, inputs or candidate versions, read/write boundaries, acceptance checks, escalation thresholds, and the asset disposition plan (target integration line, recovery tag if needed, and retirement condition for the branch and worktree). Within this `Task Contract`, the worker drives autonomous closure on internal call-chain repairs, private adapters, and local tests without stopping for routine approvals.
+State the goal, inputs or candidate versions, read/write boundaries, acceptance checks, escalation thresholds, and the asset disposition plan (target integration line, recovery tag if needed, and retirement condition for the branch and worktree). Within this `Task Contract`, the worker drives autonomous closure on internal call-chain repairs, private adapters, local tests, and test harness fixes without stopping for routine approvals. Autonomous closure explicitly includes repairing internal verification scripts, test controllers, and scratch artifacts; never escalate internal test tooling repairs to the user unless crossing critical side-effect boundaries.
 
 Escalate to the parent only on critical side effects:
 - introducing public protocol or cross-component API changes beyond the contract;
