@@ -317,10 +317,13 @@ async function projectCreateControl() {
   const heading = page.getByText(/^(projects|项目)$/i, { exact: true }).first();
   await heading.waitFor({ state: "visible", timeout: 30_000 });
   await heading.hover({ timeout: 5_000 });
+  await page.waitForTimeout?.(500).catch(() => {});
   if (await named.isVisible().catch(() => false)) return named;
   const labelled = page.locator('[aria-label*="project" i]:not([aria-label*="options" i]):not([aria-label*="actions" i])')
     .filter({ visible: true }).first();
   if (await labelled.isVisible().catch(() => false)) return labelled;
+  const fallback = page.locator('[aria-label="Add new project"], [aria-label*="new project" i], [aria-label*="新建项目" i], [aria-label*="添加新项目" i]').first();
+  if (await fallback.count() > 0) return fallback;
   const headingButton = heading.locator("xpath=ancestor::button[1]");
   const sibling = headingButton.locator("xpath=following-sibling::button[1]");
   if (await sibling.isVisible().catch(() => false)) return sibling;
@@ -337,11 +340,18 @@ async function createProject(projectName) {
   }
   await create.click({ force: true });
   const dialog = page.getByRole("dialog");
-  await dialog.locator('input[type="text"]').first().or(dialog.getByRole("textbox").first()).first().fill(projectName);
-  await dialog.getByRole("button", { name: /^(Default memory|默认记忆)$/i }).click();
-  await page.getByRole("menuitemradio", { name: /Project-only memory|仅限项目/i }).click();
-  await dialog.getByRole("button", { name: /^(Project-only memory|仅限项目)$/i })
-    .waitFor({ state: "visible", timeout: 10_000 });
+  await dialog.waitFor?.({ state: "visible", timeout: 15_000 }).catch?.(() => {});
+  await page.waitForTimeout?.(300).catch(() => {});
+  const input = dialog.locator('input[type="text"]').first().or(dialog.getByRole("textbox").first()).first();
+  await input.waitFor?.({ state: "visible", timeout: 10_000 }).catch?.(() => {});
+  await input.fill(projectName);
+  const memoryBtn = dialog.getByRole("button", { name: /^(Default memory|默认记忆)$/i }).first();
+  if (await memoryBtn.isVisible().catch(() => false)) {
+    await memoryBtn.click();
+    await page.getByRole("menuitemradio", { name: /Project-only memory|仅限项目/i }).click();
+    await dialog.getByRole("button", { name: /^(Project-only memory|仅限项目)$/i })
+      .waitFor({ state: "visible", timeout: 10_000 });
+  }
   await dialog.getByRole("button", { name: /^(Create project|创建项目)$/i }).click();
   await page.waitForURL(/\/g\/[^/]+\/project$/, { timeout: 30_000 });
   return page.url();
