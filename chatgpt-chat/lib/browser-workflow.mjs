@@ -310,11 +310,17 @@ async function verifyProjectOnlyMemory() {
 }
 
 async function projectCreateControl() {
-  const named = page.getByRole("button", { name: /^(new project|create project|新建项目|创建项目)$/i }).first();
+  const named = page.getByRole("button", { name: /^(new project|create project|add new project|新建项目|创建项目|添加新项目)$/i })
+    .filter({ visible: true }).first();
   if (await named.isVisible().catch(() => false)) return named;
 
   const heading = page.getByText(/^(projects|项目)$/i, { exact: true }).first();
   await heading.waitFor({ state: "visible", timeout: 30_000 });
+  await heading.hover({ timeout: 5_000 });
+  if (await named.isVisible().catch(() => false)) return named;
+  const labelled = page.locator('[aria-label*="project" i]:not([aria-label*="options" i]):not([aria-label*="actions" i])')
+    .filter({ visible: true }).first();
+  if (await labelled.isVisible().catch(() => false)) return labelled;
   const headingButton = heading.locator("xpath=ancestor::button[1]");
   const sibling = headingButton.locator("xpath=following-sibling::button[1]");
   if (await sibling.isVisible().catch(() => false)) return sibling;
@@ -323,19 +329,20 @@ async function projectCreateControl() {
 
 async function createProject(projectName) {
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await ensureSidebar(page);
   const create = await projectCreateControl();
   if (await page.getByRole("button", { name: projectName, exact: true }).count()
     || await page.getByRole("link", { name: projectName, exact: true }).count()) {
     throw new Error("An unmapped same-name ChatGPT Project already exists");
   }
-  await create.click();
+  await create.click({ force: true });
   const dialog = page.getByRole("dialog");
-  await dialog.getByRole("textbox", { name: "Project name" }).fill(projectName);
-  await dialog.getByRole("button", { name: "Default memory", exact: true }).click();
-  await page.getByRole("menuitemradio", { name: /Project-only memory/ }).click();
-  await dialog.getByRole("button", { name: "Project-only memory", exact: true })
+  await dialog.locator('input[type="text"]').first().or(dialog.getByRole("textbox").first()).first().fill(projectName);
+  await dialog.getByRole("button", { name: /^(Default memory|默认记忆)$/i }).click();
+  await page.getByRole("menuitemradio", { name: /Project-only memory|仅限项目/i }).click();
+  await dialog.getByRole("button", { name: /^(Project-only memory|仅限项目)$/i })
     .waitFor({ state: "visible", timeout: 10_000 });
-  await dialog.getByRole("button", { name: "Create project", exact: true }).click();
+  await dialog.getByRole("button", { name: /^(Create project|创建项目)$/i }).click();
   await page.waitForURL(/\/g\/[^/]+\/project$/, { timeout: 30_000 });
   return page.url();
 }
