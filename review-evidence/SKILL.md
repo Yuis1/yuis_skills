@@ -32,7 +32,7 @@ Complete self-review first, then freeze the candidate and emit a single machine-
 - machine exit codes, pass/fail counts, and duration; and
 - skipped items, known limitations, and remaining risks.
 
-The machine manifest is the single source of truth for execution facts. Author, Reviewer, and Root cite anchors or hashes in this manifest rather than manually re-copying SHAs, counts, or exit statuses across separate documents. When candidate code, inputs, or environments change, assess impact and rerun affected checks; reuse requires unchanged inputs.
+The machine manifest is the single source of truth for execution facts. Author, Reviewer, and Root cite anchors or hashes in this manifest under a zero hand-copying policy rather than manually duplicating SHAs, counts, or exit statuses across separate documents. When candidate code, inputs, or environments change, assess impact and rerun affected checks; reuse requires unchanged inputs.
 
 ## Independent Verification
 
@@ -40,7 +40,7 @@ Use fresh review context, specifications, and the machine manifest; passing auth
 
 1. Independently confirm change boundaries, Owners, and true dependency closures.
 2. Sample critical verification commands by risk rather than mechanically repeating all tests.
-3. Check behavioral contracts and test integrity: verify that assertions were not softened, skipped, or hardcoded to bypass failures, adding structural checks for boundary leakage, forwarding, and change amplification only where affected scope demands them.
+3. Execute forensic test audits and contract checks: verify that assertions were not softened, skipped, or hardcoded to bypass failures, adding structural checks for boundary leakage, forwarding, and change amplification only where affected scope demands them.
 4. Classify failures explicitly: regression in this change, pre-existing baseline defect, test-suite flaw, flaky test, environment breakdown, or unexecuted.
 5. Record skipped, unexecuted, or under-evidenced items as “unproven”; do not report them as passed.
 
