@@ -14,7 +14,7 @@ Decide whether this Skill applies before running `command -v chatgpt-chat`, `ins
 2. The subject is frontier or genuinely difficult.
 3. The answer requires extensive online literature from multiple sources, beyond a small documentation lookup.
 
-For example, a difficult emerging research question requiring a broad literature review can qualify. Routine repository troubleshooting, code or diff review, local-file analysis, and a question answered by a few documentation pages do not qualify merely because they involve planning, architecture, or an important decision.
+Routine repository troubleshooting, code or diff review, local-file analysis, and questions answered by a few documentation pages do not qualify.
 
 If the user explicitly requests `chatgpt-chat` or ChatGPT Web, follow that instruction through the normal path below. The automatic-invocation gate does not override an explicit request or the security boundary.
 
@@ -38,17 +38,18 @@ Use only the `chatgpt-chat` CLI. Do not read implementation, research, or tests,
 
    Use `chatgpt-chat doctor --cwd "$PWD"` for preflight. If none is connected, the CLI may automatically launch everyday Edge (Chrome if unavailable) and wait up to 15 seconds for Playwriter. No manual pre-launch needed. It reuses the normal Profile and saved login cookies without reading/copying them or creating a test Profile. The CLI prefers the sole Edge Profile, then Chrome; ambiguity fails closed rather than guessing an account. Safe operations retry once on that Profile.
 
-3. Use the `inspect` summary to continue or start a conversation. Put the question in a permission-restricted file, then invoke one of:
+3. Use the `inspect` summary to continue or start a conversation. Put questions in a permission-restricted file. Prefer `--async` so agents never block during 10–40 min reasoning:
 
    ```bash
+   # Non-blocking async submit (returns status "submitted" immediately):
+   chatgpt-chat ask --cwd "$PWD" --prompt-file /private/prompt --new --async
+   # Probe / collect without blocking (status "generating" or "completed"):
+   chatgpt-chat collect --cwd "$PWD"
+   # Synchronous ask (blocks until complete):
    chatgpt-chat ask --cwd "$PWD" --prompt-file /private/prompt --new
-   chatgpt-chat ask --cwd "$PWD" --prompt-file /private/prompt \
-     --attachment /private/review.zip --new
-   chatgpt-chat ask --cwd "$PWD" --prompt-file /private/prompt \
-     --conversation-url 'https://chatgpt.com/...'
    ```
 
-4. Project Sources are the project's long-lived source of facts:
+4. Project Sources are long-lived facts:
 
    ```bash
    chatgpt-chat source-list --cwd "$PWD"
@@ -59,7 +60,7 @@ Use only the `chatgpt-chat` CLI. Do not read implementation, research, or tests,
 
    Use only reviewed regular files; exclude secrets, browser data, Git history, dependencies, builds, and caches. Deletion requires approval of the exact filename.
 
-5. Read the full `response_path`. Report generated attachments by path and bytes only; do not execute them.
+5. Read the full `response_path`. Report attachments by path and bytes only; do not execute them.
 
 Before sending, the CLI verifies the exact Project, Project-only Memory, Chat, Pro, and latest visible flagship GPT. It closes only its own ChatGPT tab. `ask` retries only before submission; after confirmed submission it may resume observation without resending, while uncertain submission fails closed.
 

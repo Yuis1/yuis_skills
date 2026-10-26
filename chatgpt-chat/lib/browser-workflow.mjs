@@ -518,6 +518,61 @@ async function titleForConversation(url) {
 async function run() {
   let projectUrl = input.projectUrl;
   let createdProjectUrl = null;
+
+  if (input.command === "collect") {
+    if (!projectUrl) throw new Error("Project is not mapped");
+    const projectId = new URL(projectUrl).pathname.match(/^\/g\/(g-p-[^/]+)\/project$/)?.[1];
+    const conversationPath = new URL(input.conversationUrl).pathname;
+    if (!projectId || !conversationPath.startsWith(`/g/${projectId}`) || !conversationPath.includes("/c/")) {
+      throw new Error("Conversation does not belong to the mapped ChatGPT Project");
+    }
+    await page.goto(input.conversationUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
+    const messageLocator = page.locator('[data-markdown-text-style="assistant-message"], [data-message-author-role="assistant"]');
+    const stopLocator = page.locator('[data-testid="stop-button"]');
+    await messageLocator.first().or(stopLocator.first()).waitFor({ state: "visible", timeout: 15_000 }).catch(() => {});
+    const waitDeadline = Date.now() + Math.max(0, Number(input.waitSeconds) || 0) * 1000;
+    for (;;) {
+      const stop = page.locator('[data-testid="stop-button"]');
+      const isGenerating = (await stop.count()) > 0 && (await stop.first().isVisible().catch(() => false));
+      if (!isGenerating) {
+        const currentMessages = page.locator('[data-markdown-text-style="assistant-message"], [data-message-author-role="assistant"]');
+        const completionVisible = await page.getByRole("status")
+          .filter({ hasText: /^Response complete$/ }).last().isVisible().catch(() => false);
+        const regenerationVisible = !completionVisible && await page.getByRole("button", { name: "Regenerate response", exact: true })
+          .last().isVisible().catch(() => false);
+        if (await currentMessages.count() && (completionVisible || regenerationVisible || (await currentMessages.last().innerText()).trim().length > 0)) {
+          const content = currentMessages.last();
+          const text = (await content.innerText()).trim();
+          if (text) {
+            const responsePath = path.join(input.artifactDirectory, `${new Date().toISOString().replace(/[:.]/g, "-")}-response.txt`);
+            fs.writeFileSync(responsePath, `${text}\n`, { mode: 0o600, flag: "wx" });
+            const turn = content.locator('xpath=ancestor::*[@data-content-search-unit-key][1]');
+            const attachments = await collectAttachments(turn);
+            return {
+              projectUrl,
+              createdProjectUrl: null,
+              conversationUrl: input.conversationUrl,
+              status: "completed",
+              responsePath,
+              responseBytes: Buffer.byteLength(text),
+              responsePreview: text.slice(0, 500),
+              attachments,
+            };
+          }
+        }
+      }
+      if (Date.now() >= waitDeadline) {
+        return {
+          projectUrl,
+          createdProjectUrl: null,
+          conversationUrl: input.conversationUrl,
+          status: "generating",
+        };
+      }
+      await page.waitForTimeout(2000);
+    }
+  }
+
   if (!projectUrl) {
     if (input.command === "inspect") {
       projectUrl = await findMappedProject(page, input.projectName, waitForProject);
@@ -590,6 +645,17 @@ async function run() {
     await page.waitForURL(/\/c\//, { timeout: 30_000 });
     conversationUrl = page.url();
     onPhase("submitted_confirmed", { conversationUrl });
+    if (input.isAsync) {
+      return {
+        projectUrl,
+        createdProjectUrl,
+        interaction,
+        conversationUrl,
+        conversationTitle: await titleForConversation(conversationUrl).catch(() => "New conversation"),
+        status: "submitted",
+        uploadedAttachments,
+      };
+    }
   }
   const { turn, text } = await waitForCompletedResponse(page);
   const responsePath = path.join(input.artifactDirectory, `${new Date().toISOString().replace(/[:.]/g, "-")}-response.txt`);

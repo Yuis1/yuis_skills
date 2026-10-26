@@ -12,9 +12,10 @@ function publicError(message) {
 }
 
 function parseArguments(argv) {
-  const [command, ...rest] = argv;
-  if (!new Set(["doctor", "login", "inspect", "ask", "source-list", "source-add", "source-remove"]).has(command)) {
-    throw publicError("usage: chatgpt-chat <doctor|login|inspect|ask|source-list|source-add|source-remove> [options]");
+  let [command, ...rest] = argv;
+  if (command === "poll") command = "collect";
+  if (!new Set(["doctor", "login", "inspect", "ask", "collect", "source-list", "source-add", "source-remove"]).has(command)) {
+    throw publicError("usage: chatgpt-chat <doctor|login|inspect|ask|collect|source-list|source-add|source-remove> [options]");
   }
   const input = {
     command,
@@ -26,6 +27,8 @@ function parseArguments(argv) {
     confirmProjectSourceDelete: false,
     newConversation: false,
     conversationUrl: null,
+    isAsync: false,
+    waitSeconds: 0,
   };
   for (let index = 0; index < rest.length; index += 1) {
     const argument = rest[index];
@@ -57,8 +60,20 @@ function parseArguments(argv) {
       input.newConversation = true;
       continue;
     }
+    if (command === "ask" && (argument === "--async" || argument === "--detach")) {
+      input.isAsync = true;
+      continue;
+    }
     if (command === "ask" && argument === "--conversation-url" && rest[index + 1]) {
       input.conversationUrl = rest[++index];
+      continue;
+    }
+    if (command === "collect" && argument === "--conversation-url" && rest[index + 1]) {
+      input.conversationUrl = rest[++index];
+      continue;
+    }
+    if (command === "collect" && argument === "--wait" && rest[index + 1]) {
+      input.waitSeconds = Math.max(0, parseInt(rest[++index], 10) || 0);
       continue;
     }
     throw publicError(`unknown argument: ${argument}`);
@@ -130,6 +145,16 @@ function validateResult(input, result) {
   if (input.command === "login") {
     if (result.status !== "login_window_open") throw publicError("browser adapter returned an invalid login result");
     return result;
+  }
+  if (input.command === "ask") {
+    if (result.status !== "completed" && result.status !== "submitted") {
+      throw publicError("browser adapter returned an invalid ask result");
+    }
+  }
+  if (input.command === "collect") {
+    if (result.status !== "completed" && result.status !== "generating") {
+      throw publicError("browser adapter returned an invalid collect result");
+    }
   }
   const isSourceCommand = input.command.startsWith("source-");
   if (isSourceCommand && result.status !== "completed") {
@@ -208,7 +233,14 @@ async function main() {
           conversationUrl: input.conversationUrl,
           newConversation: input.newConversation,
           attachmentPaths: input.attachmentPaths,
+          isAsync: input.isAsync,
         })
+        : input.command === "collect"
+          ? await adapter.collect({
+            cwd: input.cwd,
+            conversationUrl: input.conversationUrl,
+            waitSeconds: input.waitSeconds,
+          })
         : input.command === "source-list"
           ? await adapter.sourceList({ cwd: input.cwd })
           : input.command === "source-add"

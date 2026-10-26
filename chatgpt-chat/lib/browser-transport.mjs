@@ -61,7 +61,11 @@ function parseWorkflowResult(output) {
 }
 
 function operationTimeout(input) {
+  if (input.command === "collect") {
+    return Math.max(60_000, ((Number(input.waitSeconds) || 0) + 30) * 1000);
+  }
   if (input.command !== "ask") return 600_000;
+  if (input.isAsync) return 180_000;
   const poll = Number(process.env.CHATGPT_CHAT_POLL_MILLISECONDS || 600_000);
   return Math.max(3_600_000, Number.isFinite(poll) ? poll * 12 : 7_200_000);
 }
@@ -140,7 +144,7 @@ function isRecoverableBrowserError(error) {
 }
 
 function canRetry(input, error) {
-  if (["doctor", "login", "inspect", "source-list"].includes(input.command)) return true;
+  if (["doctor", "login", "inspect", "source-list", "collect"].includes(input.command)) return true;
   return input.command === "ask" && ["pre_submit", "submitted_confirmed"].includes(error?.diagnostics?.phase);
 }
 

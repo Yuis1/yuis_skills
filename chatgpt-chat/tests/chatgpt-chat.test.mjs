@@ -169,6 +169,90 @@ test("ask reads the prompt file and requires an explicit conversation choice", (
   assert.match(ambiguous.stderr, /exactly one of --new or --conversation-url/);
 });
 
+test("ask supports --async to submit without waiting for response", () => {
+  const { project, adapter, root } = fixture(`export async function ask(input) {
+    if (!input.isAsync) throw new Error("expected isAsync to be true");
+    return {
+      schema_version: 1,
+      command: "ask",
+      status: "submitted",
+      conversation_url: "https://chatgpt.com/c/async-example",
+      verification: { project: "sample-project", memory_scope: "project-only", mode: "chat", effort: "Pro", model: "GPT-6" },
+      uploaded_attachments: []
+    };
+  }\n`);
+  const promptFile = join(root, "prompt.txt");
+  writeFileSync(promptFile, "Review async task.\n");
+
+  const result = spawnSync(
+    process.execPath,
+    [cli, "ask", "--cwd", project, "--prompt-file", promptFile, "--new", "--async"],
+    {
+      encoding: "utf8",
+      env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    schema_version: 1,
+    command: "ask",
+    status: "submitted",
+    conversation_url: "https://chatgpt.com/c/async-example",
+    verification: { project: "sample-project", memory_scope: "project-only", mode: "chat", effort: "Pro", model: "GPT-6" },
+    uploaded_attachments: [],
+  });
+});
+
+test("collect probes generating or completed response without blocking", () => {
+  const { project, adapter } = fixture(`
+    export async function collect(input) {
+      if (input.waitSeconds === 10) {
+        return {
+          schema_version: 1,
+          command: "collect",
+          status: "generating",
+          conversation_url: input.conversationUrl || "https://chatgpt.com/c/async-example",
+          verification: { project: "sample-project", memory_scope: "project-only", mode: "chat", effort: "Pro", model: "GPT-6" },
+        };
+      }
+      return {
+        schema_version: 1,
+        command: "collect",
+        status: "completed",
+        conversation_url: input.conversationUrl || "https://chatgpt.com/c/async-example",
+        verification: { project: "sample-project", memory_scope: "project-only", mode: "chat", effort: "Pro", model: "GPT-6" },
+        response_path: "/artifacts/async-response.md",
+        response_bytes: 42,
+        response_preview: "preview text",
+        attachments: [],
+      };
+    }\n`);
+
+  const generating = spawnSync(
+    process.execPath,
+    [cli, "collect", "--cwd", project, "--wait", "10"],
+    {
+      encoding: "utf8",
+      env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+    },
+  );
+  assert.equal(generating.status, 0, generating.stderr);
+  assert.equal(JSON.parse(generating.stdout).status, "generating");
+
+  const completed = spawnSync(
+    process.execPath,
+    [cli, "poll", "--cwd", project, "--conversation-url", "https://chatgpt.com/c/async-example"],
+    {
+      encoding: "utf8",
+      env: { ...process.env, CHATGPT_CHAT_ADAPTER_MODULE: pathToFileURL(adapter).href },
+    },
+  );
+  assert.equal(completed.status, 0, completed.stderr);
+  assert.equal(JSON.parse(completed.stdout).status, "completed");
+  assert.equal(JSON.parse(completed.stdout).command, "collect");
+});
+
 test("project source commands use explicit files and deletion confirmation", () => {
   const root = mkdtempSync(join(tmpdir(), "chatgpt-chat-sources-"));
   const project = join(root, "sample-project");

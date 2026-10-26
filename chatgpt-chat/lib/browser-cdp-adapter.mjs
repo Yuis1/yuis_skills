@@ -153,7 +153,7 @@ export async function sourceRemove({ cwd, sourceName }) {
   return runSourceCommand({ cwd, command: "source-remove", sourceName });
 }
 
-export async function ask({ cwd, prompt, conversationUrl, newConversation, attachmentPaths = [] }) {
+export async function ask({ cwd, prompt, conversationUrl, newConversation, attachmentPaths = [], isAsync = false }) {
   if (!prompt.trim()) throw new Error("Prompt file is empty");
   const identity = resolveProject(cwd);
   validateConversationChoice(identity, conversationUrl);
@@ -170,6 +170,7 @@ export async function ask({ cwd, prompt, conversationUrl, newConversation, attac
     prompt,
     attachmentPaths,
     artifactDirectory,
+    isAsync,
   }, cwd);
   if (result.createdProjectUrl) {
     projectState("bind-project", "--cwd", cwd, "--url", result.createdProjectUrl, "--memory-scope", "project-only");
@@ -180,6 +181,16 @@ export async function ask({ cwd, prompt, conversationUrl, newConversation, attac
     "--title", result.conversationTitle,
     "--topic", prompt.trim().slice(0, 240),
   );
+  if (isAsync || result.status === "submitted") {
+    return {
+      schema_version: 1,
+      command: "ask",
+      status: "submitted",
+      conversation_url: result.conversationUrl,
+      verification: { project: identity.local_name, memory_scope: "project-only", ...result.interaction },
+      uploaded_attachments: result.uploadedAttachments,
+    };
+  }
   return {
     schema_version: 1,
     command: "ask",
@@ -190,6 +201,55 @@ export async function ask({ cwd, prompt, conversationUrl, newConversation, attac
     response_bytes: result.responseBytes,
     response_preview: result.responsePreview,
     uploaded_attachments: result.uploadedAttachments,
+    attachments: result.attachments,
+  };
+}
+
+export async function collect({ cwd, conversationUrl = null, waitSeconds = 0 }) {
+  const identity = resolveProject(cwd);
+  if (!identity.mapping?.project_url) throw new Error("Project is not mapped");
+  const targetUrl = conversationUrl || identity.mapping.conversations?.[0]?.url;
+  if (!targetUrl) throw new Error("No conversation found in project to collect");
+  validateConversationChoice(identity, targetUrl);
+  const artifactDirectory = projectState("artifact-dir", "--cwd", cwd);
+  const result = await runBrowserWorkflow({
+    command: "collect",
+    projectName: identity.local_name,
+    projectUrl: identity.mapping.project_url,
+    conversationUrl: targetUrl,
+    waitSeconds,
+    artifactDirectory,
+  }, cwd);
+  if (result.status === "generating") {
+    return {
+      schema_version: 1,
+      command: "collect",
+      status: "generating",
+      conversation_url: result.conversationUrl,
+      verification: {
+        project: identity.local_name,
+        memory_scope: "project-only",
+        mode: "chat",
+        effort: "Pro",
+        model: "GPT-6",
+      },
+    };
+  }
+  return {
+    schema_version: 1,
+    command: "collect",
+    status: "completed",
+    conversation_url: result.conversationUrl,
+    verification: {
+      project: identity.local_name,
+      memory_scope: "project-only",
+      mode: "chat",
+      effort: "Pro",
+      model: "GPT-6",
+    },
+    response_path: result.responsePath,
+    response_bytes: result.responseBytes,
+    response_preview: result.responsePreview,
     attachments: result.attachments,
   };
 }
