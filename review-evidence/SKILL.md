@@ -7,7 +7,7 @@ description: Tier review evidence, generate unified machine facts, freeze candid
 
 # Complex Review and Evidence
 
-Tier evidence by task risk. Routine fixes and local refactors require only lightweight verification; do not construct heavy evidence packages for low-risk changes.
+Tier evidence by task risk. Enforce proportional review overhead: internal test repairs, harness adaptations, and routine local refactors belong to Tier 0/1—verify via the author's local regression run (`git diff --stat` and passing tests) without spawning independent reviewer sub-agents or writing multi-page manifest packages. Reserve formal multi-agent review for Tier 3 candidates (public API breaking changes, security boundaries, or irreversible persistence cutovers). Emit review findings into ephemeral review output or PR summaries rather than cluttering repositories or scratch trees with persistent ceremony files.
 
 ## Freeze Acceptance Scope
 
