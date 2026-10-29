@@ -12,6 +12,9 @@ This project distills the practical failure modes I have encountered while using
 - **Architectural antipatterns:** overloaded entry points, unclear ownership of business facts, uncontrolled dependency direction, shallow modules, complex interfaces, and all-at-once refactoring across architectural layers
 - **False completion and test cheating:** tests made to fail merely to satisfy a test-first ritual, softening assertions or injecting skips to fake passing tests, and bug fixes that sacrifice user experience
 - **Context rot and coordination overhead:** sprawling multi-hour sessions, unmanaged accumulation of dozens of branches and worktrees, interface drift across parallel teams, and orchestrators reduced to bloated communication bottlenecks
+- **Governance bureaucracy and meta-work sprawl:** agents getting trapped in nested administrative ceremonies—generating hundreds of ritualistic tracking files, sample dumps, closeout manifests, and review loops, burning hundreds of millions of tokens on self-review bureaucracy while consecutive commits fail to touch core product code paths
+- **Test harness quagmire and trial-and-error spirals:** sub-agents reinventing fragile test runners, fighting port collisions, TIME_WAIT false alarms, and leaked zombie child processes, or accidentally deleting shared test databases during cleanup
+- **Slice-only false completion and async verification races:** declaring features complete when decoupled backend unit tests and frontend component mocks pass individually, while the unmocked end-to-end user flow remains broken; asserting persistence against transient in-flight UI states before network requests settle, or using read-only GET probes to falsely certify write-verb readiness before heavy multi-tier runs
 - **Unsystematic feedback:** failure to align before implementation, missing architecture enforcement and code-quality gates, weak design judgment, and failure to persist bug evidence
 - **Prompt and documentation defects:** exposing internal reasoning, lacking narrative structure, and using terminology without a shared understanding
 
@@ -39,6 +42,13 @@ Common combinations:
 - System decomposition: `system-design` → `arch-evolve` → `arch-guard`
 - Large-scale refactoring: `safe-refactor` + `test-evidence`; add `review-evidence` for a high-risk candidate
 - Agent behavior changes: `agent-dev` + `test-evidence`
+
+### Prompt Elevation with `ambitious-prompt-rewrite`
+
+Inspired by Anthropic Engineering Lead Felix Rieseberg's viral long-form essay *"How to be more ambitious: A tutorial for humans with models"* (October 2026), `ambitious-prompt-rewrite` bridges the persistent "ambition gap" between human prompts and frontier model capabilities. Humans routinely constrain models to mundane, local, single-turn tasks. This skill elevates drafts across three orthogonal axes:
+- **Altitude:** elevates the goal beyond the immediate task, turning one-off manual fixes into durable, self-sustaining loops that take humans out of routine execution;
+- **Depth:** demands instruments of top domain experts (raw ASTs, native profilers, statistical models) and enforces an independent, external judge rather than in-loop narrative self-evaluation;
+- **Range:** maps underlying verbs to orthogonal professional disciplines (forensic accountants, short sellers, motion designers) to inject rigor without cosmetic role-playing.
 
 After installation, an Agent can select Skills from the task and their descriptions, or you can name a Skill explicitly in your Prompt. Do not preload the entire collection before every task.
 
