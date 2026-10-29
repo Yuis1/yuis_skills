@@ -71,9 +71,12 @@ Only cross-project principles and hard constraints stay in persistent context; c
 
 | Source | Skills used by `AGENTS.md` | Purpose |
 |---|---|---|
-| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team`, `ambitious-prompt-rewrite` | System architecture, evolution, automated enforcement, refactoring, evidence, Agent collaboration, and prompt elevation |
-| [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`, `grill-me`, `grill-with-docs`, `prototype`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `ask-matt`, `research`, `code-review`, `tdd`, `diagnosing-bugs`, `improve-codebase-architecture`, `resolving-merge-conflicts` | Requirements alignment, planning, implementation, testing, diagnosis, code review, and module design |
-| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend`, `redesign-existing-projects` | New frontend design and modernization of existing interfaces |
+| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team`, `ambitious-prompt-rewrite`, `chatgpt-chat` | System architecture, evolution, automated enforcement, refactoring, evidence, Agent collaboration, and prompt elevation |
+| [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`, `grill-me`, `grill-with-docs`, `prototype`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `ask-matt`, `research`, `code-review`, `tdd`, `diagnosing-bugs`, `improve-codebase-architecture`, `pr`, `retro`, `to-questionnaire`, `wait-what`, `wizard` | Requirements alignment, planning, implementation, testing, diagnosis, code review, PR authoring, and session retrospectives |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend` | Anti-slop art direction, macro layout variance, and real-browser inspection for web pages and app screens |
+| [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | `ui-ux-pro-max` | Offline BM25 vertical domain palettes, typography systems, and interaction guidelines |
+| [`emilkowalski/skills`](https://github.com/emilkowalski/skills) | `emil-design-eng`, `animate`, `review-animations` | Micro-interaction ergonomics, physical spring tuning, 150–250ms feedback latency caps, and reduced-motion compliance |
+| [`Nutlope/hallmark`](https://github.com/Nutlope/hallmark) | `hallmark` | Defensive anti-slop quality gates, 16 Floor rules, and automated `sloplint.mjs` AST/Tailwind inspection |
 
 `agent-team` also depends on the `paseo-advisor` and `paseo-committee` capabilities provided by a Paseo environment. If you do not use Paseo, do not install `agent-team`, and remove the corresponding Skill guidance from `AGENTS.md`.
 

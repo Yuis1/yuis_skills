@@ -71,9 +71,12 @@
 
 | 来源 | `AGENTS.md` 使用的技能 | 作用 |
 |---|---|---|
-| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team`、`ambitious-prompt-rewrite` | 系统架构、演进、自动守护、重构、证据、Agent 协作与提示词升维 |
-| [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`、`grill-me`、`grill-with-docs`、`prototype`、`to-spec`、`to-tickets`、`wayfinder`、`implement`、`ask-matt`、`research`、`code-review`、`tdd`、`diagnosing-bugs`、`improve-codebase-architecture`、`resolving-merge-conflicts` | 需求对齐、规划、实现、测试、排障、代码评审与模块设计 |
-| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend`、`redesign-existing-projects` | 新前端设计与既有界面翻新 |
+| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team`、`ambitious-prompt-rewrite`、`chatgpt-chat` | 系统架构、演进、自动守护、重构、证据、Agent 协作与提示词升维 |
+| [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`、`grill-me`、`grill-with-docs`、`prototype`、`to-spec`、`to-tickets`、`wayfinder`、`implement`、`ask-matt`、`research`、`code-review`、`tdd`、`diagnosing-bugs`、`improve-codebase-architecture`、`pr`、`retro`、`to-questionnaire`、`wait-what`、`wizard` | 需求对齐、规划、实现、测试、诊断、代码复审、PR 编写与会话复盘 |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend` | 反 AI 模板化先锋视觉、宏观方差打破、网页与应用界面真实浏览器截屏评审 |
+| [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | `ui-ux-pro-max` | 本地 BM25 垂直行业调色板、字体搭配与交互设计指南检索底座 |
+| [`emilkowalski/skills`](https://github.com/emilkowalski/skills) | `emil-design-eng`、`animate`、`review-animations` | 微观人机工效学、物理弹簧阻尼比调优、150~250ms 交互时延硬顶与无障碍减弱动效 |
+| [`Nutlope/hallmark`](https://github.com/Nutlope/hallmark) | `hallmark` | 防御型反油腻质量守门员、16 条不可让步 Floor 硬门禁与 `sloplint.mjs` 静态机检 |
 
 `agent-team` 还依赖 Paseo 环境提供的 `paseo-advisor` 和 `paseo-committee`。不使用 Paseo 时，不要安装 `agent-team`，并删除 `AGENTS.md` 中对应的技能指引。
 
