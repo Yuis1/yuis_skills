@@ -99,8 +99,6 @@
 
 任何一种语言都不是翻译分支或次级事实源。如果一项修改无法在不改变含义的前提下同步到另一版本，应停止合并并先解决底层内容决策。修改流程和验证边界详见[双语维护契约](docs/bilingual-maintenance.zh-CN.md)。
 
-[2026 年 9 月维护记录](docs/optimization-2026-09-23.md)说明当前的触发和授权边界。
-
 ## 安装
 
 [Codex](https://developers.openai.com/codex/build-skills)、[Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md) 和 [OpenCode](https://opencode.ai/docs/skills/) 读取 `~/.agents/skills`；[Claude Code](https://code.claude.com/docs/en/agent-sdk/skills) 读取 `~/.claude/skills`。

@@ -4,3 +4,6 @@
 # Python test bytecode
 __pycache__/
 *.py[cod]
+
+# Private maintenance records
+/docs/maintenance/

@@ -99,8 +99,6 @@ English and Simplified Chinese are equal-authority mirrors. Contributors may sta
 
 Neither language is a translation branch or a secondary source. If a proposed edit cannot be mirrored without changing meaning, stop and resolve the underlying content decision before merging. See the [bilingual maintenance contract](docs/bilingual-maintenance.md) for the editing workflow and validation boundary.
 
-The [September 2026 maintenance record](docs/optimization-2026-09-23.md) explains the current trigger and authorization boundaries.
-
 ## Installation
 
 [Codex](https://developers.openai.com/codex/build-skills), [Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md), and [OpenCode](https://opencode.ai/docs/skills/) read `~/.agents/skills`; [Claude Code](https://code.claude.com/docs/en/agent-sdk/skills) reads `~/.claude/skills`.
