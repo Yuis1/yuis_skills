@@ -45,7 +45,8 @@
 
 ### 借助 `ambitious-prompt-rewrite` 升维提示词
 
-受 Anthropic 工程主管 Felix Rieseberg 发布的万字长文《如何更具雄心：人类与模型的进阶教程》（*How to be more ambitious: A tutorial for humans with models*，2026 年 10 月）启发，`ambitious-prompt-rewrite` 旨在消除人类请求与前沿模型能力之间的“雄心鸿沟”（Ambition Gap）。人类往往出于习惯，将前沿模型限定在平庸、局部、单次的浅层任务中。该技能在三个正交维度上重构提示词：
+受 Felix Rieseberg 的文章[《如何更具雄心：人类与模型的进阶教程》（How to be more ambitious: A tutorial for humans with models）](https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/)（2026 年 10 月 13 日）启发，`ambitious-prompt-rewrite` 旨在消除人类请求与前沿模型能力之间的“雄心鸿沟”（Ambition Gap）。人类往往出于习惯，将前沿模型限定在平庸、局部、单次的浅层任务中。该技能在三个正交维度上重构提示词：
+
 - **高度（Altitude）：** 将目标提升至超越当前动作的全局视角，把单次手工修复转化为将人类解放出来的持久自闭环系统；
 - **深度（Depth）：** 调动领域顶尖专家的专业工具（原生 AST、性能探针、统计学模型），并强制引入外部独立裁判，严禁回路内的口头自我评价；
 - **广度（Range）：** 将核心动词映射至正交交叉学科（如做空机构、法务会计师、动效设计师），引入其实质性求证方法学，拒绝浮于表面的角色扮演。
@@ -67,7 +68,7 @@
 
 仓库根目录的 [`AGENTS.md`](./AGENTS.md) 收录了这套技能配套的用户级规则。它既是维护本仓库时的项目规则，也是向各 Coding Agent 分发全局规则的权威来源。后续应从仓库通过 Ansible 等配置管理工具单向发布，避免同时手工维护仓库和用户目录中的副本。
 
-这份规则只将跨项目原则和硬约束保留在常驻上下文中，具体技能按需加载，因此不能当作完全独立的 Prompt 使用。请配套安装下面三组技能：
+这份规则只将跨项目原则和硬约束保留在常驻上下文中，具体技能按需加载，因此不能当作完全独立的 Prompt 使用。请配套安装下面各组技能：
 
 | 来源 | `AGENTS.md` 使用的技能 | 作用 |
 |---|---|---|
@@ -137,19 +138,32 @@ link_skills "$HOME/.claude/skills"
 
 | 仓库 | 固定版本 |
 |---|---|
-| [`mattpocock/skills`](https://github.com/mattpocock/skills/tree/v1.1.0) | `v1.1.0`（`eabea89380927aadb93abf6e290a19334d249292`） |
-| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill/tree/e988add20dab0fa97d7a76781c48961c8184288e) | `e988add20dab0fa97d7a76781c48961c8184288e` |
+| [`mattpocock/skills`](https://github.com/mattpocock/skills/tree/59db609eb1e18aaf59b63284d0e52255aff0c63c) | `59db609eb1e18aaf59b63284d0e52255aff0c63c` |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill/tree/12af471f627f866411b4bd785b19646d3672784c) | `12af471f627f866411b4bd785b19646d3672784c` |
+| [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/28b3b8dee8c976df4fa3e94aed4e092ad43fcb03) | `28b3b8dee8c976df4fa3e94aed4e092ad43fcb03` |
+| [`emilkowalski/skills`](https://github.com/emilkowalski/skills/tree/a81dbca07f2217b7103e510c0f13f8d5b017afc9) | `a81dbca07f2217b7103e510c0f13f8d5b017afc9` |
+| [`Nutlope/hallmark`](https://github.com/Nutlope/hallmark/tree/8f6969f8922caabde9de1784959eae11ddf68073) | `8f6969f8922caabde9de1784959eae11ddf68073` |
 
 ```bash
-git clone --branch v1.1.0 --depth 1 \
-  https://github.com/mattpocock/skills.git ../mattpocock-skills
+git clone https://github.com/mattpocock/skills.git ../mattpocock-skills
+git -C ../mattpocock-skills checkout --detach 59db609eb1e18aaf59b63284d0e52255aff0c63c
 git clone https://github.com/Leonxlnx/taste-skill.git ../taste-skill
-git -C ../taste-skill checkout --detach \
-  e988add20dab0fa97d7a76781c48961c8184288e
+git -C ../taste-skill checkout --detach 12af471f627f866411b4bd785b19646d3672784c
+git clone https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git ../ui-ux-pro-max-skill
+git -C ../ui-ux-pro-max-skill checkout --detach 28b3b8dee8c976df4fa3e94aed4e092ad43fcb03
+git clone https://github.com/emilkowalski/skills.git ../emilkowalski-skills
+git -C ../emilkowalski-skills checkout --detach a81dbca07f2217b7103e510c0f13f8d5b017afc9
+git clone https://github.com/Nutlope/hallmark.git ../hallmark
+git -C ../hallmark checkout --detach 8f6969f8922caabde9de1784959eae11ddf68073
 
-npx skills@latest add ../mattpocock-skills --global --skill '*'
-npx skills@latest add ../taste-skill --global \
-  --skill design-taste-frontend redesign-existing-projects
+npx skills@latest add ../mattpocock-skills/skills/engineering --global --skill '*'
+npx skills@latest add ../mattpocock-skills/skills/productivity --global --skill '*'
+npx skills@latest add ../mattpocock-skills/skills/misc --global --skill '*'
+npx skills@latest add ../taste-skill --global --skill design-taste-frontend
+npx skills@latest add ../ui-ux-pro-max-skill --global --skill ui-ux-pro-max
+npx skills@latest add ../emilkowalski-skills --global \
+  --skill emil-design-eng animate review-animations
+npx skills@latest add ../hallmark --global --skill hallmark
 ```
 
 原版 `gpt-taste` 要求模拟执行并无条件采用营销布局，因此不纳入受控安装集合。其余视觉技能仅在产品任务适用时选择，保留已有设计系统和功能。

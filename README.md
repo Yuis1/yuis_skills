@@ -45,7 +45,8 @@ Common combinations:
 
 ### Prompt Elevation with `ambitious-prompt-rewrite`
 
-Inspired by Anthropic Engineering Lead Felix Rieseberg's viral long-form essay *"How to be more ambitious: A tutorial for humans with models"* (October 2026), `ambitious-prompt-rewrite` bridges the persistent "ambition gap" between human prompts and frontier model capabilities. Humans routinely constrain models to mundane, local, single-turn tasks. This skill elevates drafts across three orthogonal axes:
+Inspired by Felix Rieseberg's essay [*How to be more ambitious: A tutorial for humans with models*](https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/) (13 October 2026), `ambitious-prompt-rewrite` bridges the persistent "ambition gap" between human prompts and frontier model capabilities. Humans routinely constrain models to mundane, local, single-turn tasks. This skill elevates drafts across three orthogonal axes:
+
 - **Altitude:** elevates the goal beyond the immediate task, turning one-off manual fixes into durable, self-sustaining loops that take humans out of routine execution;
 - **Depth:** demands instruments of top domain experts (raw ASTs, native profilers, statistical models) and enforces an independent, external judge rather than in-loop narrative self-evaluation;
 - **Range:** maps underlying verbs to orthogonal professional disciplines (forensic accountants, short sellers, motion designers) to inject rigor without cosmetic role-playing.
@@ -67,7 +68,7 @@ Examples:
 
 The repository-root [`AGENTS.md`](./AGENTS.md) contains the user-level rules that accompany these Skills. It is both the project rule set for maintaining this repository and the authoritative source distributed to Coding Agents. Publish it in one direction from the repository through Ansible or another configuration-management system; do not maintain the repository and user-directory copies manually in parallel.
 
-Only cross-project principles and hard constraints stay in persistent context; concrete skills load on demand. The file is therefore not a complete standalone prompt. Install the following three Skill groups alongside it:
+Only cross-project principles and hard constraints stay in persistent context; concrete skills load on demand. The file is therefore not a complete standalone prompt. Install the following Skill groups alongside it:
 
 | Source | Skills used by `AGENTS.md` | Purpose |
 |---|---|---|
@@ -76,7 +77,7 @@ Only cross-project principles and hard constraints stay in persistent context; c
 | [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend` | Anti-slop art direction, macro layout variance, and real-browser inspection for web pages and app screens |
 | [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | `ui-ux-pro-max` | Offline BM25 vertical domain palettes, typography systems, and interaction guidelines |
 | [`emilkowalski/skills`](https://github.com/emilkowalski/skills) | `emil-design-eng`, `animate`, `review-animations` | Micro-interaction ergonomics, physical spring tuning, 150–250ms feedback latency caps, and reduced-motion compliance |
-| [`Nutlope/hallmark`](https://github.com/Nutlope/hallmark) | `hallmark` | Defensive anti-slop quality gates, 16 Floor rules, and automated `sloplint.mjs` AST/Tailwind inspection |
+| [`Nutlope/hallmark`](https://github.com/Nutlope/hallmark) | `hallmark` | Defensive anti-slop quality gates, 16 Floor rules, and automated `sloplint.mjs` static inspection |
 
 `agent-team` also depends on the `paseo-advisor` and `paseo-committee` capabilities provided by a Paseo environment. If you do not use Paseo, do not install `agent-team`, and remove the corresponding Skill guidance from `AGENTS.md`.
 
@@ -137,19 +138,32 @@ Dependencies are pinned as follows:
 
 | Repository | Pinned version |
 |---|---|
-| [`mattpocock/skills`](https://github.com/mattpocock/skills/tree/v1.1.0) | `v1.1.0` (`eabea89380927aadb93abf6e290a19334d249292`) |
-| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill/tree/e988add20dab0fa97d7a76781c48961c8184288e) | `e988add20dab0fa97d7a76781c48961c8184288e` |
+| [`mattpocock/skills`](https://github.com/mattpocock/skills/tree/59db609eb1e18aaf59b63284d0e52255aff0c63c) | `59db609eb1e18aaf59b63284d0e52255aff0c63c` |
+| [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill/tree/12af471f627f866411b4bd785b19646d3672784c) | `12af471f627f866411b4bd785b19646d3672784c` |
+| [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/28b3b8dee8c976df4fa3e94aed4e092ad43fcb03) | `28b3b8dee8c976df4fa3e94aed4e092ad43fcb03` |
+| [`emilkowalski/skills`](https://github.com/emilkowalski/skills/tree/a81dbca07f2217b7103e510c0f13f8d5b017afc9) | `a81dbca07f2217b7103e510c0f13f8d5b017afc9` |
+| [`Nutlope/hallmark`](https://github.com/Nutlope/hallmark/tree/8f6969f8922caabde9de1784959eae11ddf68073) | `8f6969f8922caabde9de1784959eae11ddf68073` |
 
 ```bash
-git clone --branch v1.1.0 --depth 1 \
-  https://github.com/mattpocock/skills.git ../mattpocock-skills
+git clone https://github.com/mattpocock/skills.git ../mattpocock-skills
+git -C ../mattpocock-skills checkout --detach 59db609eb1e18aaf59b63284d0e52255aff0c63c
 git clone https://github.com/Leonxlnx/taste-skill.git ../taste-skill
-git -C ../taste-skill checkout --detach \
-  e988add20dab0fa97d7a76781c48961c8184288e
+git -C ../taste-skill checkout --detach 12af471f627f866411b4bd785b19646d3672784c
+git clone https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git ../ui-ux-pro-max-skill
+git -C ../ui-ux-pro-max-skill checkout --detach 28b3b8dee8c976df4fa3e94aed4e092ad43fcb03
+git clone https://github.com/emilkowalski/skills.git ../emilkowalski-skills
+git -C ../emilkowalski-skills checkout --detach a81dbca07f2217b7103e510c0f13f8d5b017afc9
+git clone https://github.com/Nutlope/hallmark.git ../hallmark
+git -C ../hallmark checkout --detach 8f6969f8922caabde9de1784959eae11ddf68073
 
-npx skills@latest add ../mattpocock-skills --global --skill '*'
-npx skills@latest add ../taste-skill --global \
-  --skill design-taste-frontend redesign-existing-projects
+npx skills@latest add ../mattpocock-skills/skills/engineering --global --skill '*'
+npx skills@latest add ../mattpocock-skills/skills/productivity --global --skill '*'
+npx skills@latest add ../mattpocock-skills/skills/misc --global --skill '*'
+npx skills@latest add ../taste-skill --global --skill design-taste-frontend
+npx skills@latest add ../ui-ux-pro-max-skill --global --skill ui-ux-pro-max
+npx skills@latest add ../emilkowalski-skills --global \
+  --skill emil-design-eng animate review-animations
+npx skills@latest add ../hallmark --global --skill hallmark
 ```
 
 The original `gpt-taste` skill is excluded from the managed install set because it requests simulated execution and unconditional marketing layouts. Select the remaining visual skills only when the product brief fits; preserve existing design systems and functionality.
