@@ -13,6 +13,8 @@ This project distills the practical failure modes I have encountered while using
 - **False completion and test cheating:** tests made to fail merely to satisfy a test-first ritual, softening assertions or injecting skips to fake passing tests, and bug fixes that sacrifice user experience
 - **Context rot and coordination overhead:** sprawling multi-hour sessions, unmanaged accumulation of dozens of branches and worktrees, interface drift across parallel teams, and orchestrators reduced to bloated communication bottlenecks
 - **Governance bureaucracy and meta-work sprawl:** agents getting trapped in nested administrative ceremonies—generating hundreds of ritualistic tracking files, sample dumps, closeout manifests, and review loops, burning hundreds of millions of tokens on self-review bureaucracy while consecutive commits fail to touch core product code paths
+- **Phantom compatibility on unreleased software:** treating pre-release green-field code as immutable legacy production databases—generating dozens of sequential migrations, schema compatibility layers (v1/v2/v6), and rollback barriers for apps with zero production users
+- **Verification theatre and over-defensive corner-case obsession:** obsessing over 0.01% catastrophe scenarios (power loss mid-write, extreme clock skew, cascading replays) and writing tests for test mocks themselves while delaying the primary happy path
 - **Test harness quagmire and trial-and-error spirals:** sub-agents reinventing fragile test runners, fighting port collisions, TIME_WAIT false alarms, and leaked zombie child processes, or accidentally deleting shared test databases during cleanup
 - **Slice-only false completion and async verification races:** declaring features complete when decoupled backend unit tests and frontend component mocks pass individually, while the unmocked end-to-end user flow remains broken; asserting persistence against transient in-flight UI states before network requests settle, or using read-only GET probes to falsely certify write-verb readiness before heavy multi-tier runs
 - **Unsystematic feedback:** failure to align before implementation, missing architecture enforcement and code-quality gates, weak design judgment, and failure to persist bug evidence
@@ -26,14 +28,14 @@ The project systematizes those lessons as a user-level `AGENTS.md` and a collect
 
 | Scenario | Skill | What it addresses |
 |---|---|---|
-| Design or review system structure | `system-design` | Establish business Owners, boundaries, and components; verify dependency direction, side-effect ownership, and contract-first schema locks |
+| Design or review system structure | `system-design` | Establish business Owners, boundaries, and components; verify dependency direction, architectural invariants, green-field schema collapse, and contract-first schema locks |
 | Automate architecture rules | `arch-guard` | Design architecture tests, CI Gates, baseline ratchets, and exception handling |
 | Evolve services, data, or protocols | `arch-evolve` | Analyze architectural quanta and runtime coupling; plan Expand-Contract migrations and irreversible points |
 | Execute cross-module refactoring | `safe-refactor` | Replace old paths through working vertical slices, retiring intermediate slice branches and worktrees to avoid big-bang accumulation |
 | Accept complex or high-risk work | `review-evidence` | Tier review evidence by risk; freeze candidate versions and produce unified machine manifests without manual copying |
-| Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; enforce preflight probes, failure observability, and immutable test targets |
+| Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; enforce preflight probes, happy-path primacy, clean-room ephemeral sandboxes, and immutable test targets |
 | Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through deterministic tooling and behavioral benchmarks |
-| Organize parallel multi-Agent work | `agent-team` | Coordinate two-tier domain leads, bounded task contracts, worktree/branch retirement, and root digest isolation |
+| Organize parallel multi-Agent work | `agent-team` | Coordinate two-tier domain leads, bounded task contracts, canonical 4-state taskboards, stub-decoupled delivery, worktree/branch retirement, and root digest isolation |
 | Reframe and rewrite constrained prompts | `ambitious-prompt-rewrite` | Elevate routine tasks across altitude, depth, and range into professional, durable directives |
 | Research a frontier or difficult question separable from repository files that needs extensive online literature | `chatgpt-chat` | Consult ChatGPT Web through the user's existing Edge/Chrome Profile |
 
