@@ -60,6 +60,7 @@
 
 - **顶层架构与不变量建模：** 由 `pi/openai-codex/gpt-6-astra` 主笔形式化 Schema、状态机枚举与接口契约（`Schema-as-Spec`），推理强度严格封顶为 `high`；
 - **宏观审查与瘦身去油腻：** 由 `pi/antigravity/gemini-3.8-flash`（通过 Pi 的 Antigravity 扩展）依托 1M+ 全局上下文视野审视跨模块依赖，主动识别并剔除推测性防御分支与偶然复杂度；
+- **开发计划与任务切片拆解：** 由 `pi/antigravity/gemini-3.8-flash` 圈定 3~5 个主干黄金切片并把边缘场景推迟至 `BACKLOG.md`，由 `pi/openai-codex/gpt-6-astra` 通过 `/skill:paseo-advisor` 复核契约，并由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 拆解为原子任务契约（变更 < 300 行）；
 - **战术总控与敏捷派发：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 担任一二级主控，下发微瀑布切片并把关完成定义（DoD），绝不擅自脑补未请求的边缘异常；
 - **日常文案、产品定义与调研：** 由 `pi/antigravity/gemini-3.8-flash` 承担文案宣发、PRD 需求梳理、用户旅程与文献调研，语言亲切自然且吞吐极快；
 - **疑难硬核排障热线：** 遭遇深水区并发死锁或底层协议缺陷时，通过 `/skill:paseo-advisor` 咨询 `pi/openai-codex/gpt-6-astra` 获取只读专家第二意见，战术领队始终保留编排主控权且不交接。

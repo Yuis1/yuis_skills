@@ -60,6 +60,7 @@ Frontier benchmarks (SlopCodeBench) and multi-agent operations reveal that apply
 
 - **Top-Level Invariant Modeling:** `pi/openai-codex/gpt-6-astra` drafts formal schemas, state machines, and interfaces (`Schema-as-Spec`), with reasoning capped at `high`;
 - **Macro De-bloat Review:** `pi/antigravity/gemini-3.8-flash` (via Pi's Antigravity extension) reviews global dependencies with 1M+ context, actively pruning speculative defenses and accidental complexity;
+- **Development Planning & Slicing:** `pi/antigravity/gemini-3.8-flash` frames 3–5 happy-path milestones and defers edge cases to `BACKLOG.md`, audited by `pi/openai-codex/gpt-6-astra` via `/skill:paseo-advisor`, while native `pi/deepseek-official/deepseek-flash` slices milestones into atomic task contracts (< 300 lines);
 - **Tactical Orchestration:** native `pi/deepseek-official/deepseek-flash` (via Pi) serves as Tier 1 Root and Tier 2 Leads, executing micro-waterfalls and rapid re-planning without bloat;
 - **Copywriting, Product Specs & Research:** `pi/antigravity/gemini-3.8-flash` handles natural-language documentation, user journeys, marketing copy, and literature synthesis with high throughput;
 - **Hardcore Troubleshooting:** `pi/openai-codex/gpt-6-astra` provides read-only second opinions via `/skill:paseo-advisor` for deep concurrency deadlocks and protocol bugs, while the tactical lead retains complete orchestration ownership without handoff.
