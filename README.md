@@ -36,6 +36,7 @@ The project systematizes those lessons as a user-level `AGENTS.md` and a collect
 | Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; enforce preflight probes, happy-path primacy, clean-room ephemeral sandboxes, and immutable test targets |
 | Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through deterministic tooling and behavioral benchmarks |
 | Organize parallel multi-Agent work | `agent-team` | Coordinate two-tier domain leads, bounded task contracts, canonical 4-state taskboards, stub-decoupled delivery, worktree/branch retirement, and root digest isolation |
+| Assign models and reasoning tiers for delegated work | `delegation-models` | Map cognitive archetypes across architecture, tactical orchestration, copy, research, and implementation |
 | Reframe and rewrite constrained prompts | `ambitious-prompt-rewrite` | Elevate routine tasks across altitude, depth, and range into professional, durable directives |
 | Research a frontier or difficult question separable from repository files that needs extensive online literature | `chatgpt-chat` | Consult ChatGPT Web through the user's existing Edge/Chrome Profile |
 
@@ -52,6 +53,16 @@ Inspired by Felix Rieseberg's essay [*How to be more ambitious: A tutorial for h
 - **Altitude:** elevates the goal beyond the immediate task, turning one-off manual fixes into durable, self-sustaining loops that take humans out of routine execution;
 - **Depth:** demands instruments of top domain experts (raw ASTs, native profilers, statistical models) and enforces an independent, external judge rather than in-loop narrative self-evaluation;
 - **Range:** maps underlying verbs to orthogonal professional disciplines (forensic accountants, short sellers, motion designers) to inject rigor without cosmetic role-playing.
+
+### Cognitive Specialization with `delegation-models`
+
+Frontier benchmarks (SlopCodeBench) and multi-agent operations reveal that applying heavy reasoning models unconditionally produces severe verbosity expansion, self-debate spirals, and over-defensive code bloat ("xhigh considered harmful"). This skill pairs models by cognitive archetype rather than raw compute cost, executing natively through Pi for higher responsiveness and unified streaming:
+
+- **Top-Level Invariant Modeling:** `pi/openai-codex/gpt-6-astra` drafts formal schemas, state machines, and interfaces (`Schema-as-Spec`), with reasoning capped at `high`;
+- **Macro De-bloat Review:** `pi/antigravity/gemini-3.8-flash` (via Pi's Antigravity extension) reviews global dependencies with 1M+ context, actively pruning speculative defenses and accidental complexity;
+- **Tactical Orchestration:** native `pi/deepseek-official/deepseek-flash` (via Pi) serves as Tier 1 Root and Tier 2 Leads, executing micro-waterfalls and rapid re-planning without bloat;
+- **Copywriting, Product Specs & Research:** `pi/antigravity/gemini-3.8-flash` handles natural-language documentation, user journeys, marketing copy, and literature synthesis with high throughput;
+- **Hardcore Troubleshooting:** `pi/openai-codex/gpt-6-astra` provides read-only second opinions via `/skill:paseo-advisor` for deep concurrency deadlocks and protocol bugs, while the tactical lead retains complete orchestration ownership without handoff.
 
 After installation, an Agent can select Skills from the task and their descriptions, or you can name a Skill explicitly in your Prompt. Do not preload the entire collection before every task.
 
@@ -74,7 +85,7 @@ Only cross-project principles and hard constraints stay in persistent context; c
 
 | Source | Skills used by `AGENTS.md` | Purpose |
 |---|---|---|
-| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team`, `ambitious-prompt-rewrite`, `chatgpt-chat` | System architecture, evolution, automated enforcement, refactoring, evidence, Agent collaboration, and prompt elevation |
+| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team`, `delegation-models`, `ambitious-prompt-rewrite`, `chatgpt-chat` | System architecture, evolution, automated enforcement, refactoring, evidence, Agent collaboration, cognitive model delegation, and prompt elevation |
 | [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`, `grill-me`, `grill-with-docs`, `prototype`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `ask-matt`, `research`, `code-review`, `tdd`, `diagnosing-bugs`, `improve-codebase-architecture`, `pr`, `retro`, `to-questionnaire`, `wait-what`, `wizard` | Requirements alignment, planning, implementation, testing, diagnosis, code review, PR authoring, and session retrospectives |
 | [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend` | Anti-slop art direction, macro layout variance, and real-browser inspection for web pages and app screens |
 | [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | `ui-ux-pro-max` | Offline BM25 vertical domain palettes, typography systems, and interaction guidelines |
@@ -114,7 +125,7 @@ cd yuis_skills
 skills=(
   system-design arch-guard arch-evolve safe-refactor
   review-evidence test-evidence agent-dev agent-team
-  ambitious-prompt-rewrite chatgpt-chat
+  delegation-models ambitious-prompt-rewrite chatgpt-chat
 )
 repo_dir="$(pwd -P)"
 
