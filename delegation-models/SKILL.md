@@ -26,17 +26,17 @@ Frontier engineering research and SlopCodeBench empirical studies demonstrate th
 3. **Development Planning & Scope Decomposition:**
    - **Primary Planning Engine:** use `pi/deepseek-official/deepseek-flash` (thinking: `high`; fallback to other DeepSeek providers like `codebuddy/deepseek-v4.1-flash`). Directly drives end-to-end milestone roadmaps, cuts legacy deadweight, anchors single-command E2E proofs, and decomposes active milestones into 3–6 atomic task contracts (< 300 line diffs).
    - **Advisory Invariant Reference:** consult `pi/openai-codex/gpt-6-astra` via `/skill:paseo-advisor` for supplementary reference on domain invariant boundaries and state-machine transitions. Astra acts strictly as an advisory consult, not as a mandatory blocking gatekeeper.
-4. **Tactical Orchestration (Tier 1 Root & Tier 2 Domain Leads):**
-   - Use `pi/deepseek-official/deepseek-flash` (native Pi provider).
-   - Operates with a native 1M (`1000000`) context window. Capitalizes on asymmetric causal architecture and high prefix-caching hit rates. Delivers concise task contracts, rapid re-planning, and strict definition-of-done gates without hallucinating unrequested edge cases.
+4. **Tactical Orchestration Hierarchy:**
+   - **Tier 1 Root Orchestrator:** use `pi/deepseek-official/deepseek-flash` (native Pi provider, operating with a native 1M context window for high prefix-caching hit rates, cross-domain schema locking, and milestone convergence).
+   - **Tier 2 Domain Leads:** default to `codebuddy/deepseek-v4.1-flash` (cost-effective tactical slicing, agile taskboard DoD tracking, and worker supervision; fallback to Pi native if unavailable).
 5. **Hardcore Troubleshooting & Deadlock Breaking:**
    - Consult `pi/openai-codex/gpt-6-astra` (thinking: `high`) via `/skill:paseo-advisor` as a focused read-only advisor for deep concurrency races, protocol subtleties, or irreducible deadlocks. The tactical lead retains full orchestration control throughout without transferring ownership or handing off the task.
 6. **Copywriting, Marketing, Product Documentation & Research:**
    - Use `pi/antigravity/gemini-3.8-flash` (routed through Pi's Antigravity extension; thinking: `medium` for copy, `high` for PRD and literature research).
    - Natural phrasing, zero code-defense bias, and high synthesis throughput across large document sets.
-7. **Code Implementation & Local Refactoring:**
-   - Use `pi/openai-codex/gpt-6.1-terra` (thinking: `high`) or `pi/deepseek-official/deepseek-flash`.
-   - Focus on vertical slice TDD, happy-path primacy, and clean-room ephemeral sandboxes.
+7. **Code Implementation & Working Models:**
+   - **Primary Working Model:** default to `pi/openai-codex/gpt-6.1-sol` (thinking: `high`). Handles non-trivial feature development, vertical slice TDD, complex refactoring, and state machine implementation.
+   - **Low-Difficulty Repetitive Tasks:** route to `pi/openai-codex/gpt-6.1-terra` (thinking: `low` or `medium`). Reserved for boilerplate generation, mechanical edits, commit messages, and metadata updates.
 8. **Gateway Limitation Boundary:**
    - Third-party model packaging via multi-tenant proxy gateways (such as multi-tenant IDE AI suites) often truncates context windows to 16k–32k tokens and applies lossy background compression. Do not assign gateway-proxied third-party models as global orchestrators or multi-file planners; reserve them for localized single-file edits.
 
@@ -48,11 +48,12 @@ Frontier engineering research and SlopCodeBench empirical studies demonstrate th
 | Architecture review | `pi/antigravity/gemini-3.8-flash` | `high` | Review Astra drafts across global context; prune speculative defenses and accidental complexity. |
 | Development planning | `pi/deepseek-official/deepseek-flash` | `high` | Drive milestone roadmaps, happy-path slices (< 300 lines), and single-command E2E. DeepSeek fallback. |
 | Plan advisory consult | `pi/openai-codex/gpt-6-astra` | `high` | Optional advisory consult on invariant boundaries via `/skill:paseo-advisor`; non-blocking. |
+| Root orchestration (Tier 1) | `pi/deepseek-official/deepseek-flash` | `high` | Native Pi 1M context, contract locking, and milestone integration. |
+| Domain leads (Tier 2) | `codebuddy/deepseek-v4.1-flash` | `high` | Cost-effective domain agile slicing and taskboard tracking. Pi native fallback. |
 | Tactical task decomposition | `pi/deepseek-official/deepseek-flash` | `high` | Slice current milestone into 3–6 atomic task contracts (< 300 lines) under single-command E2E. |
-| Tactical orchestration | `pi/deepseek-official/deepseek-flash` | `high` | Dispatch micro-waterfall slices, enforce definition of done, and perform rapid re-planning without bloat. |
 | Hardcore troubleshooting | `pi/openai-codex/gpt-6-astra` | `high` | Consult via `/skill:paseo-advisor` for read-only second opinions on deep concurrency and deadlocks without transferring orchestration control. |
 | Copywriting & marketing | `pi/antigravity/gemini-3.8-flash` | `medium` | Natural human tone, engaging copy, and zero code-defense boilerplate. |
 | Product docs & PRDs | `pi/antigravity/gemini-3.8-flash` | `high` | Synthesize user journeys, feature specifications, and clear acceptance boundaries. |
 | Research & literature | `pi/antigravity/gemini-3.8-flash` | `high` | Macro-survey across long documents and web evidence; consult `chatgpt-chat` when extensive online search is required. |
-| Code implementation | `pi/openai-codex/gpt-6.1-terra` | `high` | Implement happy path first under single-command E2E constraints. |
-| Small tasks & metadata | `pi/openai-codex/gpt-6.1-terra` | `low` | Bounded single-file edits, commit messages, and metadata updates. |
+| Primary code implementation | `pi/openai-codex/gpt-6.1-sol` | `high` | Primary working model for vertical slice TDD and non-trivial features. |
+| Repetitive tasks & metadata | `pi/openai-codex/gpt-6.1-terra` | `low` | Reserved for low-difficulty repetitive tasks, boilerplate, and metadata. |
