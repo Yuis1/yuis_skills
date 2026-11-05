@@ -58,9 +58,9 @@
 
 前沿基准评测（如 SlopCodeBench）与多智能体实战表明：无条件将高推理大模型推至顶格（xhigh）会导致严重的自我辩论死循环、废话膨胀与过度防御的样板代码。`delegation-models` 依据认知原型对模型进行精准解耦与协同，并统一经由 Pi 原生引擎执行以保障高响应与无缝流式交互：
 
-- **顶层架构与不变量建模：** 由 `pi/openai-codex/gpt-6-astra` 主笔形式化 Schema、状态机枚举与接口契约（`Schema-as-Spec`），推理强度严格封顶为 `high`；
+- **顶层架构与不变量建模：** 由 `pi/openai-codex/gpt-6-astra` 主笔形式化 Schema、状态机枚举与接口契约（`Schema-as-Spec`），默认采用 `high` 推理强度；
 - **宏观审查与瘦身去油腻：** 由 `pi/antigravity/gemini-3.8-flash`（通过 Pi 的 Antigravity 扩展）依托 1M+ 全局上下文视野审视跨模块依赖，主动识别并剔除推测性防御分支与偶然复杂度；
-- **开发计划与任务切片拆解：** 由 `pi/antigravity/gemini-3.8-flash` 圈定 3~5 个主干黄金切片并把边缘场景推迟至 `BACKLOG.md`，由 `pi/openai-codex/gpt-6-astra` 通过 `/skill:paseo-advisor` 复核契约，并由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 拆解为原子任务契约（变更 < 300 行）；
+- **开发计划与任务切片拆解：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 主导里程碑规划、主干黄金路径与单命令 E2E 原子切片（变更 < 300 行；实测验证见[前沿模型规划评测报告](docs/benchmarks/model-planning-benchmark-2026-11.zh-CN.md)），并由 `pi/openai-codex/gpt-6-astra` 提供非阻塞式架构参考；
 - **战术总控与敏捷派发：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 担任一二级主控，下发微瀑布切片并把关完成定义（DoD），绝不擅自脑补未请求的边缘异常；
 - **日常文案、产品定义与调研：** 由 `pi/antigravity/gemini-3.8-flash` 承担文案宣发、PRD 需求梳理、用户旅程与文献调研，语言亲切自然且吞吐极快；
 - **疑难硬核排障热线：** 遭遇深水区并发死锁或底层协议缺陷时，通过 `/skill:paseo-advisor` 咨询 `pi/openai-codex/gpt-6-astra` 获取只读专家第二意见，战术领队始终保留编排主控权且不交接。

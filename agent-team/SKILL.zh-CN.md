@@ -18,9 +18,9 @@
 
 1. **一级总控（Root Orchestrator）：** 负责锁定跨领域公有 Schema、划分 2~4 个架构领域、任命高吞吐战术领域领队（优先采用 Pi 原厂 `pi/deepseek-official/deepseek-flash`），并仲裁里程碑集成。总控绝不亲自编写叶子代码，亦不直接穿透审阅叶子原始日志。
 2. **二级总控（Domain Lead）：** 敏捷、克制的战术总控模型，独占负责单一架构领域。领队将领域目标切片为原子任务，管理下辖 3~6 个直接叶子 Worker，分配隔离的临时环境，并执行领域级质量门禁。领队严禁单方面篡改共享公有契约。一级总控与二级领队恪守叶子环境完全自治（Decentralized Leaf Autonomy）：仅把关完成定义（Definition of Done）与最终黑盒验收，局部临时配置、动态端口分配与内部测试运行器完全下放叶子 Worker 自治，总控严禁插手微观测试脚本实现。
-3. **双层规划流水线（Two-Tier Planning Pipeline）：** 宏观里程碑与路线图（3~5 个主干黄金切片与重依赖桩化决策）由 `pi/antigravity/gemini-3.8-flash`（思考等级：`high`）主笔，并通过 `/skill:paseo-advisor` 由 `pi/openai-codex/gpt-6-astra` 进行不变量闭环校验。战术总控（`pi/deepseek-official/deepseek-flash`）随后将当前里程碑拆解为 3~6 个直接派发给叶子的原子任务契约（变更 < 300 行），并锚定单命令端到端真实验收。
-4. **专家顾问热线（Hardcore Technical Advisor Hotline）：** 当 Worker 或领队遭遇深水区并发死锁、协议底层硬伤或不可复现算法阻碍时，领队通过 `/skill:paseo-advisor` 咨询专家顾问（`pi/openai-codex/gpt-6-astra`，思考等级封顶为 `high`）获取只读第二意见破局。该咨询过程不涉及主控权交接，战术领队始终独占编排主控权，严禁将重型模型长期挂在主控席位或交出控制权。
-5. **推理上限铁律（Reasoning Effort Cap）：** 总控、领队与规划者的推理等级严格封顶为 `high`；常规工作流全局严禁使用无约束的 `xhigh`，杜绝自我辩论死循环与防御性样板代码通胀。
+3. **开发计划规划与任务切片拆解：** 开发计划由 `pi/deepseek-official/deepseek-flash`（思考等级：`high`；其他 DeepSeek 渠道兜底）主导，梳理端到端黄金路径路线图并拆解为 3~6 个原子任务契约（变更 < 300 行），锚定单命令端到端真实验收。`pi/openai-codex/gpt-6-astra` 通过 `/skill:paseo-advisor` 提供不变量边界的参考建议，不作为强制阻断门禁。
+4. **专家顾问热线（Hardcore Technical Advisor Hotline）：** 当 Worker 或领队遭遇深水区并发死锁、协议底层硬伤或不可复现算法阻碍时，领队通过 `/skill:paseo-advisor` 咨询专家顾问（`pi/openai-codex/gpt-6-astra`，按需采用 `high` 或 `xhigh` 思考等级）获取只读第二意见破局。该咨询过程不涉及主控权交接，战术领队始终独占编排主控权，严禁将重型模型长期挂在主控席位或交出控制权。
+5. **推理等级弹性配置（Reasoning Effort Allocation）：** 总控、领队与常规规划者默认采用 `high` 思考等级，保障交付吞吐并避免推测性辩论死循环；极高推理等级（`xhigh` 或 `max`）仅在底层深度死锁、复杂并发竞态或形式化加密校验等硬核难题攻坚时针对性启用。
 6. **叶子执行者（Leaf Worker）：** 在专属工作树中执行单一有界任务契约。叶子节点硬性禁止再次派发子智能体（截断递归派发）。
 7. **级联摘要隔离：** 叶子 Worker 仅向二级总控提交结构化交接单（`git diff --stat`、测试命令、退出码与输出摘要）；二级总控在领域内验证通过后，仅向一级总控汇报精炼的领域里程碑摘要。
 8. **分层工作树拓扑与闭环：** 主干集成领域分支；各二级总控持有一棵领域集成分支与工作树；各叶子 Worker 持有一棵临时工作树。叶子任务合入领域分支时，立即删除叶子工作树与分支；领域里程碑合入主干时，一级总控打标恢复并回收二级工作树。

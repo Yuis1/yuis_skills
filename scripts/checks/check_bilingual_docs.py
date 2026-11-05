@@ -20,6 +20,8 @@ PAIRS = (
     (ROOT / "docs/bilingual-maintenance.md", ROOT / "docs/bilingual-maintenance.zh-CN.md"),
     (ROOT / "docs/research/bilingual-agent-skills.md", ROOT / "docs/research/bilingual-agent-skills.zh-CN.md"),
     (ROOT / "docs/benchmarks/model-planning-benchmark-2026-11.md", ROOT / "docs/benchmarks/model-planning-benchmark-2026-11.zh-CN.md"),
+    (ROOT / "docs/benchmarks/evaluator-astra-2026-11.md", ROOT / "docs/benchmarks/evaluator-astra-2026-11.zh-CN.md"),
+    (ROOT / "docs/benchmarks/evaluator-deepseek-2026-11.md", ROOT / "docs/benchmarks/evaluator-deepseek-2026-11.zh-CN.md"),
     *((directory / "SKILL.md", directory / "SKILL.zh-CN.md") for directory in SKILL_DIRS),
     (ROOT / "system-design/COMPONENTS.md", ROOT / "system-design/COMPONENTS.zh-CN.md"),
     (ROOT / "system-design/REVIEW.md", ROOT / "system-design/REVIEW.zh-CN.md"),
