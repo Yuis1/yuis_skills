@@ -9,7 +9,7 @@ description: Reframe and rewrite shallow, constrained prompts into ambitious, pr
 
 The goal is to eliminate the ambition gap between human requests and model capabilities. Humans routinely constrain models to mundane tasks because of self-efficacy limits. This skill transforms shallow, task-oriented drafts into high-leverage prompts that operate across `Altitude`, `Depth`, and `Range`.
 
-Use this skill when you have a prompt, task draft, or feature request that feels routine, local, or artificially constrained, and you want to unlock its highest-value formulation before execution.
+Use this skill when you have a prompt, task draft, or feature request that feels routine, local, or artificially constrained, and you want to unlock its highest-value formulation before execution. Do not use for already-specific, well-scoped routine bugfixes, localized typo corrections, or simple factual queries; pass them directly to execution without adding meta-work overhead.
 
 ## Rewriting Pipeline
 

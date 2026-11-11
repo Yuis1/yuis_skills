@@ -1,6 +1,6 @@
 ---
 name: agent-team
-description: Coordinate parallel agents, two-tier domain leads, bounded task contracts, worktree isolation, and session handoffs. Use for concurrent workstreams or multi-angle reviews.
+description: Coordinate parallel agents, two-tier domain leads, bounded task contracts, cognitive model assignments, worktree isolation, and session handoffs. Use for concurrent workstreams, model delegation, or multi-angle reviews.
 ---
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
@@ -9,7 +9,7 @@ description: Coordinate parallel agents, two-tier domain leads, bounded task con
 
 ## Decide Whether to Delegate
 
-Follow the user's and active runtime's delegation limits first. Delegate only independent work whose benefit exceeds startup, handoff and integration cost. Routine planning stays with the parent; an advisor or committee needs a concrete unresolved question or an explicit request.
+Follow the user's and active runtime's delegation limits first. Delegate only independent work whose benefit exceeds startup, handoff and integration cost. Routine planning stays with the parent; an advisor or committee needs a concrete unresolved question or an explicit request. Strictly prohibit multi-agent delegation for trivial tasks: single-file edits, localized bugfixes, or routine work touching fewer than three independent modules belong to a single worker session. Reserve multi-agent orchestration for parallel, cross-boundary workstreams.
 
 Root-only delegation remains the default: workers and reviewers report needed assistance back to their parent instead of spawning detached agents. When the user explicitly authorizes hierarchical delegation for large multi-subsystem efforts, designated domain leads may assign bounded tasks to direct workers; leaf workers do not delegate further.
 
@@ -21,9 +21,9 @@ Enforce an Anti-Bureaucracy Ratchet: meta-work (task tracking, contract negotiat
 
 When fast-paced parallel development requires coordinating multiple subsystems (such as client, server, data, QA, and infrastructure), deploy a two-tier orchestration hierarchy capped at a strict depth of two:
 
-1. **Root Orchestrator (Tier 1):** locks cross-domain public schemas, partitions 2–4 architectural domains, appoints high-efficiency tactical Domain Leads (prioritizing `pi/deepseek-official/deepseek-flash` via native Pi), and adjudicates milestone integrations. The root never implements leaf code, nor does it inspect raw leaf logs.
+1. **Root Orchestrator (Tier 1):** locks cross-domain public schemas, partitions 2–4 architectural domains, appoints high-efficiency tactical Domain Leads (prioritizing `pi/deepseek-official/deepseek-flash`), and adjudicates milestone integrations. The root never implements leaf code, nor does it inspect raw leaf logs.
 2. **Domain Leads (Tier 2):** agile, non-dramatic tactical orchestrators holding ownership over a single architectural domain (defaulting to cost-effective `codebuddy/deepseek-v4.1-flash`; fallback to native Pi). Each lead decomposes domain goals into atomic slices, coordinates 3–6 direct leaf workers, provides isolated scratch environments, and runs domain-level verification gates. Leads do not mutate shared public schemas unilaterally. Root and Domain Leads enforce Decentralized Leaf Autonomy: they verify definitions of done and final black-box acceptance, while local scratch configurations, ephemeral port allocations, and internal harness implementations remain fully decentralized to executing workers without serial micro-management.
-3. **Development Planning and Task Slicing:** development planning is led by `pi/deepseek-official/deepseek-flash` (thinking: `high`; fallback to other DeepSeek providers), framing end-to-end happy-path roadmaps and slicing active milestones into 3–6 atomic task contracts (< 300 lines) bound to single-command E2E proofs. `pi/openai-codex/gpt-6-astra` provides non-blocking advisory input via `/skill:paseo-advisor` on invariant boundaries without serving as a mandatory approval gate.
+3. **Development Planning and Task Slicing:** development planning is led by `pi/deepseek-official/deepseek-flash` (thinking: `high`; fallback to other DeepSeek providers), framing end-to-end happy-path roadmaps and slicing active milestones into 3–6 atomic task contracts centered on single-transaction boundaries and bound to single-command E2E proofs. `pi/openai-codex/gpt-6-astra` provides non-blocking advisory input via `/skill:paseo-advisor` on invariant boundaries without serving as a mandatory approval gate.
 4. **Hardcore Technical Advisor Hotline:** when workers or leads encounter deep concurrency deadlocks, subtle protocol bugs, or irreducible algorithmic blocks, the lead consults an expert advisor (`pi/openai-codex/gpt-6-astra`, using `high` or `xhigh` reasoning as needed) via `/skill:paseo-advisor` for a read-only second opinion. This advisory consultation does not transfer orchestration control; the tactical lead retains exclusive ownership throughout without keeping heavy models in the orchestrator seat.
 5. **Reasoning Effort Allocation:** orchestrators, leads, and routine planners default to `high` reasoning to maintain execution velocity and avoid debater spirals; reserve extreme reasoning (`xhigh` or `max`) strictly for deep technical deadlocks, subtle concurrency races, and formal cryptographic proofs.
 6. **Leaf Workers (Tier 3):** execute single bounded task contracts within dedicated worktrees. Primary implementation defaults to `pi/openai-codex/gpt-6.1-sol`, while low-difficulty repetitive tasks route to `pi/openai-codex/gpt-6.1-terra`. Leaf workers are hard-blocked from spawning further sub-agents (zero recursive delegation).
@@ -43,7 +43,7 @@ Escalate to the parent only on critical side effects:
 - performing irreversible persistence migrations or destructive file overwrites;
 - encountering execution denials like `dcg` or permission blocks. When blocked by false positives on operations confirmed safe within scope, decompose into targeted smaller commands or use `dcg` allowlist/allow-once; escalate genuine out-of-scope destruction risks.
 
-Read `delegation-models` when available for unspecified model and effort defaults; explicit user choices win. Assign concrete domain methodologies, tools, and evidence standards for specialized angles (such as adversarial review or forensic verification); avoid cosmetic role-playing. Use the active runtime's exposed tool schema directly (`paseo`, Codex native delegation, or CLI).
+Consult the Cognitive Model Delegation Matrix below for unspecified model and effort defaults; explicit user choices win. Assign concrete domain methodologies, tools, and evidence standards for specialized angles (such as adversarial review or forensic verification); avoid cosmetic role-playing. Use the active runtime's exposed tool schema directly (`paseo`, Codex native delegation, or CLI).
 
 ## Isolate Writes and Permissions
 
@@ -60,3 +60,50 @@ Favor stateless, short-lived worker sessions scoped to single atomic Task Contra
 Classify failures before retrying, and retry only safe transient operations within the task budget. Trigger a context poisoning circuit breaker upon repeated repair failures or oscillating diffs: rather than compounding failed reasoning in the same session, revert to the baseline, isolate the specific negative constraint, and execute a clean-room reboot with a fresh session. If an external submission may have occurred, query its status or record uncertainty; never blindly resend. Handle missing inputs and tooling defects directly; a different model or arbitrary wait cannot cure a broken tool.
 
 Protect the root orchestrator from context bloat: root inspects only structured handoff manifests, exit statuses, and `git diff --stat`, while raw child reasoning and build streams remain isolated in worker logs. Deduplicate completion notifications and heartbeats by event ID or state hash. Absorb unchanged heartbeats idempotently without emitting repetitive narrative reports or re-dispatching identical work. A worker completion notification is a progress event, not proof that the root objective is complete. Review and integrate the result, check remaining bottlenecks, and proceed with authorized work unless blocked by a genuine decision. Report at meaningful milestones. Pair integration with retirement: a worker task is complete only when its branch is merged or tagged for recovery, and its ephemeral worktree is deleted; prevent the creation rate of temporary environments from permanently outpacing retirement.
+
+## Cognitive Model Delegation Matrix
+
+Use these defaults only when the user has not specified the delegated agent's model or effort. Respect explicit user selections. Do not change the parent's model, effort, or manual model picker. This matrix does not authorize delegation; follow the delegation and team rules above first. Do not force a named role. Keep fast mode off unless explicitly requested.
+
+### Model Specialization by Domain
+
+1. **Top-Level System Architecture & Invariant Modeling:**
+   - Use `pi/openai-codex/gpt-6-astra` (defaults to `high`; reserve extreme reasoning like `xhigh` strictly for hardcore deadlocks).
+   - Produce formal types, state machines, and interfaces (`Schema-as-Spec`), not speculative natural language.
+2. **Architecture Review & Slop Reduction:**
+   - Use `pi/antigravity/gemini-3.8-flash` (via Pi's native Antigravity extension, not standalone Antigravity CLI; thinking: `high`).
+   - Leverages true 1M+ context to review global dependencies, actively pruning over-defensive branches, redundant validation shims, and accidental complexity before code generation.
+3. **Development Planning & Scope Decomposition:**
+   - **Primary Planning Engine:** use `pi/deepseek-official/deepseek-flash` (thinking: `high`; fallback to other DeepSeek providers like `codebuddy/deepseek-v4.1-flash`). Directly drives end-to-end milestone roadmaps, cuts legacy deadweight, anchors single-command E2E proofs, and decomposes active milestones into 3–6 atomic task contracts.
+   - **Advisory Invariant Reference:** consult `pi/openai-codex/gpt-6-astra` via `/skill:paseo-advisor` for supplementary reference on domain invariant boundaries and state-machine transitions. Astra acts strictly as an advisory consult, not as a mandatory blocking gatekeeper.
+4. **Tactical Orchestration Hierarchy:**
+   - **Tier 1 Root Orchestrator:** use `pi/deepseek-official/deepseek-flash` (operating with a native 1M context window for high prefix-caching hit rates, cross-domain schema locking, and milestone convergence).
+   - **Tier 2 Domain Leads:** default to `codebuddy/deepseek-v4.1-flash` (cost-effective tactical slicing, agile taskboard tracking, and worker supervision; fallback to Pi native if unavailable).
+5. **Hardcore Troubleshooting & Deadlock Breaking:**
+   - Consult `pi/openai-codex/gpt-6-astra` (thinking: `high`) via `/skill:paseo-advisor` as a focused read-only advisor for deep concurrency races, protocol subtleties, or irreducible deadlocks. The tactical lead retains full orchestration control throughout without transferring ownership or handing off the task.
+6. **Copywriting, Marketing, Product Documentation & Research:**
+   - Use `pi/antigravity/gemini-3.8-flash` (routed through Pi's Antigravity extension; thinking: `medium` for copy, `high` for PRD and literature research).
+   - Natural phrasing, zero code-defense bias, and high synthesis throughput across large document sets.
+7. **Code Implementation & Working Models:**
+   - **Primary Working Model:** default to `pi/openai-codex/gpt-6.1-sol` (thinking: `high`). Handles non-trivial feature development, vertical slice TDD, complex refactoring, and state machine implementation.
+   - **Low-Difficulty Repetitive Tasks:** route to `pi/openai-codex/gpt-6.1-terra` (thinking: `low` or `medium`). Reserved for boilerplate generation, mechanical edits, commit messages, and metadata updates.
+8. **Gateway Limitation Boundary:**
+   - Third-party model packaging via multi-tenant proxy gateways (such as multi-tenant IDE AI suites) often truncates context windows to 16k–32k tokens and applies lossy background compression. Do not assign gateway-proxied third-party models as global orchestrators or multi-file planners; reserve them for localized single-file edits.
+
+### Delegation Default Matrix
+
+| Delegated Work | Default Model | Reasoning Effort | Guidance |
+| --- | --- | --- | --- |
+| Top-level architecture | `pi/openai-codex/gpt-6-astra` | `high` | Model core schemas, state machine enums, and invariants. Defaults to `high`; reserve `xhigh` for hardcore deadlocks. |
+| Architecture review | `pi/antigravity/gemini-3.8-flash` | `high` | Review Astra drafts across global context; prune speculative defenses and accidental complexity. |
+| Development planning | `pi/deepseek-official/deepseek-flash` | `high` | Drive milestone roadmaps, atomic happy-path slices, and single-command E2E. DeepSeek fallback. |
+| Plan advisory consult | `pi/openai-codex/gpt-6-astra` | `high` | Optional advisory consult on invariant boundaries via `/skill:paseo-advisor`; non-blocking. |
+| Root orchestration (Tier 1) | `pi/deepseek-official/deepseek-flash` | `high` | Native Pi 1M context, contract locking, and milestone integration. |
+| Domain leads (Tier 2) | `codebuddy/deepseek-v4.1-flash` | `high` | Cost-effective domain agile slicing and taskboard tracking. Pi native fallback. |
+| Tactical task decomposition | `pi/deepseek-official/deepseek-flash` | `high` | Slice current milestone into 3–6 atomic task contracts under single-command E2E. |
+| Hardcore troubleshooting | `pi/openai-codex/gpt-6-astra` | `high` | Consult via `/skill:paseo-advisor` for read-only second opinions on deep concurrency and deadlocks without transferring orchestration control. |
+| Copywriting & marketing | `pi/antigravity/gemini-3.8-flash` | `medium` | Natural human tone, engaging copy, and zero code-defense boilerplate. |
+| Product docs & PRDs | `pi/antigravity/gemini-3.8-flash` | `high` | Synthesize user journeys, feature specifications, and clear acceptance boundaries. |
+| Research & literature | `pi/antigravity/gemini-3.8-flash` | `high` | Macro-survey across long documents and web evidence; consult `chatgpt-chat` when extensive online search is required. |
+| Primary code implementation | `pi/openai-codex/gpt-6.1-sol` | `high` | Primary working model for vertical slice TDD and non-trivial features. |
+| Repetitive tasks & metadata | `pi/openai-codex/gpt-6.1-terra` | `low` | Reserved for low-difficulty repetitive tasks, boilerplate, and metadata. |

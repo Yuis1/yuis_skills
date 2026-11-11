@@ -35,9 +35,9 @@ The project systematizes those lessons as a user-level `AGENTS.md` and a collect
 | Accept complex or high-risk work | `review-evidence` | Tier review evidence by risk; freeze candidate versions and produce unified machine manifests without manual copying |
 | Determine whether verification truly proves a claim | `test-evidence` | Distinguish behavioral, static, and non-code evidence; enforce preflight probes, happy-path primacy, clean-room ephemeral sandboxes, and immutable test targets |
 | Develop or improve Agent products | `agent-dev` | Govern Prompts, models, Schemas, tools, orchestration, and evaluations through deterministic tooling and behavioral benchmarks |
-| Organize parallel multi-Agent work | `agent-team` | Coordinate two-tier domain leads, bounded task contracts, canonical 4-state taskboards, stub-decoupled delivery, worktree/branch retirement, and root digest isolation |
-| Assign models and reasoning tiers for delegated work | `delegation-models` | Map cognitive archetypes across architecture, tactical orchestration, copy, research, and implementation |
+| Organize parallel multi-Agent work and model delegation | `agent-team` | Coordinate two-tier domain leads, bounded task contracts, cognitive model assignments, canonical 4-state taskboards, stub-decoupled delivery, and worktree isolation |
 | Reframe and rewrite constrained prompts | `ambitious-prompt-rewrite` | Elevate routine tasks across altitude, depth, and range into professional, durable directives |
+| Establish, mutate, or govern IaC control planes | `iac-control-plane` | Scaffold infrastructure repositories, isolate multi-cloud roots, enforce playbook SSOT and execution boundaries, manage secrets, and govern human-machine co-reading documentation |
 | Research a frontier or difficult question separable from repository files that needs extensive online literature | `chatgpt-chat` | Consult ChatGPT Web through the user's existing Edge/Chrome Profile |
 
 Common combinations:
@@ -54,13 +54,13 @@ Inspired by Felix Rieseberg's essay [*How to be more ambitious: A tutorial for h
 - **Depth:** demands instruments of top domain experts (raw ASTs, native profilers, statistical models) and enforces an independent, external judge rather than in-loop narrative self-evaluation;
 - **Range:** maps underlying verbs to orthogonal professional disciplines (forensic accountants, short sellers, motion designers) to inject rigor without cosmetic role-playing.
 
-### Cognitive Specialization with `delegation-models`
+### Cognitive Specialization with `agent-team`
 
-Frontier benchmarks (SlopCodeBench) and multi-agent operations reveal that applying heavy reasoning models unconditionally produces severe verbosity expansion, self-debate spirals, and over-defensive code bloat ("xhigh considered harmful"). This skill pairs models by cognitive archetype rather than raw compute cost, executing natively through Pi for higher responsiveness and unified streaming:
+Frontier benchmarks (SlopCodeBench) and multi-agent operations reveal that applying heavy reasoning models unconditionally produces severe verbosity expansion, self-debate spirals, and over-defensive code bloat ("xhigh considered harmful"). This skill pairs models by cognitive archetype rather than raw compute cost:
 
 - **Top-Level Invariant Modeling:** `pi/openai-codex/gpt-6-astra` drafts formal schemas, state machines, and interfaces (`Schema-as-Spec`), with `high` reasoning by default;
 - **Macro De-bloat Review:** `pi/antigravity/gemini-3.8-flash` (via Pi's Antigravity extension) reviews global dependencies with 1M+ context, actively pruning speculative defenses and accidental complexity;
-- **Development Planning & Slicing:** native `pi/deepseek-official/deepseek-flash` drives milestone roadmaps, happy-path slices (< 300 lines), and single-command E2E verification (empirically validated in [Frontier Model Planning Benchmark](docs/benchmarks/model-planning-benchmark-2026-11.md)), while `pi/openai-codex/gpt-6-astra` provides non-blocking invariant reference;
+- **Development Planning & Slicing:** native `pi/deepseek-official/deepseek-flash` drives milestone roadmaps, atomic happy-path slices, and single-command E2E verification (empirically validated in [Frontier Model Planning Benchmark](docs/benchmarks/model-planning-benchmark-2026-11.md)), while `pi/openai-codex/gpt-6-astra` provides non-blocking invariant reference;
 - **Tactical Orchestration:** native `pi/deepseek-official/deepseek-flash` serves as Tier 1 Root, while cost-effective `codebuddy/deepseek-v4.1-flash` manages Tier 2 Domain Leads;
 - **Code Implementation:** `pi/openai-codex/gpt-6.1-sol` serves as the primary working model for non-trivial implementation and TDD, while `pi/openai-codex/gpt-6.1-terra` handles low-difficulty repetitive tasks;
 - **Copywriting, Product Specs & Research:** `pi/antigravity/gemini-3.8-flash` handles natural-language documentation, user journeys, marketing copy, and literature synthesis with high throughput;
@@ -87,7 +87,7 @@ Only cross-project principles and hard constraints stay in persistent context; c
 
 | Source | Skills used by `AGENTS.md` | Purpose |
 |---|---|---|
-| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team`, `delegation-models`, `ambitious-prompt-rewrite`, `chatgpt-chat` | System architecture, evolution, automated enforcement, refactoring, evidence, Agent collaboration, cognitive model delegation, and prompt elevation |
+| This repository | `system-design`, `arch-guard`, `arch-evolve`, `safe-refactor`, `review-evidence`, `test-evidence`, `agent-dev`, `agent-team`, `ambitious-prompt-rewrite`, `chatgpt-chat`, `iac-control-plane` | System architecture, evolution, automated enforcement, refactoring, evidence, Agent collaboration, cognitive model delegation, and prompt elevation |
 | [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`, `grill-me`, `grill-with-docs`, `prototype`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `ask-matt`, `research`, `code-review`, `tdd`, `diagnosing-bugs`, `improve-codebase-architecture`, `pr`, `retro`, `to-questionnaire`, `wait-what`, `wizard` | Requirements alignment, planning, implementation, testing, diagnosis, code review, PR authoring, and session retrospectives |
 | [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend` | Anti-slop art direction, macro layout variance, and real-browser inspection for web pages and app screens |
 | [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | `ui-ux-pro-max` | Offline BM25 vertical domain palettes, typography systems, and interaction guidelines |
@@ -127,7 +127,7 @@ cd yuis_skills
 skills=(
   system-design arch-guard arch-evolve safe-refactor
   review-evidence test-evidence agent-dev agent-team
-  delegation-models ambitious-prompt-rewrite chatgpt-chat
+  ambitious-prompt-rewrite chatgpt-chat iac-control-plane
 )
 repo_dir="$(pwd -P)"
 

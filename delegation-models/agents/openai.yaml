@@ -1,4 +1,0 @@
-interface:
-  display_name: "Delegation Models"
-  short_description: "Assign default models and reasoning tiers for delegated work"
-  default_prompt: "Use $delegation-models to determine the recommended model and reasoning effort for delegated work."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "IaC Control Plane"
+  short_description: "Scaffold, mutate, and govern Infrastructure-as-Code control planes, inventories, playbooks, and safe operational boundaries"
+  default_prompt: "Use $iac-control-plane to establish, modify, or govern infrastructure automation and operational policies."

@@ -26,6 +26,7 @@ PAIRS = (
     (ROOT / "system-design/COMPONENTS.md", ROOT / "system-design/COMPONENTS.zh-CN.md"),
     (ROOT / "system-design/REVIEW.md", ROOT / "system-design/REVIEW.zh-CN.md"),
     (ROOT / "test-evidence/LEGACY.md", ROOT / "test-evidence/LEGACY.zh-CN.md"),
+    (ROOT / "iac-control-plane/SCAFFOLD.md", ROOT / "iac-control-plane/SCAFFOLD.zh-CN.md"),
 )
 INLINE_CODE_PATTERN = re.compile(r"`([^`\n]+)`")
 URL_PATTERN = re.compile(r"https?://[^\s)>]+")

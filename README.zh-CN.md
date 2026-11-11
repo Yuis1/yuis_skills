@@ -35,9 +35,9 @@
 | 验收复杂或高风险任务 | `review-evidence` | 按风险对复审证据分级，冻结候选版本并生成统一机器事实清单 |
 | 判断验证是否真正成立 | `test-evidence` | 区分证据能力边界，落实前置环境探针、主干黄金路径优先、无状态瞬态沙箱与不可变测试目标 |
 | 开发或优化 Agent 产品 | `agent-dev` | 版本化治理 Prompt、模型、Schema、工具、编排及确定性评测基准 |
-| 组织多 Agent 并行工作 | `agent-team` | 组织二级总控与领域领队，控制任务契约、极简 4 态看板、重型依赖桩化解耦、工作树与分支退役、短命 Worker 会话与总控摘要隔离 |
-| 为委派任务分配模型与推理档位 | `delegation-models` | 依据认知原型对系统架构、战术总控、文案调研与工程实现进行精准分工 |
+| 组织多 Agent 并行工作与模型认知委派 | `agent-team` | 组织二级总控与领域领队，管理任务契约、模型认知委派矩阵、极简 4 态看板、重型依赖桩化解耦与工作树隔离 |
 | 重构并重写受限的提示词 | `ambitious-prompt-rewrite` | 在高度、深度与广度上将平庸任务升维为专业级自闭环指令 |
+| 建立、变更或治理 IaC 控制面 | `iac-control-plane` | 脚手架基础设施仓库、隔离多云根模块、强制剧本 SSOT 与执行边界、隔离机密并治理人机共读运维文档 |
 | 研究可与仓库文件分析分离、前沿或有难度且需大量在线文献的问题 | `chatgpt-chat` | 通过用户现有 Edge/Chrome Profile 咨询 ChatGPT Web |
 
 常见组合：
@@ -54,13 +54,13 @@
 - **深度（Depth）：** 调动领域顶尖专家的专业工具（原生 AST、性能探针、统计学模型），并强制引入外部独立裁判，严禁回路内的口头自我评价；
 - **广度（Range）：** 将核心动词映射至正交交叉学科（如做空机构、法务会计师、动效设计师），引入其实质性求证方法学，拒绝浮于表面的角色扮演。
 
-### 借助 `delegation-models` 落实模型认知分工
+### 借助 `agent-team` 落实模型认知分工
 
-前沿基准评测（如 SlopCodeBench）与多智能体实战表明：无条件将高推理大模型推至顶格（xhigh）会导致严重的自我辩论死循环、废话膨胀与过度防御的样板代码。`delegation-models` 依据认知原型对模型进行精准解耦与协同，并统一经由 Pi 原生引擎执行以保障高响应与无缝流式交互：
+前沿基准评测（如 SlopCodeBench）与多智能体实战表明：无条件将高推理大模型推至顶格（xhigh）会导致严重的自我辩论死循环、废话膨胀与过度防御的样板代码。`agent-team` 依据认知原型对模型进行精准解耦与协同：
 
 - **顶层架构与不变量建模：** 由 `pi/openai-codex/gpt-6-astra` 主笔形式化 Schema、状态机枚举与接口契约（`Schema-as-Spec`），默认采用 `high` 推理强度；
 - **宏观审查与瘦身去油腻：** 由 `pi/antigravity/gemini-3.8-flash`（通过 Pi 的 Antigravity 扩展）依托 1M+ 全局上下文视野审视跨模块依赖，主动识别并剔除推测性防御分支与偶然复杂度；
-- **开发计划与任务切片拆解：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 主导里程碑规划、主干黄金路径与单命令 E2E 原子切片（变更 < 300 行；实测验证见[前沿模型规划评测报告](docs/benchmarks/model-planning-benchmark-2026-11.zh-CN.md)），并由 `pi/openai-codex/gpt-6-astra` 提供非阻塞式架构参考；
+- **开发计划与任务切片拆解：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 主导里程碑规划、主干黄金路径与单命令 E2E 原子切片（实测验证见[前沿模型规划评测报告](docs/benchmarks/model-planning-benchmark-2026-11.zh-CN.md)），并由 `pi/openai-codex/gpt-6-astra` 提供非阻塞式架构参考；
 - **战术总控与领域领队：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 担任一级总控，二级领域领队默认采用兼具成本优势的 `codebuddy/deepseek-v4.1-flash`；
 - **核心代码实现与干活分工：** 由 `pi/openai-codex/gpt-6.1-sol` 担任核心业务开发与 TDD 默认干活主力，仅低难度重复性任务走 `pi/openai-codex/gpt-6.1-terra`；
 - **日常文案、产品定义与调研：** 由 `pi/antigravity/gemini-3.8-flash` 承担文案宣发、PRD 需求梳理、用户旅程与文献调研，语言亲切自然且吞吐极快；
@@ -87,7 +87,7 @@
 
 | 来源 | `AGENTS.md` 使用的技能 | 作用 |
 |---|---|---|
-| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team`、`delegation-models`、`ambitious-prompt-rewrite`、`chatgpt-chat` | 系统架构、演进、自动守护、重构、证据、Agent 协作、模型认知委派与提示词升维 |
+| 本仓库 | `system-design`、`arch-guard`、`arch-evolve`、`safe-refactor`、`review-evidence`、`test-evidence`、`agent-dev`、`agent-team`、`ambitious-prompt-rewrite`、`chatgpt-chat`、`iac-control-plane` | 系统架构、演进、自动守护、重构、证据、Agent 协作、模型认知委派与提示词升维 |
 | [`mattpocock/skills`](https://github.com/mattpocock/skills) | `codebase-design`、`grill-me`、`grill-with-docs`、`prototype`、`to-spec`、`to-tickets`、`wayfinder`、`implement`、`ask-matt`、`research`、`code-review`、`tdd`、`diagnosing-bugs`、`improve-codebase-architecture`、`pr`、`retro`、`to-questionnaire`、`wait-what`、`wizard` | 需求对齐、规划、实现、测试、诊断、代码复审、PR 编写与会话复盘 |
 | [`Leonxlnx/taste-skill`](https://github.com/Leonxlnx/taste-skill) | `design-taste-frontend` | 反 AI 模板化先锋视觉、宏观方差打破、网页与应用界面真实浏览器截屏评审 |
 | [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | `ui-ux-pro-max` | 本地 BM25 垂直行业调色板、字体搭配与交互设计指南检索底座 |
@@ -127,7 +127,7 @@ cd yuis_skills
 skills=(
   system-design arch-guard arch-evolve safe-refactor
   review-evidence test-evidence agent-dev agent-team
-  delegation-models ambitious-prompt-rewrite chatgpt-chat
+  ambitious-prompt-rewrite chatgpt-chat iac-control-plane
 )
 repo_dir="$(pwd -P)"
 
