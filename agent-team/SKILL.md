@@ -71,7 +71,7 @@ Use these defaults only when the user has not specified the delegated agent's mo
    - Use `pi/openai-codex/gpt-6-astra` (defaults to `high`; reserve extreme reasoning like `xhigh` strictly for hardcore deadlocks).
    - Produce formal types, state machines, and interfaces (`Schema-as-Spec`), not speculative natural language.
 2. **Architecture Review & Slop Reduction:**
-   - Use `pi/antigravity/gemini-3.8-flash` (via Pi's native Antigravity extension, not standalone Antigravity CLI; thinking: `high`).
+   - Use `antigravity/gemini-4-hydrogen-high` (via the official Antigravity CLI in Paseo; effort is encoded in the model ID, so omit `thinkingOptionId`).
    - Leverages true 1M+ context to review global dependencies, actively pruning over-defensive branches, redundant validation shims, and accidental complexity before code generation.
 3. **Development Planning & Scope Decomposition:**
    - **Primary Planning Engine:** use `pi/deepseek-official/deepseek-flash` (thinking: `high`; fallback to other DeepSeek providers like `codebuddy/deepseek-v4.1-flash`). Directly drives end-to-end milestone roadmaps, cuts legacy deadweight, anchors single-command E2E proofs, and decomposes active milestones into 3–6 atomic task contracts.
@@ -82,7 +82,7 @@ Use these defaults only when the user has not specified the delegated agent's mo
 5. **Hardcore Troubleshooting & Deadlock Breaking:**
    - Consult `pi/openai-codex/gpt-6-astra` (thinking: `high`) via `/skill:paseo-advisor` as a focused read-only advisor for deep concurrency races, protocol subtleties, or irreducible deadlocks. The tactical lead retains full orchestration control throughout without transferring ownership or handing off the task.
 6. **Copywriting, Marketing, Product Documentation & Research:**
-   - Use `pi/antigravity/gemini-3.8-flash` (routed through Pi's Antigravity extension; thinking: `medium` for copy, `high` for PRD and literature research).
+   - Use `antigravity/gemini-4-hydrogen-medium` for copy and `antigravity/gemini-4-hydrogen-high` for PRD and literature research (official CLI via Paseo; omit `thinkingOptionId`).
    - Natural phrasing, zero code-defense bias, and high synthesis throughput across large document sets.
 7. **Code Implementation & Working Models:**
    - **Primary Working Model:** default to `pi/openai-codex/gpt-6.1-sol` (thinking: `high`). Handles non-trivial feature development, vertical slice TDD, complex refactoring, and state machine implementation.
@@ -95,15 +95,15 @@ Use these defaults only when the user has not specified the delegated agent's mo
 | Delegated Work | Default Model | Reasoning Effort | Guidance |
 | --- | --- | --- | --- |
 | Top-level architecture | `pi/openai-codex/gpt-6-astra` | `high` | Model core schemas, state machine enums, and invariants. Defaults to `high`; reserve `xhigh` for hardcore deadlocks. |
-| Architecture review | `pi/antigravity/gemini-3.8-flash` | `high` | Review Astra drafts across global context; prune speculative defenses and accidental complexity. |
+| Architecture review | `antigravity/gemini-4-hydrogen-high` | In model ID | Review Astra drafts across global context; prune speculative defenses and accidental complexity. |
 | Development planning | `pi/deepseek-official/deepseek-flash` | `high` | Drive milestone roadmaps, atomic happy-path slices, and single-command E2E. DeepSeek fallback. |
 | Plan advisory consult | `pi/openai-codex/gpt-6-astra` | `high` | Optional advisory consult on invariant boundaries via `/skill:paseo-advisor`; non-blocking. |
 | Root orchestration (Tier 1) | `pi/deepseek-official/deepseek-flash` | `high` | Native Pi 1M context, contract locking, and milestone integration. |
 | Domain leads (Tier 2) | `codebuddy/deepseek-v4.1-flash` | `high` | Cost-effective domain agile slicing and taskboard tracking. Pi native fallback. |
 | Tactical task decomposition | `pi/deepseek-official/deepseek-flash` | `high` | Slice current milestone into 3–6 atomic task contracts under single-command E2E. |
 | Hardcore troubleshooting | `pi/openai-codex/gpt-6-astra` | `high` | Consult via `/skill:paseo-advisor` for read-only second opinions on deep concurrency and deadlocks without transferring orchestration control. |
-| Copywriting & marketing | `pi/antigravity/gemini-3.8-flash` | `medium` | Natural human tone, engaging copy, and zero code-defense boilerplate. |
-| Product docs & PRDs | `pi/antigravity/gemini-3.8-flash` | `high` | Synthesize user journeys, feature specifications, and clear acceptance boundaries. |
-| Research & literature | `pi/antigravity/gemini-3.8-flash` | `high` | Macro-survey across long documents and web evidence; consult `chatgpt-chat` when extensive online search is required. |
+| Copywriting & marketing | `antigravity/gemini-4-hydrogen-medium` | In model ID | Natural human tone, engaging copy, and zero code-defense boilerplate. |
+| Product docs & PRDs | `antigravity/gemini-4-hydrogen-high` | In model ID | Synthesize user journeys, feature specifications, and clear acceptance boundaries. |
+| Research & literature | `antigravity/gemini-4-hydrogen-high` | In model ID | Macro-survey across long documents and web evidence; consult `chatgpt-chat` when extensive online search is required. |
 | Primary code implementation | `pi/openai-codex/gpt-6.1-sol` | `high` | Primary working model for vertical slice TDD and non-trivial features. |
 | Repetitive tasks & metadata | `pi/openai-codex/gpt-6.1-terra` | `low` | Reserved for low-difficulty repetitive tasks, boilerplate, and metadata. |

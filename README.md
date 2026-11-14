@@ -59,11 +59,11 @@ Inspired by Felix Rieseberg's essay [*How to be more ambitious: A tutorial for h
 Frontier benchmarks (SlopCodeBench) and multi-agent operations reveal that applying heavy reasoning models unconditionally produces severe verbosity expansion, self-debate spirals, and over-defensive code bloat ("xhigh considered harmful"). This skill pairs models by cognitive archetype rather than raw compute cost:
 
 - **Top-Level Invariant Modeling:** `pi/openai-codex/gpt-6-astra` drafts formal schemas, state machines, and interfaces (`Schema-as-Spec`), with `high` reasoning by default;
-- **Macro De-bloat Review:** `pi/antigravity/gemini-3.8-flash` (via Pi's Antigravity extension) reviews global dependencies with 1M+ context, actively pruning speculative defenses and accidental complexity;
+- **Macro De-bloat Review:** `antigravity/gemini-4-hydrogen-high` (via the official Antigravity CLI in Paseo) reviews global dependencies across the project context, actively pruning speculative defenses and accidental complexity;
 - **Development Planning & Slicing:** native `pi/deepseek-official/deepseek-flash` drives milestone roadmaps, atomic happy-path slices, and single-command E2E verification (empirically validated in [Frontier Model Planning Benchmark](docs/benchmarks/model-planning-benchmark-2026-11.md)), while `pi/openai-codex/gpt-6-astra` provides non-blocking invariant reference;
 - **Tactical Orchestration:** native `pi/deepseek-official/deepseek-flash` serves as Tier 1 Root, while cost-effective `codebuddy/deepseek-v4.1-flash` manages Tier 2 Domain Leads;
 - **Code Implementation:** `pi/openai-codex/gpt-6.1-sol` serves as the primary working model for non-trivial implementation and TDD, while `pi/openai-codex/gpt-6.1-terra` handles low-difficulty repetitive tasks;
-- **Copywriting, Product Specs & Research:** `pi/antigravity/gemini-3.8-flash` handles natural-language documentation, user journeys, marketing copy, and literature synthesis with high throughput;
+- **Copywriting, Product Specs & Research:** `antigravity/gemini-4-hydrogen-medium` handles marketing copy; `antigravity/gemini-4-hydrogen-high` handles product documentation, user journeys, and literature synthesis;
 - **Hardcore Troubleshooting:** `pi/openai-codex/gpt-6-astra` provides read-only second opinions via `/skill:paseo-advisor` for deep concurrency deadlocks and protocol bugs, while the tactical lead retains complete orchestration ownership without handoff.
 
 After installation, an Agent can select Skills from the task and their descriptions, or you can name a Skill explicitly in your Prompt. Do not preload the entire collection before every task.

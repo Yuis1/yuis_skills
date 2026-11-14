@@ -59,11 +59,11 @@
 前沿基准评测（如 SlopCodeBench）与多智能体实战表明：无条件将高推理大模型推至顶格（xhigh）会导致严重的自我辩论死循环、废话膨胀与过度防御的样板代码。`agent-team` 依据认知原型对模型进行精准解耦与协同：
 
 - **顶层架构与不变量建模：** 由 `pi/openai-codex/gpt-6-astra` 主笔形式化 Schema、状态机枚举与接口契约（`Schema-as-Spec`），默认采用 `high` 推理强度；
-- **宏观审查与瘦身去油腻：** 由 `pi/antigravity/gemini-3.8-flash`（通过 Pi 的 Antigravity 扩展）依托 1M+ 全局上下文视野审视跨模块依赖，主动识别并剔除推测性防御分支与偶然复杂度；
+- **宏观审查与瘦身去油腻：** 由 `antigravity/gemini-4-hydrogen-high`（通过 Paseo 的官方 Antigravity CLI 通道）依托全局上下文视野审视跨模块依赖，主动识别并剔除推测性防御分支与偶然复杂度；
 - **开发计划与任务切片拆解：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 主导里程碑规划、主干黄金路径与单命令 E2E 原子切片（实测验证见[前沿模型规划评测报告](docs/benchmarks/model-planning-benchmark-2026-11.zh-CN.md)），并由 `pi/openai-codex/gpt-6-astra` 提供非阻塞式架构参考；
 - **战术总控与领域领队：** 由 Pi 原厂 `pi/deepseek-official/deepseek-flash` 担任一级总控，二级领域领队默认采用兼具成本优势的 `codebuddy/deepseek-v4.1-flash`；
 - **核心代码实现与干活分工：** 由 `pi/openai-codex/gpt-6.1-sol` 担任核心业务开发与 TDD 默认干活主力，仅低难度重复性任务走 `pi/openai-codex/gpt-6.1-terra`；
-- **日常文案、产品定义与调研：** 由 `pi/antigravity/gemini-3.8-flash` 承担文案宣发、PRD 需求梳理、用户旅程与文献调研，语言亲切自然且吞吐极快；
+- **日常文案、产品定义与调研：** 由 `antigravity/gemini-4-hydrogen-medium` 承担文案宣发，`antigravity/gemini-4-hydrogen-high` 承担 PRD 需求梳理、用户旅程与文献调研；
 - **疑难硬核排障热线：** 遭遇深水区并发死锁或底层协议缺陷时，通过 `/skill:paseo-advisor` 咨询 `pi/openai-codex/gpt-6-astra` 获取只读专家第二意见，战术领队始终保留编排主控权且不交接。
 
 安装后，Agent 可以根据任务和技能描述自动选择；也可以在 Prompt 中明确指定技能。不要在每次任务前预加载整套技能。

@@ -71,8 +71,8 @@ description: 组织与协调多智能体并行工作、二级领域领队、有�
    - 使用 `pi/openai-codex/gpt-6-astra`（默认 `high`；仅在硬核死锁时保留 `xhigh` 极高推理）。
    - 产出形式化类型、状态机与接口契约（`Schema-as-Spec`），拒绝推测性自然语言。
 2. **架构审查与去冗余瘦身：**
-   - 使用 `pi/antigravity/gemini-3.8-flash`（通过 Pi 原生 Antigravity 扩展，非独立 CLI；思考等级：`high`）。
-   - 依托真实 1M+ 极长上下文审视全局依赖，在代码生成前主动修剪过度防御的分支、多余校验层与偶发复杂度。
+   - 使用 `antigravity/gemini-4-hydrogen-high`（通过 Paseo 的官方 Antigravity CLI 通道；推理强度编码在模型 ID 中，省略 `thinkingOptionId`）。
+   - 依托全局上下文审视跨模块依赖，在代码生成前主动修剪过度防御的分支、多余校验层与偶发复杂度。
 3. **开发计划规划与范围拆解：**
    - **计划规划主笔引擎：** 使用 `pi/deepseek-official/deepseek-flash`（思考等级：`high`；其他渠道的 DeepSeek 如 `codebuddy/deepseek-v4.1-flash` 作为兜底）。由其主导宏观里程碑路线图与端到端黄金路径，果断剔除历史负债，锚定单命令 E2E 验收，并将当前里程碑细化为 3~6 个原子任务契约。
    - **架构不变量顾问参考：** 咨询 `pi/openai-codex/gpt-6-astra`（通过 `/skill:paseo-advisor`）作为领域不变量边界与状态转换的补充参考。Astra 严格作为顾问，不作为强制阻断门禁。
@@ -82,7 +82,7 @@ description: 组织与协调多智能体并行工作、二级领域领队、有�
 5. **深水区硬核排障与死锁突破：**
    - 咨询 `pi/openai-codex/gpt-6-astra`（思考等级：`high`，通过 `/skill:paseo-advisor`）作为只读第二意见顾问，攻坚深水区并发竞态、协议底层硬伤或不可复现死锁。战术领队全程保持编排主控权，不让渡控制权或移交任务。
 6. **文案撰写、市场宣发、产品文档与宏观调研：**
-   - 使用 `pi/antigravity/gemini-3.8-flash`（通过 Pi 的 Antigravity 扩展路由；文案采用 `medium`，PRD 与文献调研采用 `high`）。
+   - 文案使用 `antigravity/gemini-4-hydrogen-medium`，PRD 与文献调研使用 `antigravity/gemini-4-hydrogen-high`（通过 Paseo 的官方 CLI 通道；省略 `thinkingOptionId`）。
    - 表达自然、无代码防御偏见，在大文本集合上保持极高综合吞吐。
 7. **代码编写与核心实现模型：**
    - **核心主力模型：** 默认采用 `pi/openai-codex/gpt-6.1-sol`（思考等级：`high`）。承接实质性业务特性开发、纵向切片 TDD、复杂重构与状态机实现。
@@ -95,15 +95,15 @@ description: 组织与协调多智能体并行工作、二级领域领队、有�
 | 委派工作 | 默认模型 | 推理等级 | 说明 |
 | --- | --- | --- | --- |
 | 顶层架构设计 | `pi/openai-codex/gpt-6-astra` | `high` | 建模核心契约、状态机枚举与不变量。默认 `high`；`xhigh` 仅用于深水区死锁。 |
-| 架构瘦身审查 | `pi/antigravity/gemini-3.8-flash` | `high` | 基于全局上下文审查 Astra 草案；修剪推测性防御代码与偶发复杂度。 |
+| 架构瘦身审查 | `antigravity/gemini-4-hydrogen-high` | 模型 ID 内 | 基于全局上下文审查 Astra 草案；修剪推测性防御代码与偶发复杂度。 |
 | 开发计划规划 | `pi/deepseek-official/deepseek-flash` | `high` | 主导里程碑规划、原子黄金路径切片与单命令 E2E。其他 DeepSeek 兜底。 |
 | 规划顾问参考 | `pi/openai-codex/gpt-6-astra` | `high` | 通过 `/skill:paseo-advisor` 提供不变量边界的非阻塞性建议参考。 |
 | 一级总控编排 (Tier 1) | `pi/deepseek-official/deepseek-flash` | `high` | 原生 Pi 1M 上下文，负责契约锁定与里程碑集成。 |
 | 二级领域领队 (Tier 2) | `codebuddy/deepseek-v4.1-flash` | `high` | 负责高性价比领域敏捷切片与任务看板跟踪。Pi 原厂通道兜底。 |
 | 战术切片契约拆解 | `pi/deepseek-official/deepseek-flash` | `high` | 将当前里程碑拆解为 3~6 个原子任务契约，绑定单命令 E2E。 |
 | 深水区技术排障 | `pi/openai-codex/gpt-6-astra` | `high` | 通过 `/skill:paseo-advisor` 提供深水区并发与死锁的只读第二意见，不移交主控权。 |
-| 文案撰写与宣发 | `pi/antigravity/gemini-3.8-flash` | `medium` | 自然人类语气，高表现力文案，零代码防御样板。 |
-| 产品文档与 PRD | `pi/antigravity/gemini-3.8-flash` | `high` | 综合用户旅程、特性规格说明与清晰验收边界。 |
-| 调研与文献综述 | `pi/antigravity/gemini-3.8-flash` | `high` | 针对长篇文档与网络证据进行宏观概览；需大量在线检索时咨询 `chatgpt-chat`。 |
+| 文案撰写与宣发 | `antigravity/gemini-4-hydrogen-medium` | 模型 ID 内 | 自然人类语气，高表现力文案，零代码防御样板。 |
+| 产品文档与 PRD | `antigravity/gemini-4-hydrogen-high` | 模型 ID 内 | 综合用户旅程、特性规格说明与清晰验收边界。 |
+| 调研与文献综述 | `antigravity/gemini-4-hydrogen-high` | 模型 ID 内 | 针对长篇文档与网络证据进行宏观概览；需大量在线检索时咨询 `chatgpt-chat`。 |
 | 核心业务代码实现 | `pi/openai-codex/gpt-6.1-sol` | `high` | 纵向切片 TDD 与实质性特性的核心开发主力模型。 |
 | 重复任务与元数据 | `pi/openai-codex/gpt-6.1-terra` | `low` | 专用于低难度重复性任务、脚手架样板与元数据更新。 |
